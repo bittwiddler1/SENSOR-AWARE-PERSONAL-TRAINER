@@ -4,7 +4,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
+using OpenTK;
 namespace Sensor_Aware_PT
 {
     /** Holds ID and MAC of each sensor */
@@ -21,11 +21,19 @@ namespace Sensor_Aware_PT
         }
     }
 
+    /** Struct to hold info on each line of sensor data */
+    public struct SensorDataEntry
+    {
+        public Vector3 orientation;
+        public DateTime timeStamp;
+        public int sequenceNumber;
+    }
+
     class SensorManager
     {
         /** baud rate for the com ports */
-        public static const int SENSOR_BAUD_RATE = 9600;
-        const double SERIAL_ENUMERATION_TIMEOUT_SECONDS = 5;
+        public const int SENSOR_BAUD_RATE = 9600;
+        public const double SERIAL_ENUMERATION_TIMEOUT_SECONDS = 5;
         #region instance variables 
         /** Holds the config data for each sensor. Eventually user can use a configurator to set this up
          * though for now it's hardcoded to our sensors */

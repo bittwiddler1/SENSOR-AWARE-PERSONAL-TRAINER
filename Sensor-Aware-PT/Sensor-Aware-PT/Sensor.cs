@@ -4,7 +4,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
+using OpenTK;
 
 namespace Sensor_Aware_PT
 {
@@ -13,6 +13,8 @@ namespace Sensor_Aware_PT
     {
         /** Timeout in ms for IO */
         static int SERIAL_IO_TIMEOUT = 500;
+        /** Max number of values to keep in history */
+        static int HISTORY_BUFFER_SIZE = 500;
         /** Friendly sensor ID A-D */
         private string mID;
 
@@ -41,6 +43,13 @@ namespace Sensor_Aware_PT
         private SerialPort mSerialPort;
         /** Thread to handle the constant stream of data input */
         private Thread mReadThread;
+
+        /** Keeps track of the # of the data packet since last reset */
+        private int mSequenceNum;
+
+        /** Circular buffer to hold the data input */
+        private RingBuffer<SensorDataEntry> mData;
+        
         /** Sensor state */
         enum SensorState
         {
@@ -56,6 +65,7 @@ namespace Sensor_Aware_PT
             mID = config.Id;
             mMAC = config.Mac;
             mPortName = config.PortName;
+            mData = new RingBuffer<SensorDataEntry>(HISTORY_BUFFER_SIZE);
             initialize();
         }
 
@@ -96,9 +106,35 @@ namespace Sensor_Aware_PT
             }
         }
 
+        /** Self explanatory.*/
         private void changeState(SensorState newState)
         {
+            //TODO add debug logging stuff here
             mSensorState = newState;
+        }
+
+        /** Takes an input line and spits a vector 3 out */
+        public static Vector3 parseInput(string input)
+        {
+            Vector3 retVal = new Vector3();
+            //TODO actual parsing shit
+            return retVal;
+        }
+
+        private SensorDataEntry prepareEntry(Vector3 orientation)
+        {
+            SensorDataEntry newEntry;
+            newEntry.orientation = orientation;
+            newEntry.sequenceNumber = mSequenceNum++;
+            newEntry.timeStamp = DateTime.Now;
+
+            return newEntry;
+            
+        }
+
+        public void reset()
+        {
+
         }
     }
 }
