@@ -8,21 +8,23 @@ using System.Threading;
 namespace Sensor_Aware_PT
 {
     /** Holds ID and MAC of each sensor */
-    struct SensorConfigData
+    public class SensorConfigData
     {
         public string Id;
         public string Mac;
+        public string PortName;
         public SensorConfigData(string _id, string _mac)
         {
             Id = _id;
             Mac = _mac;
+            PortName = "";
         }
     }
 
     class SensorManager
     {
         /** baud rate for the com ports */
-        const int SENSOR_BAUD_RATE = 9600;
+        public static const int SENSOR_BAUD_RATE = 9600;
         const double SERIAL_ENUMERATION_TIMEOUT_SECONDS = 5;
         #region instance variables 
         /** Holds the config data for each sensor. Eventually user can use a configurator to set this up
@@ -54,8 +56,7 @@ namespace Sensor_Aware_PT
         {
             foreach (SensorConfigData config in mSensorInfoList)
             {
-                Sensor sensor = new Sensor(config.Id, config.Mac);
-                
+                Sensor sensor = new Sensor(config);   
             }
         }
 
@@ -79,22 +80,47 @@ namespace Sensor_Aware_PT
             {
                 SerialPort port = new SerialPort(portName, SENSOR_BAUD_RATE);
                 /** Open the port, start the enumerate thread */
+                port.Open();
                 mSerialPortThread.Start(port);
                 /** Wait until its complete OR the timeout elapses */
                 mSerialPortThread.Join(TimeSpan.FromSeconds(SERIAL_ENUMERATION_TIMEOUT_SECONDS));
+                port.Close();
+                port.Dispose();
             }
         }
 
-        /** Called after setting up a serial port and opening it */
+        /** Sends the handshake command and waits for a reply until timeout. This maps the portname for each sensor
+         * the data is the SerialPort which has been opened */
         private void enumeratePort(object data)
         {
             SerialPort port = (SerialPort)data;
             string dataLine;
-            port.Open();
-            while (true)
+            try
             {
-                dataLine = port.ReadLine();
+                /** Send the identify command */
+                port.WriteLine("COMMAND_IDENTIFY");
 
+                /** Wait for the response */
+                while (true)
+                {
+                    dataLine = port.ReadLine();
+
+                    /** Check if the response matches any of our preset macs */
+                    foreach(SensorConfigData sensor in mSensorInfoList)
+                    {
+                        if (dataLine.Equals(sensor.Mac))
+                        {
+                            /** Match found, save the mapping and return */
+                            sensor.PortName = port.PortName;
+                            return;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                /** pokemon */
+                throw;
             }
         }
     }
