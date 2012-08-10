@@ -92,12 +92,20 @@ namespace Sensor_Aware_PT
         /** Background thread that loops infinitely for incoming data */
         private void readThreadRun()
         {
+            Logger.Info("Sensor {0} read thread started", mID);
             if (mSensorState == SensorState.Initialized)
             {
                 changeState(SensorState.ReadingInput);
-                while (true)
+                try
                 {
-                    string dataLine = mSerialPort.ReadLine();
+                    while (true)
+                    {
+                        string dataLine = mSerialPort.ReadLine();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Sensor {0} read thread exception: {1}", mID, e.Message);
                 }
             }
             else
@@ -109,7 +117,7 @@ namespace Sensor_Aware_PT
         /** Self explanatory.*/
         private void changeState(SensorState newState)
         {
-            //TODO add debug logging stuff here
+            Logger.Info("Sensor {0} changing state from {1} to {2}", mID, mSensorState, newState);
             mSensorState = newState;
         }
 
@@ -129,7 +137,6 @@ namespace Sensor_Aware_PT
             newEntry.timeStamp = DateTime.Now;
 
             return newEntry;
-            
         }
 
         public void reset()

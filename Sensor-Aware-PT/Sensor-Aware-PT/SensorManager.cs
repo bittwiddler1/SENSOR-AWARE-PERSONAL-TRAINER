@@ -49,7 +49,7 @@ namespace Sensor_Aware_PT
         {
             initializeVariables();
             initializeSensorConfig();
-            initializeSensors();
+            //initializeSensors();
         }
 
         /** Initialize all the class variables...duh */
@@ -81,17 +81,21 @@ namespace Sensor_Aware_PT
          * This allows us to grab the serial ports we identify as our sensors */
         public void enumerateSerialPorts()
         {
+            Logger.Info("Serial port enumeration started");
             string[] ports = SerialPort.GetPortNames();
+            Logger.Info("Serial ports are: {0}", ports);
             mSerialPortThread = new Thread(enumeratePort);
             /** Go through each port, attempt to set it up, send handshake, wait for response */
             foreach (string portName in ports)
             {
+                Logger.Info("Attempting to enumerate port {0}", portName);
                 SerialPort port = new SerialPort(portName, SENSOR_BAUD_RATE);
                 /** Open the port, start the enumerate thread */
                 port.Open();
                 mSerialPortThread.Start(port);
                 /** Wait until its complete OR the timeout elapses */
                 mSerialPortThread.Join(TimeSpan.FromSeconds(SERIAL_ENUMERATION_TIMEOUT_SECONDS));
+                Logger.Info("enumeratePort: match found or timeout occured");
                 port.Close();
                 port.Dispose();
             }
@@ -101,13 +105,16 @@ namespace Sensor_Aware_PT
          * the data is the SerialPort which has been opened */
         private void enumeratePort(object data)
         {
+            
             SerialPort port = (SerialPort)data;
+            Logger.Info("enumeratePort thread started for port {0}", port.PortName);
             string dataLine;
             try
             {
+                Logger.Info("enumeratePort: sending identify command");
                 /** Send the identify command */
                 port.WriteLine("COMMAND_IDENTIFY");
-
+                Logger.Info("enumeratePort: waiting for response");
                 /** Wait for the response */
                 while (true)
                 {
@@ -119,6 +126,7 @@ namespace Sensor_Aware_PT
                         if (dataLine.Equals(sensor.Mac))
                         {
                             /** Match found, save the mapping and return */
+                            Logger.Info("enumeratePort: Match found between {0} and {1}", sensor.PortName, sensor.Mac);
                             sensor.PortName = port.PortName;
                             return;
                         }
@@ -127,8 +135,8 @@ namespace Sensor_Aware_PT
             }
             catch (Exception e)
             {
-                /** pokemon */
-                throw;
+                Logger.Error("enumeratePort: exception  in port {0} {1}", port.PortName, e.Message);
+                
             }
         }
     }

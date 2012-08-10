@@ -14,14 +14,16 @@ namespace Sensor_Aware_PT
 
         private SerialPort port;
         private Thread ReadThread;
+        private SensorManager mSensorManager;
 
         public MainForm()
         {
             InitializeComponent();
-
+            /*
             ReadThread = new Thread(ReadThread_main);
             ReadThread.Name = "Read Thread";
             ReadThread.IsBackground = true;
+             * */
         }
 
         private void ReadThread_main()
@@ -42,6 +44,9 @@ namespace Sensor_Aware_PT
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            mSensorManager = new SensorManager();
+            mSensorManager.enumerateSerialPorts();
+            /*
             // Allow the user to set the appropriate properties
             port = new SerialPort();
             port.PortName = "COM3";
@@ -57,18 +62,19 @@ namespace Sensor_Aware_PT
 
             port.Open();
             ReadThread.Start();
+             * */
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             bRunning = false;
-            ReadThread.Abort();
+            //ReadThread.Abort();
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Thread.CurrentThread.Join();
-            port.Close();
+           // Thread.CurrentThread.Join();
+           // port.Close();
         }
 
         private void glControl1_Load(object sender, EventArgs e)
