@@ -29,7 +29,7 @@ namespace Sensor_Aware_PT
         public int sequenceNumber;
     }
 
-    class SensorManager
+    class Nexus
     {
         /** baud rate for the com ports */
         public const int SENSOR_BAUD_RATE = 9600;
@@ -45,7 +45,7 @@ namespace Sensor_Aware_PT
         
         #endregion
 
-        public SensorManager()
+        public Nexus()
         {
             initializeVariables();
             initializeSensorConfig();

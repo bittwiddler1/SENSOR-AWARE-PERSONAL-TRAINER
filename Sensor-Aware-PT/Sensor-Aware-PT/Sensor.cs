@@ -80,7 +80,7 @@ namespace Sensor_Aware_PT
             mReadThread.IsBackground = true;
 
             /** Setup the serial port */
-            mSerialPort = new SerialPort(mPortName, SensorManager.SENSOR_BAUD_RATE);
+            mSerialPort = new SerialPort(mPortName, Nexus.SENSOR_BAUD_RATE);
             mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
             mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
             mSerialPort.Open();
@@ -121,9 +121,10 @@ namespace Sensor_Aware_PT
             return retVal;
         }
 
+        /** Packs an orientation into a data entry struct along with sequence and timestamp */
         private SensorDataEntry prepareEntry(Vector3 orientation)
         {
-            SensorDataEntry newEntry;
+            SensorDataEntry newEntry = new SensorDataEntry();
             newEntry.orientation = orientation;
             newEntry.sequenceNumber = mSequenceNum++;
             newEntry.timeStamp = DateTime.Now;
