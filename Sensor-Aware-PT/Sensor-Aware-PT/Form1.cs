@@ -14,7 +14,7 @@ namespace Sensor_Aware_PT
 
         private SerialPort port;
         private Thread ReadThread;
-        private SensorManager mSensorManager;
+        private Nexus mSensorManager;
 
         public MainForm()
         {
@@ -44,8 +44,15 @@ namespace Sensor_Aware_PT
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            mSensorManager = new SensorManager();
-            mSensorManager.enumerateSerialPorts();
+
+            string[] ports = SerialPort.GetPortNames();
+
+            foreach( string s in ports )
+            {
+                Logger.Info( "{0}", s );
+            }
+            mSensorManager = new Nexus();
+            
             /*
             // Allow the user to set the appropriate properties
             port = new SerialPort();
