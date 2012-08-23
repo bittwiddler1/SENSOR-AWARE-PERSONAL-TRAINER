@@ -12,19 +12,19 @@ namespace Sensor_Aware_PT
     class Sensor
     {
         /** Timeout in ms for IO */
-<<<<<<< HEAD
-        static int SERIAL_IO_TIMEOUT = 2500;
-=======
         static int SERIAL_IO_TIMEOUT = 10000;
->>>>>>> master
         /** Max number of values to keep in history */
         static int HISTORY_BUFFER_SIZE = 500;
+
+        private const int MAX_READ_ERRORS = 3; 
+
         /** Friendly sensor ID A-D */
         private string mID;
+        private int mReadErrors;
 
         public string Id
         {
-            get { return mID; }
+            get { return mID;  }
             set { mID = value; }
         }
         /** Last 4 Digits of mac address, used for ID purposes */
@@ -32,7 +32,7 @@ namespace Sensor_Aware_PT
 
         public string MacAddress
         {
-            get { return mMAC; }
+            get { return mMAC;  }
             set { mMAC = value; }
         }
         /** COM port of sensor */
@@ -40,7 +40,7 @@ namespace Sensor_Aware_PT
 
         public string SerialPortName
         {
-            get { return mPortName; }
+            get { return mPortName;  }
             set { mPortName = value; }
         }
         /** Serial Port for data*/
@@ -89,7 +89,6 @@ namespace Sensor_Aware_PT
             }
             catch( Exception e)
             {
-
                 Logger.Error( e.Message );
             }
   
@@ -102,6 +101,7 @@ namespace Sensor_Aware_PT
             mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
             mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
             mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
+
             mSerialPort.Open();
             changeState( SensorState.Initialized );
             Logger.Info("Sensor {0} read thread started", mID);
@@ -118,8 +118,16 @@ namespace Sensor_Aware_PT
                 }
                 catch (Exception e)
                 {
-                    Logger.Error("Sensor {0} read thread exception: {1}", mID, e.Message);
-                    throw new Exception( String.Format("Sensor {0} read thread exception: {1}", mID, e.Message ));
+                    mReadErrors++;
+                    if( MAX_READ_ERRORS <= mReadErrors )
+                    {
+                        Logger.Error( "Sensor {0} read thread exception: {1}", mID, e.Message );
+                        throw new Exception( String.Format( "Sensor {0} read thread exception: {1}", mID, e.Message ) );
+                    }
+                    else
+                    {
+                    }
+ 
                 }
             }
             else
