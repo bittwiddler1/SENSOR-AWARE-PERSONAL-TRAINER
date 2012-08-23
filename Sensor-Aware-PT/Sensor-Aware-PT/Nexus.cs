@@ -167,6 +167,11 @@ namespace Sensor_Aware_PT
                 fileStream.Flush();
                 fileStream.Close();
             }
+
+            foreach( Sensor s in mSensorDict.Values )
+            {
+                s.initialize();
+            }
         }
 
         /// <summary>

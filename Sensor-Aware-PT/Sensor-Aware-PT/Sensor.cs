@@ -12,7 +12,7 @@ namespace Sensor_Aware_PT
     class Sensor
     {
         /** Timeout in ms for IO */
-        static int SERIAL_IO_TIMEOUT = 500;
+        static int SERIAL_IO_TIMEOUT = 2500;
         /** Max number of values to keep in history */
         static int HISTORY_BUFFER_SIZE = 500;
         /** Friendly sensor ID A-D */
@@ -66,11 +66,11 @@ namespace Sensor_Aware_PT
             mMAC = config.Mac;
             mPortName = config.PortName;
             mData = new RingBuffer<SensorDataEntry>(HISTORY_BUFFER_SIZE);
-            initialize();
+            
         }
 
         /** Initializes the sensor using the ID and MAC */
-        private void initialize()
+        public void initialize()
         {
             try
             {
@@ -116,6 +116,7 @@ namespace Sensor_Aware_PT
                 catch (Exception e)
                 {
                     Logger.Error("Sensor {0} read thread exception: {1}", mID, e.Message);
+                    throw new Exception( String.Format("Sensor {0} read thread exception: {1}", mID, e.Message ));
                 }
             }
             else
