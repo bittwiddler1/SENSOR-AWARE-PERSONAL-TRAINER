@@ -60,7 +60,7 @@ namespace Sensor_Aware_PT
 
         private SensorState mSensorState = SensorState.Uninitialized; /** Default state for the sensor */
 
-        public Sensor(SensorConfigData config)
+        public Sensor(SensorIdentification config)
         {
             mID = config.Id;
             mMAC = config.Mac;

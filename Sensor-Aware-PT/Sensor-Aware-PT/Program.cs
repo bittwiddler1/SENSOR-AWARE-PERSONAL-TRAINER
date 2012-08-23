@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
-
+using System.Threading;
+using System.Text;
 
 namespace Sensor_Aware_PT
 {
@@ -17,22 +18,66 @@ namespace Sensor_Aware_PT
         
         [DllImport( "kernel32.dll" )]
         static extern bool AttachConsole(int dwProcessId);
+        
         private const int ATTACH_PARENT_PROCESS = -1;
+
+        private static Form mainForm = null;
 
         [STAThread]
         static void Main()
         {
-                        // redirect console output to parent process;
-            // must be before any calls to Console.WriteLine()
-            AttachConsole( ATTACH_PARENT_PROCESS );
-
-            for (int i = 0; i < 10; i++)
+            try
             {
-                Console.WriteLine(i );
+                System.Windows.Forms.Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+                System.Windows.Forms.Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(onGuiUnhandledException);
+                AppDomain.CurrentDomain.UnhandledException += onUnhandledException;
+
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+
+                mainForm = new MainForm();
+                Application.Run(mainForm);
             }
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            catch (Exception e)
+            {
+                handleUnhandledException(e);
+            }
+            // redirect console output to parent process;
+            // must be before any calls to Console.WriteLine()
+           // AttachConsole( ATTACH_PARENT_PROCESS );
+
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    Console.WriteLine(i );
+            //}
+
+        }
+
+        private static void onGuiUnhandledException(object sender, ThreadExceptionEventArgs e)
+        {
+            handleUnhandledException(e.Exception);
+        }
+
+        private static void onUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+
+            handleUnhandledException(e.ExceptionObject);
+        }
+
+        private static void handleUnhandledException(Object o)
+        {
+            Exception e = o as Exception;
+
+            if (e != null)
+            {
+                StringBuilder tmp = new StringBuilder(e.GetType().ToString() + ": ");
+                tmp.Append(e.Message);
+                tmp.AppendLine();
+                tmp.AppendLine(e.StackTrace);
+                Logger.Error(tmp.ToString());
+
+                MessageBox.Show(mainForm, e.GetType().ToString(), e.Message+"\nThe program will now exit\n\nStackTrace:\n"+e.StackTrace, MessageBoxButtons.OK);
+            }
         }
     }
 }
