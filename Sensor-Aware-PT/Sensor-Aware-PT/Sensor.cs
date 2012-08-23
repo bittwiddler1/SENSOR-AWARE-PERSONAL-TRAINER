@@ -72,21 +72,30 @@ namespace Sensor_Aware_PT
         /** Initializes the sensor using the ID and MAC */
         private void initialize()
         {
-            /** Setup the reading thread */
-            mReadThread = new Thread(readThreadRun);
-            /** Format for name of each read thread is
-             * readThreadRunA, readThreadRunB...etc */
-            mReadThread.Name = String.Format("readThreadRun{0}", mID);
-            mReadThread.IsBackground = true;
+            try
+            {
+                /** Setup the reading thread */
+                mReadThread = new Thread( readThreadRun );
+                /** Format for name of each read thread is
+                 * readThreadRunA, readThreadRunB...etc */
+                mReadThread.Name = String.Format( "readThreadRun{0}", mID );
+                mReadThread.IsBackground = true;
 
-            /** Setup the serial port */
-            mSerialPort = new SerialPort(mPortName, Nexus.SENSOR_BAUD_RATE);
-            mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
-            mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
-            mSerialPort.Open();
-            changeState(SensorState.Initialized);
-            /** Start the read thread */
-            mReadThread.Start();
+                /** Setup the serial port */
+                mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
+                mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
+                mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
+                mSerialPort.Open();
+                changeState( SensorState.Initialized );
+                /** Start the read thread */
+                mReadThread.Start();
+            }
+            catch( Exception e)
+            {
+
+                Logger.Error( e.Message );
+            }
+  
         }
 
         /** Background thread that loops infinitely for incoming data */
@@ -101,6 +110,7 @@ namespace Sensor_Aware_PT
                     while (true)
                     {
                         string dataLine = mSerialPort.ReadLine();
+                        Logger.Info( "Sensor {0} data {1}", mID, dataLine );
                     }
                 }
                 catch (Exception e)
