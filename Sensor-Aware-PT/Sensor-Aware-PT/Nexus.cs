@@ -63,6 +63,7 @@ namespace Sensor_Aware_PT
         Dictionary<String, SensorIdentification> mSensorIDDict;
         SerializableDictionary<String, String> mConfigFileDataDict;
 
+
         private Boolean bGenerateConfig = false;
         #endregion
 

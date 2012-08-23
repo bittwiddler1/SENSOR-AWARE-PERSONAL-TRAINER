@@ -12,7 +12,11 @@ namespace Sensor_Aware_PT
     class Sensor
     {
         /** Timeout in ms for IO */
+<<<<<<< HEAD
         static int SERIAL_IO_TIMEOUT = 2500;
+=======
+        static int SERIAL_IO_TIMEOUT = 10000;
+>>>>>>> master
         /** Max number of values to keep in history */
         static int HISTORY_BUFFER_SIZE = 500;
         /** Friendly sensor ID A-D */
@@ -80,13 +84,6 @@ namespace Sensor_Aware_PT
                  * readThreadRunA, readThreadRunB...etc */
                 mReadThread.Name = String.Format( "readThreadRun{0}", mID );
                 mReadThread.IsBackground = true;
-
-                /** Setup the serial port */
-                mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
-                mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
-                mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
-                mSerialPort.Open();
-                changeState( SensorState.Initialized );
                 /** Start the read thread */
                 mReadThread.Start();
             }
@@ -101,6 +98,12 @@ namespace Sensor_Aware_PT
         /** Background thread that loops infinitely for incoming data */
         private void readThreadRun()
         {
+            /** Setup the serial port */
+            mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
+            mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
+            mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
+            mSerialPort.Open();
+            changeState( SensorState.Initialized );
             Logger.Info("Sensor {0} read thread started", mID);
             if (mSensorState == SensorState.Initialized)
             {
