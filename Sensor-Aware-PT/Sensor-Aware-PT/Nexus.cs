@@ -40,6 +40,7 @@ namespace Sensor_Aware_PT
         List<SensorConfigData> mSensorInfoList;
         /** List to hold the Sensor objects */
         List<Sensor> mSensorList;
+        
 
         #endregion
 
