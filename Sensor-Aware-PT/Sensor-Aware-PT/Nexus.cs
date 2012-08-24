@@ -21,14 +21,6 @@ namespace Sensor_Aware_PT
         }
     }
 
-    /** Struct to hold info on each line of sensor data */
-    public struct SensorDataEntry
-    {
-        public Vector3 orientation;
-        public DateTime timeStamp;
-        public int sequenceNumber;
-    }
-
     class Nexus
     {
         /** baud rate for the com ports */
@@ -64,6 +56,7 @@ namespace Sensor_Aware_PT
             foreach( SensorConfigData config in mSensorInfoList )
             {
                 Sensor sensor = new Sensor( config );
+                mSensorList.Add( sensor );
             }
         }
 
@@ -71,8 +64,8 @@ namespace Sensor_Aware_PT
         private void initializeSensorConfig()
         {
             //mSensorInfoList.Add(new SensorConfigData("A", "EC21"));
-            mSensorInfoList.Add( new SensorConfigData( "B", "EC21", "COM12" ) );
-            mSensorInfoList.Add( new SensorConfigData( "C", "EC21", "COM8" ) );
+            //mSensorInfoList.Add( new SensorConfigData( "B", "EC21", "COM12" ) );
+            //mSensorInfoList.Add( new SensorConfigData( "C", "EC21", "COM8" ) );
             mSensorInfoList.Add( new SensorConfigData( "D", "EC21", "COM18" ) );
         }
 
