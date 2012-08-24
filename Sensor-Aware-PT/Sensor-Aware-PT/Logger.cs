@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace Sensor_Aware_PT
 {
@@ -50,9 +51,30 @@ namespace Sensor_Aware_PT
             
             Console.Write("[{0:D4}] [{1}] ",
                 threadId,
-                DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"));
+                DateTime.Now.ToString("HH:mm:ss.fff"));
             Console.Write(prefix);
             Console.WriteLine(text, args);
+
+
+            DateTime datet = DateTime.Now;
+            String filePath = "Log" + datet.ToString( "MM_dd" ) + ".log";
+            if( !File.Exists( filePath ) )
+            {
+                FileStream files = File.Create( filePath );
+                files.Close();
+            }
+            try
+            {
+                StreamWriter sw = File.AppendText( filePath );
+                sw.Write( prefix );
+                sw.WriteLine( text, args );
+                sw.Flush();
+                sw.Close();
+            }
+            catch( Exception e )
+            {
+                Console.WriteLine( e.Message.ToString() );
+            }
         }
     }
 }
