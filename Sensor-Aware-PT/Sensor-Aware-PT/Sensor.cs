@@ -194,6 +194,7 @@ namespace Sensor_Aware_PT
            
         }
 
+        /** Prints a data entry to the log */
         private void printDataEntry( SensorDataEntry dataEntry )
         {
             try
@@ -221,6 +222,7 @@ namespace Sensor_Aware_PT
             
         }
 
+        /** Parses a line of data from the sensor */
         private Vector3 parseDataLine( String dataLine )
         {
             dataLine = dataLine.Substring( 6 ); /** Gets rid of the ##YPR or ##GYR or ##ACC*/
