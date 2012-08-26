@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.glControl1 = new OpenTK.GLControl();
             this.SuspendLayout();
             // 
+<<<<<<< HEAD
             // glControl1
             // 
             this.glControl1.BackColor = System.Drawing.Color.Black;
@@ -44,12 +44,20 @@
             //this.glControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.glControl1_Paint);
             //this.glControl1.Resize += new System.EventHandler(this.glControl1_Resize);
             // 
+=======
+
+>>>>>>> 4d8b45f692eb6eb7aa7d26a8461d1886227449dc
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+<<<<<<< HEAD
             this.ClientSize = new System.Drawing.Size(284, 262);
             this.Controls.Add(this.glControl1);
+=======
+            this.ClientSize = new System.Drawing.Size(367, 349);
+
+>>>>>>> 4d8b45f692eb6eb7aa7d26a8461d1886227449dc
             this.Name = "MainForm";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
@@ -61,7 +69,6 @@
 
         #endregion
 
-        private OpenTK.GLControl glControl1;
     }
 }
 

@@ -3,43 +3,26 @@ using System.Text;
 using System.IO.Ports;
 using System.Threading;
 using System.Windows.Forms;
+using System.Drawing;
+using OpenTK;
+using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
 namespace Sensor_Aware_PT
 {
     public partial class MainForm : Form
     {
-        private bool loaded = false;
+        //private bool loaded = false;
         private bool bRunning = true;
 
-        private SerialPort port;
+        //private SerialPort port;
         private Thread ReadThread;
         private Nexus mSensorManager;
+        private ExperimentalDisplay ed = new ExperimentalDisplay();
 
         public MainForm()
         {
             InitializeComponent();
-            /*
-            ReadThread = new Thread(ReadThread_main);
-            ReadThread.Name = "Read Thread";
-            ReadThread.IsBackground = true;
-             * */
-        }
-
-        private void ReadThread_main()
-        {
-            while (bRunning)
-            {
-                try
-                {
-                    String message = port.ReadLine();
-                    Console.WriteLine(message);
-                }
-                catch (TimeoutException)
-                {
-
-                }
-            }
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -51,31 +34,19 @@ namespace Sensor_Aware_PT
             {
                 Logger.Info( "{0}", s );
             }
-            mSensorManager = new Nexus();
             
-            /*
-            // Allow the user to set the appropriate properties
-            port = new SerialPort();
-            port.PortName = "COM3";
-            port.BaudRate = 9600;
-            port.Parity   = Parity.Even;
-            port.DataBits = 7;
-            port.StopBits = StopBits.One;
-            port.Handshake = Handshake.None;
-
-            // Read/Write timeout
-            port.ReadTimeout  = 500;
-            port.WriteTimeout = 500;
-
-            port.Open();
+            ReadThread = new Thread( () =>
+            {
+                ed.Run( 60, 60 );
+            } );
+            ReadThread.IsBackground = true;
             ReadThread.Start();
-             * */
+            
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             bRunning = false;
-            //ReadThread.Abort();
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -83,6 +54,7 @@ namespace Sensor_Aware_PT
            // Thread.CurrentThread.Join();
            // port.Close();
         }
+<<<<<<< HEAD
 
         private void glControl1_Load(object sender, EventArgs e)
         {
@@ -106,5 +78,7 @@ namespace Sensor_Aware_PT
 
 
 
+=======
+>>>>>>> 4d8b45f692eb6eb7aa7d26a8461d1886227449dc
     }
 }
