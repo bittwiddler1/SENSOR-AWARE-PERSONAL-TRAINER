@@ -25,14 +25,11 @@ namespace Sensor_Aware_PT
                         // redirect console output to parent process;
             // must be before any calls to Console.WriteLine()
             AttachConsole( ATTACH_PARENT_PROCESS );
-
-            for (int i = 0; i < 10; i++)
-            {
-                Console.WriteLine(i );
-            }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            //Application.Run(new MainForm());
+            ExperimentalDisplay e = new ExperimentalDisplay();
+            e.Run();
         }
     }
 }

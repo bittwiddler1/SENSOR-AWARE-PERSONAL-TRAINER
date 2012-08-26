@@ -18,7 +18,9 @@ namespace Sensor_Aware_PT
         public Vector3 magnetometer = new Vector3();
         public DateTime timeStamp = new DateTime();
         public int sequenceNumber;
+        
     }
+
 
     /** Created to encapsulate a sensor */
     class Sensor
@@ -199,6 +201,7 @@ namespace Sensor_Aware_PT
         {
             try
             {
+                /*
                 string output = String.Format( "Angle{{{0},{1},{2}}}, Accel{{{3},{4},{5}}}, Mag{{{6},{7},{8}}}, Gyro{{{9},{10},{11}}}",
                 dataEntry.orientation.X,
                 dataEntry.orientation.Y,
@@ -212,6 +215,13 @@ namespace Sensor_Aware_PT
                 dataEntry.gyroscope.X,
                 dataEntry.gyroscope.Y,
                 dataEntry.gyroscope.Z );
+                */
+
+                string output = String.Format( "Angle{{{0},{1},{2}}}",
+dataEntry.orientation.X,
+dataEntry.orientation.Y,
+dataEntry.orientation.Z );
+
                 Logger.Info( "Sensor {0}: {1}", mID, output );
             }
             catch( Exception e)
@@ -300,6 +310,15 @@ namespace Sensor_Aware_PT
         public void reset()
         {
 
+        }
+
+        internal SensorDataEntry getEntry()
+        {
+            /** This is a crime, yes I know oh gods I know */
+            if( mData.Count > 0 )
+                return mData.Last();
+            else
+                return new SensorDataEntry();
         }
     }
 }

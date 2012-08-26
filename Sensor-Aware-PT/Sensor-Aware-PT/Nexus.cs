@@ -64,9 +64,9 @@ namespace Sensor_Aware_PT
         private void initializeSensorConfig()
         {
             //mSensorInfoList.Add(new SensorConfigData("A", "EC21"));
-            //mSensorInfoList.Add( new SensorConfigData( "B", "EC21", "COM12" ) );
-            //mSensorInfoList.Add( new SensorConfigData( "C", "EC21", "COM8" ) );
-            mSensorInfoList.Add( new SensorConfigData( "D", "EC21", "COM18" ) );
+            mSensorInfoList.Add( new SensorConfigData( "B", "EC21", "COM12" ) );
+            mSensorInfoList.Add( new SensorConfigData( "C", "EC21", "COM8" ) );
+            //mSensorInfoList.Add( new SensorConfigData( "D", "EC21", "COM18" ) );
         }
 
         /** Goes through every available serial port, opens a connection, sends a handshake, waits for a response and terminates
@@ -83,6 +83,11 @@ namespace Sensor_Aware_PT
                 SerialPort port = new SerialPort( portName, SENSOR_BAUD_RATE );
                 /** enumerate here? */
             }
+        }
+
+        public SensorDataEntry getEntry( int index )
+        {
+            return mSensorList[ index ].getEntry();
         }
     }
 }
