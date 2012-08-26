@@ -102,5 +102,9 @@ namespace Sensor_Aware_PT
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             glControl1.SwapBuffers();
         }
+
+
+
+
     }
 }

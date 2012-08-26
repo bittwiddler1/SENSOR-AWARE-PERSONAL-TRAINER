@@ -33,10 +33,18 @@ namespace Sensor_Aware_PT
         }
     }
 
+    /** Struct to hold info on each line of sensor data */
+    public struct SensorDataEntry
+    {
+        public Vector3 orientation;
+        public DateTime timeStamp;
+        public int sequenceNumber;
+    }
+
     class Nexus
     {
         /** baud rate for the com ports */
-        public const int SENSOR_BAUD_RATE = 9600; /* derp 57600; */
+        public const int SENSOR_BAUD_RATE = 57600;
         public const double SERIAL_ENUMERATION_TIMEOUT_SECONDS = 5;
         private const int MAC_ADDRESS_LENGTH = 12;
         private const String CFG_DIR = "Sensor-Aware-PT";
