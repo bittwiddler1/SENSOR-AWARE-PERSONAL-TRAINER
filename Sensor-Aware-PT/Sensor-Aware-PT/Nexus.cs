@@ -244,7 +244,12 @@ namespace Sensor_Aware_PT
             return wmiObjects;
         }
 
-
+        public SensorDataEntry getEntry( int index )
+        {
+            Sensor[] mEntries = mSensorDict.Values.ToArray();
+            return mEntries[index].getEntry();
+            
+        }
 
     }
 }

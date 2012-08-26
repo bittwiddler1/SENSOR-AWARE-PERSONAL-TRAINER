@@ -44,7 +44,7 @@ namespace Sensor_Aware_PT
             }
             // redirect console output to parent process;
             // must be before any calls to Console.WriteLine()
-           // AttachConsole( ATTACH_PARENT_PROCESS );
+            // AttachConsole( ATTACH_PARENT_PROCESS );
 
             //for (int i = 0; i < 10; i++)
             //{

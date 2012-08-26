@@ -20,15 +20,16 @@ namespace Sensor_Aware_PT
         public int sequenceNumber;
     }
 
+
+
     /** Created to encapsulate a sensor */
     class Sensor
     {
         /** Timeout in ms for IO */
         static int SERIAL_IO_TIMEOUT = 10000;
         /** Max number of values to keep in history */
-        static int HISTORY_BUFFER_SIZE = 500;
 
-        private const int MAX_READ_ERRORS = 3; 
+        static int HISTORY_BUFFER_SIZE = 250;
 
         /** Friendly sensor ID A-D */
         private string mID;
@@ -204,6 +205,7 @@ namespace Sensor_Aware_PT
         {
             try
             {
+                /*
                 string output = String.Format( "Angle{{{0},{1},{2}}}, Accel{{{3},{4},{5}}}, Mag{{{6},{7},{8}}}, Gyro{{{9},{10},{11}}}",
                 dataEntry.orientation.X,
                 dataEntry.orientation.Y,
@@ -217,6 +219,13 @@ namespace Sensor_Aware_PT
                 dataEntry.gyroscope.X,
                 dataEntry.gyroscope.Y,
                 dataEntry.gyroscope.Z );
+                */
+
+                string output = String.Format( "Angle{{{0},{1},{2}}}",
+dataEntry.orientation.X,
+dataEntry.orientation.Y,
+dataEntry.orientation.Z );
+
                 Logger.Info( "Sensor {0}: {1}", mID, output );
             }
             catch( Exception e)
@@ -230,6 +239,7 @@ namespace Sensor_Aware_PT
         /** Parses a line of data from the sensor */
         private Vector3 parseDataLine( String dataLine )
         {
+
             dataLine = dataLine.Substring( 6 ); /** Gets rid of the ##YPR or ##GYR or ##ACC*/
             String[] values = dataLine.Split( ',' ); /** Split on comma */
             Vector3 vecData = new Vector3();
@@ -305,6 +315,15 @@ namespace Sensor_Aware_PT
         public void reset()
         {
 
+        }
+
+        internal SensorDataEntry getEntry()
+        {
+            /** This is a crime, yes I know oh gods I know */
+            if( mData.Count > 0 )
+                return mData.Last();
+            else
+                return new SensorDataEntry();
         }
     }
 }
