@@ -54,19 +54,23 @@ namespace Sensor_Aware_PT
 
 
             GL.Translate( -2.5f, 0, 0 );
-            GL.Rotate( ( yaw - yawOffset) , 0, 1, 0 );
-            GL.Rotate(  pitch , 1, 0, 0 );
-            GL.Rotate(  -roll , 0, 0, 1 );
+            
+            GL.Rotate( -( yaw - yawOffset) ,new Vector3( 0, 1, 0 ));
+            GL.Rotate(  pitch , new Vector3(1, 0, 0 ));
+            GL.Rotate(  -roll , new Vector3(0, 0, 1 ));
+            
             Primitives.DrawCube( .75f, .5f, 1f );
 
             GL.LoadMatrix( ref lookat );
 
+
+
+
             GL.Translate( 2.5f, 0, 0 );
-
-
-            GL.Rotate( ( yaw_2 - yawOffset_2 ), 0, 1, 0 );
+            GL.Rotate( -( yaw_2 - yawOffset_2 ), 0, 1, 0 );
             GL.Rotate( pitch_2, 1, 0, 0 );
             GL.Rotate( -roll_2, 0, 0, 1 );
+            
             Primitives.DrawCube( .75f, .5f, 1f );
 
 

@@ -64,7 +64,7 @@ namespace Sensor_Aware_PT
         private void initializeSensorConfig()
         {
             //mSensorInfoList.Add(new SensorConfigData("A", "EC21"));
-            mSensorInfoList.Add( new SensorConfigData( "B", "EC21", "COM12" ) );
+            //mSensorInfoList.Add( new SensorConfigData( "B", "EC21", "COM12" ) );
             mSensorInfoList.Add( new SensorConfigData( "C", "EC21", "COM8" ) );
             //mSensorInfoList.Add( new SensorConfigData( "D", "EC21", "COM18" ) );
         }
@@ -87,7 +87,7 @@ namespace Sensor_Aware_PT
 
         public SensorDataEntry getEntry( int index )
         {
-            return mSensorList[ index ].getEntry();
+            return mSensorList[ index ].getLastEntry();
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
+using System.ComponentModel;
 
 namespace Sensor_Aware_PT
 {
@@ -14,11 +15,9 @@ namespace Sensor_Aware_PT
     {
         private bool loaded = false;
         private bool bRunning = true;
-
-        private SerialPort port;
-        private Thread ReadThread;
         private Nexus mSensorManager;
-        private ExperimentalDisplay ed = new ExperimentalDisplay();
+        public static Form_3Dcuboid formF;
+
 
         public MainForm()
         {
@@ -34,14 +33,17 @@ namespace Sensor_Aware_PT
             {
                 Logger.Info( "{0}", s );
             }
-            
-            ReadThread = new Thread( () =>
+
+            formF = new Form_3Dcuboid();
+
+            BackgroundWorker bg = new BackgroundWorker();
+            bg.DoWork += new DoWorkEventHandler( delegate
             {
-                ed.Run( 60, 60 );
+                formF.ShowDialog();
             } );
-            ReadThread.IsBackground = true;
-            ReadThread.Start();
-            
+
+            bg.RunWorkerAsync();
+            mSensorManager = new Nexus();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
