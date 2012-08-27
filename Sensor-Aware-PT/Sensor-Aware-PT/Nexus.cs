@@ -177,7 +177,7 @@ namespace Sensor_Aware_PT
             foreach( Sensor  s in mAvailableSensors )
             {
                 /** Register the ready event */
-                s.InitializationComplete += new Sensor.InitializationCompleteHandler( mAvailableSensors_InitializationCompleteEvent );
+                s.InitializationComplete += new Sensor.InitializationCompleteHandler( Sensor_InitializationCompleteEvent );
             }
 
             /** Initialize the first member */
@@ -190,7 +190,7 @@ namespace Sensor_Aware_PT
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void mAvailableSensors_InitializationCompleteEvent( object sender, EventArgs e )
+        void Sensor_InitializationCompleteEvent( object sender, EventArgs e )
         {
             Logger.Info( "Nexus has recieved ready notification from sensor {0}", ( ( Sensor ) sender ).Id );
             mReadySensorCount++;
@@ -205,7 +205,7 @@ namespace Sensor_Aware_PT
                     if( s.IsInitialized )
                     {
                         mReadySensorCount++;
-                        s.ActivationComplete += new Sensor.ActivationCompleteHandler( mAvailableSensors_ActivationCompleteEvent );
+                        s.ActivationComplete += new Sensor.ActivationCompleteHandler( Sensor_ActivationCompleteEvent );
                         s.activate();
                     }
                 }
@@ -228,14 +228,14 @@ namespace Sensor_Aware_PT
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void mAvailableSensors_ActivationCompleteEvent( object sender, EventArgs e )
+        void Sensor_ActivationCompleteEvent( object sender, EventArgs e )
         {
             mReadySensorCount--;
             if( mReadySensorCount == 0 )
             {
                 Logger.Info( "Nexus has synchronized and started reading for all initialized sensors and is activated complete" );
                 OnNexusInitializationComplete();
-            } 
+            }
         }
 
 
@@ -249,9 +249,9 @@ namespace Sensor_Aware_PT
                     handler(this, EventArgs.Empty);
                 }
             }
-            catch
+            catch(Exception e)
             {
-                // Handle exceptions here
+                throw e;
             }
         }
         /// <summary>

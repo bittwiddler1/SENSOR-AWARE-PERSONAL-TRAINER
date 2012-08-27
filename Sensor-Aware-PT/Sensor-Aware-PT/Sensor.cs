@@ -158,14 +158,14 @@ namespace Sensor_Aware_PT
                     changeState( SensorState.Initialized );
                     
                     Logger.Info( "Sensor {0} initialized", mID );
-                    OnInitializationCompleteEvent();
+                    OnInitializationComplete();
                 }
                 catch( Exception e )
                 {
                     Logger.Error( "Sensor {0} serial port open exception: {1}", mID, e.Message );
                     changeState( SensorState.NotPresent );
                     /** Send the sensor ready, assume listeners check for IsActive */
-                    OnInitializationCompleteEvent();
+                    OnInitializationComplete();
                     return;
                 }
 
@@ -266,7 +266,7 @@ namespace Sensor_Aware_PT
 
                     Logger.Info("Sensor {0} synchronization complete", mID);
                     changeState( SensorState.Activated );
-                    OnActivationCompleteEvent();
+                    OnActivationComplete();
                     /** Send the sensor ready event */
 
                     while (true)
@@ -276,7 +276,7 @@ namespace Sensor_Aware_PT
                         mData.Add(newData);
                         /** Call the event to notify and listeners */
                         DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
-                        OnDataReceivedEvent( dataEventArgs );
+                        OnDataReceived( dataEventArgs );
 
                         //Logger.Info( "Sensor {0} data: {1}, {2}, {3}", mID, newData.orientation.X, newData.orientation.Y, newData.orientation.Z );
                     }
@@ -297,7 +297,7 @@ namespace Sensor_Aware_PT
             }
         }
 
-        private void OnDataReceivedEvent( DataReceivedEventArgs arg )
+        private void OnDataReceived( DataReceivedEventArgs arg )
         {
             /** This copy is for thread safety */
             DataReceivedHandler handler = DataReceived;
@@ -308,13 +308,13 @@ namespace Sensor_Aware_PT
                     handler(this, arg);
                 }
             }
-            catch
+            catch(Exception e)
             {
-                // Handle exceptions here
+                throw e;
             }
         }
 
-        private void OnActivationCompleteEvent()
+        private void OnActivationComplete()
         {
             ActivationCompleteHandler handler = ActivationComplete;
             try
@@ -324,13 +324,13 @@ namespace Sensor_Aware_PT
                     handler( this, EventArgs.Empty);
                 }
             }
-            catch
+            catch(Exception e)
             {
-                // Handle exceptions here
+                throw e;
             }
         }
 
-        private void OnInitializationCompleteEvent()
+        private void OnInitializationComplete()
         {
             InitializationCompleteHandler handler = InitializationComplete;
             try
@@ -340,9 +340,9 @@ namespace Sensor_Aware_PT
                     handler(this, EventArgs.Empty);
                 }
             }
-            catch
+            catch(Exception e)
             {
-                // Handle exceptions here
+                throw e;
             }
         }
 
