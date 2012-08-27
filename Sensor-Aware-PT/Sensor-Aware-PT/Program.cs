@@ -8,7 +8,6 @@ using System.IO.Ports;
 using System.Text;
 using System.Threading;
 
-
 namespace Sensor_Aware_PT
 {
 
@@ -22,21 +21,35 @@ namespace Sensor_Aware_PT
         
         [DllImport( "kernel32.dll" )]
         static extern bool AttachConsole(int dwProcessId);
+        
         private const int ATTACH_PARENT_PROCESS = -1;
+
+        private static Form mainForm = null;
 
         [STAThread]
         static void Main()
         {
-                        // redirect console output to parent process;
-            // must be before any calls to Console.WriteLine()
-            AttachConsole( ATTACH_PARENT_PROCESS );
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            System.Windows.Forms.Application.SetUnhandledExceptionMode( UnhandledExceptionMode.CatchException );
-            System.Windows.Forms.Application.ThreadException += new System.Threading.ThreadExceptionEventHandler( onGuiUnhandledException );
-            AppDomain.CurrentDomain.UnhandledException += onUnhandledException;
+            try
+            {
+                System.Windows.Forms.Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+                System.Windows.Forms.Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(onGuiUnhandledException);
+                AppDomain.CurrentDomain.UnhandledException += onUnhandledException;
 
-            Application.Run(new MainForm());
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+
+                mainForm = new MainForm();
+                Application.Run(mainForm);
+            }
+            catch (Exception e)
+            {
+                handleUnhandledException(e);
+            }
+            // redirect console output to parent process;
+            // must be before any calls to Console.WriteLine()
+
+           // AttachConsole( ATTACH_PARENT_PROCESS );
+
         }
 
         private static void onGuiUnhandledException(object sender, ThreadExceptionEventArgs e)
@@ -62,7 +75,7 @@ namespace Sensor_Aware_PT
                 tmp.AppendLine(e.StackTrace);
                 Logger.Error(tmp.ToString());
 
-                //MessageBox.Show(MainForm, e.GetType().ToString(), e.Message+"\nThe program will now exit\n\nStackTrace:\n"+e.StackTrace, MessageBoxButtons.OK);
+                MessageBox.Show(mainForm, e.GetType().ToString(), e.Message+"\nThe program will now exit\n\nStackTrace:\n"+e.StackTrace, MessageBoxButtons.OK);
             }
         }
     }

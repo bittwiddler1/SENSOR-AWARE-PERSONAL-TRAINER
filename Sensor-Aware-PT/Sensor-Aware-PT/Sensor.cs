@@ -27,13 +27,17 @@ namespace Sensor_Aware_PT
         /** Timeout in ms for IO */
         static int SERIAL_IO_TIMEOUT = 10000;
         /** Max number of values to keep in history */
-        static int HISTORY_BUFFER_SIZE = 250;
+        static int HISTORY_BUFFER_SIZE = 500;
+
+        private const int MAX_READ_ERRORS = 3; 
+
         /** Friendly sensor ID A-D */
         private string mID;
+        private int mReadErrors;
 
         public string Id
         {
-            get { return mID; }
+            get { return mID;  }
             set { mID = value; }
         }
 
@@ -42,7 +46,7 @@ namespace Sensor_Aware_PT
 
         public string MacAddress
         {
-            get { return mMAC; }
+            get { return mMAC;  }
             set { mMAC = value; }
         }
         /** COM port of sensor */
@@ -50,7 +54,7 @@ namespace Sensor_Aware_PT
 
         public string SerialPortName
         {
-            get { return mPortName; }
+            get { return mPortName;  }
             set { mPortName = value; }
         }
         /** Serial Port for data*/
@@ -74,7 +78,7 @@ namespace Sensor_Aware_PT
 
         private SensorState mSensorState = SensorState.Uninitialized; /** Default state for the sensor */
 
-        public Sensor(SensorConfigData config)
+        public Sensor(SensorIdentification config)
         {
             mID = config.Id;
             mMAC = config.Mac;
@@ -88,7 +92,7 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Initializes the sensor using the ID and MAC that has been provided already
         /// </summary>
-        private void initialize()
+        public void initialize()
         {
             try
             {
@@ -107,6 +111,7 @@ namespace Sensor_Aware_PT
             }
   
         }
+
         /// <summary>
         /// Reads a float from the serial port. The Razor sends out 4-byte floats which are little endian, which
         /// are converted to big endian.
@@ -157,6 +162,7 @@ namespace Sensor_Aware_PT
             mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
             mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
             mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
+
             mSerialPort.Open();
             changeState( SensorState.Initialized );
             Logger.Info("Sensor {0} read thread started", mID);
@@ -195,12 +201,17 @@ namespace Sensor_Aware_PT
                 }
                 catch (Exception e)
                 {
-                    Logger.Error("Sensor {0} read thread exception: {1}", mID, e.Message);
+                    mReadErrors++;
+                    if( MAX_READ_ERRORS <= mReadErrors )
+                    {
+                        Logger.Error( "Sensor {0} read thread exception: {1}", mID, e.Message );
+                        throw new Exception( String.Format( "Sensor {0} read thread exception: {1}", mID, e.Message ) );
+                    }
                 }
             }
             else
             {
-                throw new Exception("Tried to read data before initialized");
+                Logger.Error("Tried to read data before initialized");
             }
         }
 
