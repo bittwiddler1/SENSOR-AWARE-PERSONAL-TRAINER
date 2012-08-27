@@ -127,6 +127,7 @@ namespace Sensor_Aware_PT
             }
         }
 
+        public Sensor mSensor;
 
         public Vector3 Orientation
         {
@@ -136,10 +137,11 @@ namespace Sensor_Aware_PT
             }
             set
             {
+                orientationVector = value;
                 /** Needed math to set the rotation matrix, too lazy to do it by hand */
-                Matrix4 rx = Matrix4.CreateRotationZ( MathHelper.DegreesToRadians( Orientation.X ) );
-                Matrix4 ry = Matrix4.CreateRotationY( MathHelper.DegreesToRadians( Orientation.Y ) );
-                Matrix4 rz = Matrix4.CreateRotationX( -MathHelper.DegreesToRadians( Orientation.Z ) );
+                Matrix4 rx = Matrix4.CreateRotationZ( MathHelper.DegreesToRadians( value.X + 90f ) );
+                Matrix4 ry = Matrix4.CreateRotationY( MathHelper.DegreesToRadians( value.Y ) );
+                Matrix4 rz = Matrix4.CreateRotationX( -MathHelper.DegreesToRadians( value.Z ) );
                 Matrix4 res = Matrix4.Identity;
                 res = res * rx * ry * rz;
                 transformationMatrix[ 0 ] = res.M11;
@@ -166,6 +168,13 @@ namespace Sensor_Aware_PT
         public Form_3Dcuboid()
             : this(new string[] { "Form_3Dcuboid/Right.png", "Form_3Dcuboid/Left.png", "Form_3Dcuboid/Back.png", "Form_3Dcuboid/Front.png", "Form_3Dcuboid/Top.png", "Form_3Dcuboid/Bottom.png" }, new float[] { 6, 4, 2 }, CameraViews.Back, 50.0f)
         {
+            /** Attach new data event */
+
+        }
+
+        public void setSensor( Sensor sensor )
+        {
+            mSensor = sensor;
         }
 
         /// <summary>
@@ -446,6 +455,11 @@ namespace Sensor_Aware_PT
             Gl.glEnable(Gl.GL_LIGHT0);
             Gl.glHint(Gl.GL_POLYGON_SMOOTH_HINT, Gl.GL_NICEST);     // Really Nice Point Smoothing
             textures = LoadTextureFromImage(imageFiles);
+
+
+            mSensor.NewSensorDataEvent += new Sensor.NewSensorDataEventHandler( sensor_NewSensorDataEvent );
+            this.Text = "Sensor " + mSensor.Id;
+
         }
 
         /// <summary>
@@ -603,6 +617,18 @@ namespace Sensor_Aware_PT
 
             Gl.glPopMatrix();
             Gl.glFlush();
+        }
+
+        #endregion
+
+        #region Data Events
+
+
+        void sensor_NewSensorDataEvent( object sender, Sensor.NewSensorDataEventArgs e )
+        {
+            /** Update rotation matrix accordingly */
+            Logger.Info( "Sensor {0} data to cuboid: {1}, {2}, {3}", e.Id, e.Data.orientation.X, e.Data.orientation.Y, e.Data.orientation.Z );
+            Orientation = e.Data.orientation;
         }
 
         #endregion

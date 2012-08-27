@@ -35,6 +35,7 @@ namespace Sensor_Aware_PT
 
     class Nexus
     {
+        #region Constants
         /** baud rate for the com ports */
         public const int SENSOR_BAUD_RATE = 57600;
         public const double SERIAL_ENUMERATION_TIMEOUT_SECONDS = 5;
@@ -44,19 +45,25 @@ namespace Sensor_Aware_PT
         /** Path to config file **/
         static String AppDataDirPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         static String ConfigFilePath = Path.Combine(new String[] { AppDataDirPath, CFG_DIR, "config.xml" });
-
+        #endregion
         #region instance variables
-        /** Holds the id data for each sensor. Eventually user can use a configurator to set this up
-         * though for now it's hardcoded to our sensors */
-        //List<SensorIdentification> mSensorIdList;
-
         /** List to hold the Sensor objects */
         Dictionary<String, Sensor> mSensorDict;
         Dictionary<String, SensorIdentification> mSensorIDDict;
         SerializableDictionary<String, String> mConfigFileDataDict;
-
+        Sensor[] mAvailableSensors;
 
         private Boolean bGenerateConfig = false;
+        /** This keeps track of the # of ready events we hve received */
+        private static int mReadySensorCount = 0;
+
+        #endregion
+        #region Event handling stuff
+
+        /** Delegate & event for when all sensors are initialized and reading */
+        public delegate void NexusReadyEventHandler( object sender, EventArgs e );
+        public event NexusReadyEventHandler NexusReadyEvent;
+ 
         #endregion
 
         /// <summary>
@@ -65,21 +72,25 @@ namespace Sensor_Aware_PT
         public Nexus()
         {
             initializeVariables();
+        }
 
+        public void Initialize()
+        {
             try
             {
                 initializeConfigFileDataDict();
             }
-            catch (Exception e)
+            catch( Exception e )
             {
-                Logger.Warning("{0}", e.Message);
+                Logger.Warning( "{0}", e.Message );
                 bGenerateConfig = true;
-                Logger.Info("Manual input will be required to configure the sensor array");
+                Logger.Info( "Manual input will be required to configure the sensor array" );
             }
 
             enumerateSensors();
         }
 
+        #region Initialization and enumeration
         /// <summary>
         ///  Initialize all the member variables
         /// </summary>
@@ -90,7 +101,7 @@ namespace Sensor_Aware_PT
             mSensorIDDict = new Dictionary<String, SensorIdentification>();
             mConfigFileDataDict = new SerializableDictionary<String, String>();
         }
-
+        
         /// <summary>
         /// Queries the system for bluetooth COM ports and enumerates the sensors using the provided data.
         /// </summary>
@@ -161,11 +172,72 @@ namespace Sensor_Aware_PT
                 fileStream.Close();
             }
 
-            foreach( Sensor s in mSensorDict.Values )
+            //sList = new Sensor[ mSensorDict.Count ];
+            mAvailableSensors = mSensorDict.Values.ToArray();
+            foreach( Sensor  s in mAvailableSensors )
             {
-                if(s.Id.Equals("C"))
-                    s.initialize();
+                /** Register the ready event */
+                s.SensorReadyEvent += new Sensor.SensorReadyEventHandler( mAvailableSensors_SensorReadyEvent );
             }
+
+            /** Initialize the first member */
+            mAvailableSensors[ 0 ].initialize();
+        }
+
+        /// <summary>
+        /// This event gets raised after each sensor completes its initialize routine. Even if a sensor fails to initialize,
+        /// it will fire this event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void mAvailableSensors_SensorReadyEvent( object sender, EventArgs e )
+        {
+            Logger.Info( "Nexus has recieved ready notification from sensor {0}", ( ( Sensor ) sender ).Id );
+            mReadySensorCount++;
+            /** Check to see if all sensors have been initialized, if so then reset the count */
+            if( mReadySensorCount == mSensorDict.Count )
+            {
+                Logger.Info( "Nexus has intialized all sensors and is preparing to begin reading" );
+                mReadySensorCount = 0;
+                /** Now take our initialized sensors, and start their respective read threads */
+                foreach( Sensor s in mAvailableSensors )
+                {
+                    if( s.IsInitialized )
+                    {
+                        mReadySensorCount++;
+                        s.SensorReadingEvent += new Sensor.SensorReadingEventHandler( mAvailableSensors_SensorReadingEvent );
+                        s.beginReading();
+                    }
+                }
+                
+            }
+            else
+            {
+                
+                {
+                    Logger.Info( "Initializing sensor list index {0}", mReadySensorCount );
+                    mAvailableSensors[ mReadySensorCount ].initialize();
+                }
+            }
+
+
+        }
+
+        /// <summary>
+        /// This event is fired after each sensor begins its read thread and synchronizes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void mAvailableSensors_SensorReadingEvent( object sender, EventArgs e )
+        {
+            mReadySensorCount--;
+            if( mReadySensorCount == 0 )
+            {
+                Logger.Info( "Nexus has synchronized and started reading for all initialized sensors and is ready" );
+                NexusReadyEvent( this, new EventArgs() );
+            }
+            
+                
         }
 
         /// <summary>
@@ -245,6 +317,21 @@ namespace Sensor_Aware_PT
             Logger.Info("Verified {0} Bluetooth COM Device(s)", wmiObjects.Length);
             return wmiObjects;
         }
+        #endregion
 
+        /// <summary>
+        /// Gets the sensors which are available/reading already
+        /// </summary>
+        /// <returns>List of active sensors</returns>
+        public List<Sensor> getActiveSensors()
+        {
+            List<Sensor> activeSensors = new List<Sensor>();
+            foreach(Sensor s in mSensorDict.Values)
+            {
+                if( s.IsActive )
+                    activeSensors.Add( s );
+            }
+            return activeSensors;
+        }
     }
 }

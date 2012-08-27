@@ -54,7 +54,7 @@ namespace Sensor_Aware_PT
                 DateTime.Now.ToString("HH:mm:ss.fff"));
             Console.Write(prefix);
             Console.WriteLine(text, args);
-
+            /*
 
             DateTime datet = DateTime.Now;
             String filePath = "Log" + datet.ToString( "MM_dd" ) + ".log";
@@ -75,6 +75,7 @@ namespace Sensor_Aware_PT
             {
                 Console.WriteLine( e.Message.ToString() );
             }
+             */
         }
     }
 }

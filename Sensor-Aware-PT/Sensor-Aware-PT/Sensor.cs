@@ -22,10 +22,11 @@ namespace Sensor_Aware_PT
 
 
     /** Created to encapsulate a sensor */
-    class Sensor
+    public class Sensor
     {
+        #region Constants and Variables
         /** Timeout in ms for IO */
-        static int SERIAL_IO_TIMEOUT = 10000;
+        static int SERIAL_IO_TIMEOUT = 20000;
         /** Max number of values to keep in history */
         static int HISTORY_BUFFER_SIZE = 500;
 
@@ -73,10 +74,56 @@ namespace Sensor_Aware_PT
         {
             Uninitialized,
             Initialized,
-            ReadingInput
+            ReadingInput,
+            NotPresent
         };
-
         private SensorState mSensorState = SensorState.Uninitialized; /** Default state for the sensor */
+        
+        #endregion
+
+        #region event handling stuff
+        
+        /** Event arguments container class */
+        public class NewSensorDataEventArgs : System.EventArgs
+        {
+            string mID;
+            SensorDataEntry mData;
+
+            public NewSensorDataEventArgs( string id, SensorDataEntry data)
+            {
+                mID = id;
+                mData = data;
+            }            
+            public string Id
+            {
+                get{ return mID;}
+            }
+
+            public SensorDataEntry Data
+            {
+                get{ return mData; }
+            }
+        }
+
+        /** Event handler for new data recieved event */
+        public delegate void NewSensorDataEventHandler( object sender, NewSensorDataEventArgs e );
+
+        public event NewSensorDataEventHandler NewSensorDataEvent;
+
+        /** Event delegate and handler for sensor ready. Note that if a sensor fails to open, it is still marked as ready
+         * A call to IsActive is expected to check if it's active or not
+         */
+        public delegate void SensorReadyEventHandler( object sender, EventArgs e );
+        public event SensorReadyEventHandler SensorReadyEvent;
+
+        /** Event delegate and handler for sensor ready. Note that if a sensor fails to open, it is still marked as ready
+ * A call to IsActive is expected to check if it's active or not
+ */
+        public delegate void SensorReadingEventHandler( object sender, EventArgs e );
+        public event SensorReadingEventHandler SensorReadingEvent;
+
+        #endregion
+        
 
         public Sensor(SensorIdentification config)
         {
@@ -101,14 +148,41 @@ namespace Sensor_Aware_PT
                  * readThreadRunA, readThreadRunB...etc */
                 mReadThread.Name = String.Format( "readThreadRun{0}", mID );
                 mReadThread.IsBackground = true;
+                /** Setup the serial port */
+                mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
+                mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
+                mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
+                try
+                {
+                    mSerialPort.Open();
+                    changeState( SensorState.Initialized );
+                    
+                    Logger.Info( "Sensor {0} initialized", mID );
+                    SensorReadyEvent( this, new EventArgs() );
+                }
+                catch( Exception e )
+                {
+                    Logger.Error( "Sensor {0} serial port open exception: {1}", mID, e.Message );
+                    changeState( SensorState.NotPresent );
+                    /** Send the sensor ready, assume listeners check for IsActive */
+                    SensorReadyEvent( this, new EventArgs() );
+                    return;
+                }
+
+
                 /** Start the read thread */
-                mReadThread.Start();
+                //mReadThread.Start();
             }
             catch( Exception e)
             {
                  Logger.Error( e.Message );
             }
   
+        }
+
+        public void beginReading()
+        {
+            mReadThread.Start();
         }
 
         /// <summary>
@@ -157,28 +231,16 @@ namespace Sensor_Aware_PT
         /// </summary>
         private void readThreadRun()
         {
-            /** Setup the serial port */
-            mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
-            mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
-            mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
-            try
-            {
-                mSerialPort.Open();
-                changeState( SensorState.Initialized );
-                Logger.Info( "Sensor {0} read thread started", mID );
-            }
-            catch( Exception e)
-            {
-                Logger.Error( "Sensor {0} serial port open exception: {1}", mID, e.Message );
-                return;
-            }
-
             if (mSensorState == SensorState.Initialized)
             {
-                changeState(SensorState.ReadingInput);
+                
                 try
                 {
+                    //Thread.Sleep( 3000 );
                     Logger.Info( "Sensor {0} synchronization started", mID );
+
+                    mSerialPort.DiscardInBuffer();
+                    
                     /** Sets the output parameters */
                     mSerialPort.Write( "#ob" );  /** Turn on binary output */
                     mSerialPort.Write( "#o1" );  /** Turn on continuous streaming output */
@@ -197,19 +259,27 @@ namespace Sensor_Aware_PT
                     while(!synchronized);
 
                     Logger.Info("Sensor {0} synchronization complete", mID);
+                    changeState( SensorState.ReadingInput );
+                    RaiseSensorReadingEvent( new EventArgs() );
+                    /** Send the sensor ready event */
+                    //SensorReadyEvent( this, new EventArgs() );
 
                     while (true)
                     {
                         /** Read the data and add to circular buffer */
                         SensorDataEntry newData = readDataEntry();
                         mData.Add(newData);
+                        /** Call the event to notify and listeners */
+                        NewSensorDataEventArgs dataEventArgs = new NewSensorDataEventArgs( mID, newData );
+                        RaiseNewSensorDataEvent( dataEventArgs );
+
                         //Logger.Info( "Sensor {0} data: {1}, {2}, {3}", mID, newData.orientation.X, newData.orientation.Y, newData.orientation.Z );
                     }
                 }
                 catch (Exception e)
                 {
-                    mReadErrors++;
-                    if( MAX_READ_ERRORS <= mReadErrors )
+                    //mReadErrors++;
+                    //if( MAX_READ_ERRORS <= mReadErrors )
                     {
                         Logger.Error( "Sensor {0} read thread exception: {1}", mID, e.Message );
                         throw new Exception( String.Format( "Sensor {0} read thread exception: {1}", mID, e.Message ) );
@@ -219,6 +289,36 @@ namespace Sensor_Aware_PT
             else
             {
                 Logger.Error("Tried to read data before initialized");
+            }
+        }
+
+        private void RaiseNewSensorDataEvent( NewSensorDataEventArgs arg )
+        {
+               try
+               {
+                  if (NewSensorDataEvent != null) 
+                  {
+                      NewSensorDataEvent( this, arg );
+                  }
+               }
+               catch
+               {
+                  // Handle exceptions here
+               }
+        }
+
+        private void RaiseSensorReadingEvent( EventArgs arg )
+        {
+            try
+            {
+                if( SensorReadingEvent != null )
+                {
+                    SensorReadingEvent( this, arg );
+                }
+            }
+            catch
+            {
+                // Handle exceptions here
             }
         }
 
@@ -366,6 +466,22 @@ namespace Sensor_Aware_PT
         {
             /** The list will never be empty because on creation I add an empty  entry */
             return mData.Last();
+        }
+
+        public bool IsActive
+        {
+            get
+            {
+                return mSensorState == SensorState.ReadingInput;
+            }
+        }
+
+        public bool IsInitialized
+        {
+            get
+            {
+                return mSensorState == SensorState.Initialized;
+            }
         }
     }
 }

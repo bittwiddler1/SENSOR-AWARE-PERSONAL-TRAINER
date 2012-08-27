@@ -5,6 +5,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Drawing;
 using OpenTK;
+using System.Collections.Generic;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using System.ComponentModel;
@@ -16,9 +17,7 @@ namespace Sensor_Aware_PT
         private bool loaded = false;
         private bool bRunning = true;
         private Nexus mSensorManager;
-        public static Form_3Dcuboid formF;
-
-
+        
         public MainForm()
         {
             InitializeComponent();
@@ -34,16 +33,41 @@ namespace Sensor_Aware_PT
                 Logger.Info( "{0}", s );
             }
 
-            formF = new Form_3Dcuboid();
-
-            BackgroundWorker bg = new BackgroundWorker();
-            bg.DoWork += new DoWorkEventHandler( delegate
-            {
-                formF.ShowDialog();
-            } );
-
-            //bg.RunWorkerAsync();
             mSensorManager = new Nexus();
+            mSensorManager.NexusReadyEvent += new Nexus.NexusReadyEventHandler( mSensorManager_NexusReadyEvent );
+            mSensorManager.Initialize();
+        }
+
+        /// <summary>
+        /// Handles the nexus ready event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void mSensorManager_NexusReadyEvent( object sender, EventArgs e )
+        {
+            /** If the nexus is now ready, query for the active sensors and attach a cuboid window to them */
+            List<Sensor> activeSensors = mSensorManager.getActiveSensors();
+            foreach( Sensor s in activeSensors )
+                attachCuboidWindow( s );
+        }
+
+
+        /// <summary>
+        /// Takes a sensor and attaches a cuboid window to it
+        /// </summary>
+        /// <param name="sensor"></param>
+        private void attachCuboidWindow(Sensor sensor)
+        {
+            /** Create new cuboid form attached to this sensor*/
+            Form_3Dcuboid cuboid = new Form_3Dcuboid();
+            /** Create background worker to show the form and run it asynchronously */
+            BackgroundWorker cuboidWorker = new BackgroundWorker();
+            cuboidWorker.DoWork += new DoWorkEventHandler( delegate
+            {
+                cuboid.setSensor( sensor );
+                cuboid.ShowDialog();
+            } );
+            cuboidWorker.RunWorkerAsync();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -56,7 +80,6 @@ namespace Sensor_Aware_PT
            // Thread.CurrentThread.Join();
            // port.Close();
         }
-
 
     }
 }
