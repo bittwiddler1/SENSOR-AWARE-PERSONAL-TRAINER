@@ -86,7 +86,6 @@ namespace Sensor_Aware_PT
             mData = new RingBuffer<SensorDataEntry>(HISTORY_BUFFER_SIZE);
             /** Add an empty entry in case getLastEntry is called before data comes in */
             mData.Add( new SensorDataEntry() );
-            initialize();
         }
 
         /// <summary>
@@ -162,10 +161,18 @@ namespace Sensor_Aware_PT
             mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
             mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
             mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
+            try
+            {
+                mSerialPort.Open();
+                changeState( SensorState.Initialized );
+                Logger.Info( "Sensor {0} read thread started", mID );
+            }
+            catch( Exception e)
+            {
+                Logger.Error( "Sensor {0} serial port open exception: {1}", mID, e.Message );
+                return;
+            }
 
-            mSerialPort.Open();
-            changeState( SensorState.Initialized );
-            Logger.Info("Sensor {0} read thread started", mID);
             if (mSensorState == SensorState.Initialized)
             {
                 changeState(SensorState.ReadingInput);

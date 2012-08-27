@@ -163,8 +163,8 @@ namespace Sensor_Aware_PT
 
             foreach( Sensor s in mSensorDict.Values )
             {
-                s.initialize();
-
+                if(s.Id.Equals("C"))
+                    s.initialize();
             }
         }
 

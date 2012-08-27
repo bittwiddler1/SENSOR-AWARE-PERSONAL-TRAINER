@@ -42,7 +42,7 @@ namespace Sensor_Aware_PT
                 formF.ShowDialog();
             } );
 
-            bg.RunWorkerAsync();
+            //bg.RunWorkerAsync();
             mSensorManager = new Nexus();
         }
 
