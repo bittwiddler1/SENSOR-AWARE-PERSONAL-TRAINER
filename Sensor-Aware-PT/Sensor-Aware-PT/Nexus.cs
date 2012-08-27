@@ -234,19 +234,19 @@ namespace Sensor_Aware_PT
             if( mReadySensorCount == 0 )
             {
                 Logger.Info( "Nexus has synchronized and started reading for all initialized sensors and is ready" );
-                OnNexusInitializedEvent(new EventArgs());
+                OnNexusInitializedEvent();
             } 
         }
 
 
-        private void OnNexusInitializedEvent(EventArgs arg)
+        private void OnNexusInitializedEvent()
         {
             NexusInitializedEventHandler handler = NexusInitializedEvent;
             try
             {
                 if (handler != null)
                 {
-                    handler(this, arg);
+                    handler(this, EventArgs.Empty);
                 }
             }
             catch
@@ -337,7 +337,7 @@ namespace Sensor_Aware_PT
         /// Gets the sensors which are available/reading already
         /// </summary>
         /// <returns>List of active sensors</returns>
-        public List<Sensor> getActiveSensors()
+        public List<Sensor> getActivatedSensors()
         {
             List<Sensor> activeSensors = new List<Sensor>();
             foreach(Sensor s in mSensorDict.Values)

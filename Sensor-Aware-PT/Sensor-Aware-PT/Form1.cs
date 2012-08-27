@@ -46,7 +46,7 @@ namespace Sensor_Aware_PT
         void mSensorManager_NexusInitializedEvent( object sender, EventArgs e )
         {
             /** If the nexus is now ready, query for the active sensors and attach a cuboid window to them */
-            List<Sensor> activeSensors = mSensorManager.getActiveSensors();
+            List<Sensor> activeSensors = mSensorManager.getActivatedSensors();
             foreach( Sensor s in activeSensors )
                 attachCuboidWindow( s );
         }

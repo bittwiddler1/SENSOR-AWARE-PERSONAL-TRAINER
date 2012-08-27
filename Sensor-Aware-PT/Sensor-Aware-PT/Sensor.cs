@@ -158,14 +158,14 @@ namespace Sensor_Aware_PT
                     changeState( SensorState.Initialized );
                     
                     Logger.Info( "Sensor {0} initialized", mID );
-                    OnSensorInitializedEvent( new EventArgs() );
+                    OnSensorInitializedEvent();
                 }
                 catch( Exception e )
                 {
                     Logger.Error( "Sensor {0} serial port open exception: {1}", mID, e.Message );
                     changeState( SensorState.NotPresent );
                     /** Send the sensor ready, assume listeners check for IsActive */
-                    OnSensorInitializedEvent( new EventArgs() );
+                    OnSensorInitializedEvent();
                     return;
                 }
 
@@ -266,7 +266,7 @@ namespace Sensor_Aware_PT
 
                     Logger.Info("Sensor {0} synchronization complete", mID);
                     changeState( SensorState.Activated );
-                    OnSensorActivatedEvent( new EventArgs() );
+                    OnSensorActivatedEvent();
                     /** Send the sensor ready event */
 
                     while (true)
@@ -314,14 +314,14 @@ namespace Sensor_Aware_PT
             }
         }
 
-        private void OnSensorActivatedEvent( EventArgs arg )
+        private void OnSensorActivatedEvent()
         {
             SensorActivatedEventHandler handler = SensorActivatedEvent;
             try
             {
                 if( handler != null )
                 {
-                    handler( this, arg );
+                    handler( this, EventArgs.Empty);
                 }
             }
             catch
@@ -330,14 +330,14 @@ namespace Sensor_Aware_PT
             }
         }
 
-        private void OnSensorInitializedEvent(EventArgs arg)
+        private void OnSensorInitializedEvent()
         {
             SensorInitializedEventHandler handler = SensorInitializedEvent;
             try
             {
                 if (handler != null)
                 {
-                    handler(this, arg);
+                    handler(this, EventArgs.Empty);
                 }
             }
             catch
@@ -463,7 +463,7 @@ namespace Sensor_Aware_PT
                     }
                     catch( Exception e )
                     {
-                        throw;
+                        throw e;
                     }
                 }
 
