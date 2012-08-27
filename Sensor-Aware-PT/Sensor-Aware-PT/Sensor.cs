@@ -84,12 +84,12 @@ namespace Sensor_Aware_PT
         #region event handling stuff
         
         /** Event arguments container class */
-        public class SensorNewDataEventArgs : System.EventArgs
+        public class DataReceivedEventArgs : System.EventArgs
         {
             string mID;
             SensorDataEntry mData;
 
-            public SensorNewDataEventArgs( string id, SensorDataEntry data)
+            public DataReceivedEventArgs( string id, SensorDataEntry data)
             {
                 mID = id;
                 mData = data;
@@ -106,21 +106,21 @@ namespace Sensor_Aware_PT
         }
 
         /** Event handler for new data recieved event */
-        public delegate void SensorNewDataEventHandler( object sender, SensorNewDataEventArgs e );
+        public delegate void DataReceivedHandler( object sender, DataReceivedEventArgs e );
 
-        public event SensorNewDataEventHandler SensorNewDataEvent;
+        public event DataReceivedHandler DataReceived;
 
         /** Event delegate and handler for sensor ready. Note that if a sensor fails to open, it is still marked as ready
          * A call to IsActive is expected to check if it's active or not
          */
-        public delegate void SensorInitializedEventHandler( object sender, EventArgs e );
-        public event SensorInitializedEventHandler SensorInitializedEvent;
+        public delegate void InitializationCompleteHandler( object sender, EventArgs e );
+        public event InitializationCompleteHandler InitializationComplete;
 
         /** Event delegate and handler for sensor ready. Note that if a sensor fails to open, it is still marked as ready
         * A call to IsActive is expected to check if it's active or not
         */
-        public delegate void SensorActivatedEventHandler( object sender, EventArgs e );
-        public event SensorActivatedEventHandler SensorActivatedEvent;
+        public delegate void ActivationCompleteHandler( object sender, EventArgs e );
+        public event ActivationCompleteHandler ActivationComplete;
 
         #endregion
         
@@ -158,14 +158,14 @@ namespace Sensor_Aware_PT
                     changeState( SensorState.Initialized );
                     
                     Logger.Info( "Sensor {0} initialized", mID );
-                    OnSensorInitializedEvent();
+                    OnInitializationCompleteEvent();
                 }
                 catch( Exception e )
                 {
                     Logger.Error( "Sensor {0} serial port open exception: {1}", mID, e.Message );
                     changeState( SensorState.NotPresent );
                     /** Send the sensor ready, assume listeners check for IsActive */
-                    OnSensorInitializedEvent();
+                    OnInitializationCompleteEvent();
                     return;
                 }
 
@@ -266,7 +266,7 @@ namespace Sensor_Aware_PT
 
                     Logger.Info("Sensor {0} synchronization complete", mID);
                     changeState( SensorState.Activated );
-                    OnSensorActivatedEvent();
+                    OnActivationCompleteEvent();
                     /** Send the sensor ready event */
 
                     while (true)
@@ -275,8 +275,8 @@ namespace Sensor_Aware_PT
                         SensorDataEntry newData = readDataEntry();
                         mData.Add(newData);
                         /** Call the event to notify and listeners */
-                        SensorNewDataEventArgs dataEventArgs = new SensorNewDataEventArgs( mID, newData );
-                        OnNewSensorDataEvent( dataEventArgs );
+                        DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
+                        OnDataReceivedEvent( dataEventArgs );
 
                         //Logger.Info( "Sensor {0} data: {1}, {2}, {3}", mID, newData.orientation.X, newData.orientation.Y, newData.orientation.Z );
                     }
@@ -297,10 +297,10 @@ namespace Sensor_Aware_PT
             }
         }
 
-        private void OnNewSensorDataEvent( SensorNewDataEventArgs arg )
+        private void OnDataReceivedEvent( DataReceivedEventArgs arg )
         {
             /** This copy is for thread safety */
-            SensorNewDataEventHandler handler = SensorNewDataEvent;
+            DataReceivedHandler handler = DataReceived;
             try
             {
                 if (handler != null) 
@@ -314,9 +314,9 @@ namespace Sensor_Aware_PT
             }
         }
 
-        private void OnSensorActivatedEvent()
+        private void OnActivationCompleteEvent()
         {
-            SensorActivatedEventHandler handler = SensorActivatedEvent;
+            ActivationCompleteHandler handler = ActivationComplete;
             try
             {
                 if( handler != null )
@@ -330,9 +330,9 @@ namespace Sensor_Aware_PT
             }
         }
 
-        private void OnSensorInitializedEvent()
+        private void OnInitializationCompleteEvent()
         {
-            SensorInitializedEventHandler handler = SensorInitializedEvent;
+            InitializationCompleteHandler handler = InitializationComplete;
             try
             {
                 if (handler != null)

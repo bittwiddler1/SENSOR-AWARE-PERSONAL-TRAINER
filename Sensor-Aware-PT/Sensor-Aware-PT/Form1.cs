@@ -36,7 +36,7 @@ namespace Sensor_Aware_PT
             }
 
             mSensorManager = new Nexus();
-            mSensorManager.NexusInitializedEvent += new Nexus.NexusInitializedEventHandler( mSensorManager_NexusInitializedEvent );
+            mSensorManager.InitializationComplete += new Nexus.InitializationCompleteHandler( mSensorManager_NexusInitializedEvent );
             mSensorManager.initialize();
         }
 

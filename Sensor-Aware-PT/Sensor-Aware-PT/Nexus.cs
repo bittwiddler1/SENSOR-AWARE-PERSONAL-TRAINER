@@ -61,8 +61,8 @@ namespace Sensor_Aware_PT
         #region Event handling stuff
 
         /** Delegate & event for when all sensors are initialized and reading */
-        public delegate void NexusInitializedEventHandler( object sender, EventArgs e );
-        public event NexusInitializedEventHandler NexusInitializedEvent;
+        public delegate void InitializationCompleteHandler( object sender, EventArgs e );
+        public event InitializationCompleteHandler InitializationComplete;
  
         #endregion
 
@@ -177,7 +177,7 @@ namespace Sensor_Aware_PT
             foreach( Sensor  s in mAvailableSensors )
             {
                 /** Register the ready event */
-                s.SensorInitializedEvent += new Sensor.SensorInitializedEventHandler( mAvailableSensors_SensorInitializedEvent );
+                s.InitializationComplete += new Sensor.InitializationCompleteHandler( mAvailableSensors_InitializationCompleteEvent );
             }
 
             /** Initialize the first member */
@@ -190,7 +190,7 @@ namespace Sensor_Aware_PT
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void mAvailableSensors_SensorInitializedEvent( object sender, EventArgs e )
+        void mAvailableSensors_InitializationCompleteEvent( object sender, EventArgs e )
         {
             Logger.Info( "Nexus has recieved ready notification from sensor {0}", ( ( Sensor ) sender ).Id );
             mReadySensorCount++;
@@ -205,7 +205,7 @@ namespace Sensor_Aware_PT
                     if( s.IsInitialized )
                     {
                         mReadySensorCount++;
-                        s.SensorActivatedEvent += new Sensor.SensorActivatedEventHandler( mAvailableSensors_SensorActivatedEvent );
+                        s.ActivationComplete += new Sensor.ActivationCompleteHandler( mAvailableSensors_ActivationCompleteEvent );
                         s.activate();
                     }
                 }
@@ -228,20 +228,20 @@ namespace Sensor_Aware_PT
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void mAvailableSensors_SensorActivatedEvent( object sender, EventArgs e )
+        void mAvailableSensors_ActivationCompleteEvent( object sender, EventArgs e )
         {
             mReadySensorCount--;
             if( mReadySensorCount == 0 )
             {
-                Logger.Info( "Nexus has synchronized and started reading for all initialized sensors and is ready" );
-                OnNexusInitializedEvent();
+                Logger.Info( "Nexus has synchronized and started reading for all initialized sensors and is activated complete" );
+                OnNexusInitializationComplete();
             } 
         }
 
 
-        private void OnNexusInitializedEvent()
+        private void OnNexusInitializationComplete()
         {
-            NexusInitializedEventHandler handler = NexusInitializedEvent;
+            InitializationCompleteHandler handler = InitializationComplete;
             try
             {
                 if (handler != null)
