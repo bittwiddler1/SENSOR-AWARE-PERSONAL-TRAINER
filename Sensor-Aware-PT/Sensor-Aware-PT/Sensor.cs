@@ -74,7 +74,7 @@ namespace Sensor_Aware_PT
         {
             Uninitialized,
             Initialized,
-            ReadingInput,
+            Activated,
             NotPresent
         };
         private SensorState mSensorState = SensorState.Uninitialized; /** Default state for the sensor */
@@ -84,12 +84,12 @@ namespace Sensor_Aware_PT
         #region event handling stuff
         
         /** Event arguments container class */
-        public class NewSensorDataEventArgs : System.EventArgs
+        public class SensorNewDataEventArgs : System.EventArgs
         {
             string mID;
             SensorDataEntry mData;
 
-            public NewSensorDataEventArgs( string id, SensorDataEntry data)
+            public SensorNewDataEventArgs( string id, SensorDataEntry data)
             {
                 mID = id;
                 mData = data;
@@ -106,21 +106,21 @@ namespace Sensor_Aware_PT
         }
 
         /** Event handler for new data recieved event */
-        public delegate void NewSensorDataEventHandler( object sender, NewSensorDataEventArgs e );
+        public delegate void SensorNewDataEventHandler( object sender, SensorNewDataEventArgs e );
 
-        public event NewSensorDataEventHandler NewSensorDataEvent;
+        public event SensorNewDataEventHandler SensorNewDataEvent;
 
         /** Event delegate and handler for sensor ready. Note that if a sensor fails to open, it is still marked as ready
          * A call to IsActive is expected to check if it's active or not
          */
-        public delegate void SensorReadyEventHandler( object sender, EventArgs e );
-        public event SensorReadyEventHandler SensorReadyEvent;
+        public delegate void SensorInitializedEventHandler( object sender, EventArgs e );
+        public event SensorInitializedEventHandler SensorInitializedEvent;
 
         /** Event delegate and handler for sensor ready. Note that if a sensor fails to open, it is still marked as ready
- * A call to IsActive is expected to check if it's active or not
- */
-        public delegate void SensorReadingEventHandler( object sender, EventArgs e );
-        public event SensorReadingEventHandler SensorReadingEvent;
+        * A call to IsActive is expected to check if it's active or not
+        */
+        public delegate void SensorActivatedEventHandler( object sender, EventArgs e );
+        public event SensorActivatedEventHandler SensorActivatedEvent;
 
         #endregion
         
@@ -158,14 +158,14 @@ namespace Sensor_Aware_PT
                     changeState( SensorState.Initialized );
                     
                     Logger.Info( "Sensor {0} initialized", mID );
-                    SensorReadyEvent( this, new EventArgs() );
+                    OnSensorInitializedEvent( new EventArgs() );
                 }
                 catch( Exception e )
                 {
                     Logger.Error( "Sensor {0} serial port open exception: {1}", mID, e.Message );
                     changeState( SensorState.NotPresent );
                     /** Send the sensor ready, assume listeners check for IsActive */
-                    SensorReadyEvent( this, new EventArgs() );
+                    OnSensorInitializedEvent( new EventArgs() );
                     return;
                 }
 
@@ -180,9 +180,15 @@ namespace Sensor_Aware_PT
   
         }
 
-        public void beginReading()
+        /// <summary>
+        /// Called to activate the sensor, after it has been initialized.
+        /// </summary>
+        public void activate()
         {
-            mReadThread.Start();
+            if (mSensorState == SensorState.Initialized)
+                mReadThread.Start();
+            else
+                throw new Exception(String.Format("Cannot activate sensor {0} since it is not initialized", mID));
         }
 
         /// <summary>
@@ -259,10 +265,9 @@ namespace Sensor_Aware_PT
                     while(!synchronized);
 
                     Logger.Info("Sensor {0} synchronization complete", mID);
-                    changeState( SensorState.ReadingInput );
-                    RaiseSensorReadingEvent( new EventArgs() );
+                    changeState( SensorState.Activated );
+                    OnSensorActivatedEvent( new EventArgs() );
                     /** Send the sensor ready event */
-                    //SensorReadyEvent( this, new EventArgs() );
 
                     while (true)
                     {
@@ -270,8 +275,8 @@ namespace Sensor_Aware_PT
                         SensorDataEntry newData = readDataEntry();
                         mData.Add(newData);
                         /** Call the event to notify and listeners */
-                        NewSensorDataEventArgs dataEventArgs = new NewSensorDataEventArgs( mID, newData );
-                        RaiseNewSensorDataEvent( dataEventArgs );
+                        SensorNewDataEventArgs dataEventArgs = new SensorNewDataEventArgs( mID, newData );
+                        OnNewSensorDataEvent( dataEventArgs );
 
                         //Logger.Info( "Sensor {0} data: {1}, {2}, {3}", mID, newData.orientation.X, newData.orientation.Y, newData.orientation.Z );
                     }
@@ -292,28 +297,47 @@ namespace Sensor_Aware_PT
             }
         }
 
-        private void RaiseNewSensorDataEvent( NewSensorDataEventArgs arg )
+        private void OnNewSensorDataEvent( SensorNewDataEventArgs arg )
         {
-               try
-               {
-                  if (NewSensorDataEvent != null) 
-                  {
-                      NewSensorDataEvent( this, arg );
-                  }
-               }
-               catch
-               {
-                  // Handle exceptions here
-               }
-        }
-
-        private void RaiseSensorReadingEvent( EventArgs arg )
-        {
+            /** This copy is for thread safety */
+            SensorNewDataEventHandler handler = SensorNewDataEvent;
             try
             {
-                if( SensorReadingEvent != null )
+                if (handler != null) 
                 {
-                    SensorReadingEvent( this, arg );
+                    handler(this, arg);
+                }
+            }
+            catch
+            {
+                // Handle exceptions here
+            }
+        }
+
+        private void OnSensorActivatedEvent( EventArgs arg )
+        {
+            SensorActivatedEventHandler handler = SensorActivatedEvent;
+            try
+            {
+                if( handler != null )
+                {
+                    handler( this, arg );
+                }
+            }
+            catch
+            {
+                // Handle exceptions here
+            }
+        }
+
+        private void OnSensorInitializedEvent(EventArgs arg)
+        {
+            SensorInitializedEventHandler handler = SensorInitializedEvent;
+            try
+            {
+                if (handler != null)
+                {
+                    handler(this, arg);
                 }
             }
             catch
@@ -468,11 +492,11 @@ namespace Sensor_Aware_PT
             return mData.Last();
         }
 
-        public bool IsActive
+        public bool IsActivated
         {
             get
             {
-                return mSensorState == SensorState.ReadingInput;
+                return mSensorState == SensorState.Activated;
             }
         }
 

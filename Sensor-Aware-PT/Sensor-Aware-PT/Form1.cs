@@ -34,8 +34,8 @@ namespace Sensor_Aware_PT
             }
 
             mSensorManager = new Nexus();
-            mSensorManager.NexusReadyEvent += new Nexus.NexusReadyEventHandler( mSensorManager_NexusReadyEvent );
-            mSensorManager.Initialize();
+            mSensorManager.NexusInitializedEvent += new Nexus.NexusInitializedEventHandler( mSensorManager_NexusInitializedEvent );
+            mSensorManager.initialize();
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Sensor_Aware_PT
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void mSensorManager_NexusReadyEvent( object sender, EventArgs e )
+        void mSensorManager_NexusInitializedEvent( object sender, EventArgs e )
         {
             /** If the nexus is now ready, query for the active sensors and attach a cuboid window to them */
             List<Sensor> activeSensors = mSensorManager.getActiveSensors();

@@ -457,7 +457,7 @@ namespace Sensor_Aware_PT
             textures = LoadTextureFromImage(imageFiles);
 
 
-            mSensor.NewSensorDataEvent += new Sensor.NewSensorDataEventHandler( sensor_NewSensorDataEvent );
+            mSensor.SensorNewDataEvent += new Sensor.SensorNewDataEventHandler( sensor_NewSensorDataEvent );
             this.Text = "Sensor " + mSensor.Id;
 
         }
@@ -624,7 +624,7 @@ namespace Sensor_Aware_PT
         #region Data Events
 
 
-        void sensor_NewSensorDataEvent( object sender, Sensor.NewSensorDataEventArgs e )
+        void sensor_NewSensorDataEvent( object sender, Sensor.SensorNewDataEventArgs e )
         {
             /** Update rotation matrix accordingly */
             Logger.Info( "Sensor {0} data to cuboid: {1}, {2}, {3}", e.Id, e.Data.orientation.X, e.Data.orientation.Y, e.Data.orientation.Z );
