@@ -25,7 +25,9 @@ namespace Sensor_Aware_PT
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-
+            chart1.Series[0].Points.Add(5f);
+            chart1.Series[0].Points.Add(7f);
+            chart1.Series[0].Points.Add(5f);
             string[] ports = SerialPort.GetPortNames();
 
             foreach( string s in ports )
