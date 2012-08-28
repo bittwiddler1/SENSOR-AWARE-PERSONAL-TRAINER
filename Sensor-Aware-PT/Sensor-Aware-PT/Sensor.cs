@@ -8,8 +8,6 @@ using OpenTK;
 
 namespace Sensor_Aware_PT
 {
-<<<<<<< HEAD
-=======
     /** Struct to hold info on each line of sensor data */
     public class SensorDataEntry
     {
@@ -23,15 +21,16 @@ namespace Sensor_Aware_PT
 
 
 
->>>>>>> 4d8b45f692eb6eb7aa7d26a8461d1886227449dc
     /** Created to encapsulate a sensor */
-    class Sensor
+    public class Sensor
     {
+        #region Constants and Variables
         /** Timeout in ms for IO */
-        static int SERIAL_IO_TIMEOUT = 10000;
+        static int SERIAL_IO_TIMEOUT = 20000;
         /** Max number of values to keep in history */
+        static int HISTORY_BUFFER_SIZE = 500;
 
-        static int HISTORY_BUFFER_SIZE = 250;
+        private const int MAX_READ_ERRORS = 3; 
 
         /** Friendly sensor ID A-D */
         private string mID;
@@ -42,6 +41,7 @@ namespace Sensor_Aware_PT
             get { return mID;  }
             set { mID = value; }
         }
+
         /** Last 4 Digits of mac address, used for ID purposes */
         private string mMAC;
 
@@ -74,10 +74,56 @@ namespace Sensor_Aware_PT
         {
             Uninitialized,
             Initialized,
-            ReadingInput
+            Activated,
+            NotPresent
         };
-
         private SensorState mSensorState = SensorState.Uninitialized; /** Default state for the sensor */
+        
+        #endregion
+
+        #region event handling stuff
+        
+        /** Event arguments container class */
+        public class DataReceivedEventArgs : System.EventArgs
+        {
+            string mID;
+            SensorDataEntry mData;
+
+            public DataReceivedEventArgs( string id, SensorDataEntry data)
+            {
+                mID = id;
+                mData = data;
+            }            
+            public string Id
+            {
+                get{ return mID;}
+            }
+
+            public SensorDataEntry Data
+            {
+                get{ return mData; }
+            }
+        }
+
+        /** Event handler for new data recieved event */
+        public delegate void DataReceivedHandler( object sender, DataReceivedEventArgs e );
+
+        public event DataReceivedHandler DataReceived;
+
+        /** Event delegate and handler for sensor ready. Note that if a sensor fails to open, it is still marked as ready
+         * A call to IsActive is expected to check if it's active or not
+         */
+        public delegate void InitializationCompleteHandler( object sender, EventArgs e );
+        public event InitializationCompleteHandler InitializationComplete;
+
+        /** Event delegate and handler for sensor ready. Note that if a sensor fails to open, it is still marked as ready
+        * A call to IsActive is expected to check if it's active or not
+        */
+        public delegate void ActivationCompleteHandler( object sender, EventArgs e );
+        public event ActivationCompleteHandler ActivationComplete;
+
+        #endregion
+        
 
         public Sensor(SensorIdentification config)
         {
@@ -85,10 +131,13 @@ namespace Sensor_Aware_PT
             mMAC = config.Mac;
             mPortName = config.PortName;
             mData = new RingBuffer<SensorDataEntry>(HISTORY_BUFFER_SIZE);
-            
+            /** Add an empty entry in case getLastEntry is called before data comes in */
+            mData.Add( new SensorDataEntry() );
         }
 
-        /** Initializes the sensor using the ID and MAC */
+        /// <summary>
+        /// Initializes the sensor using the ID and MAC that has been provided already
+        /// </summary>
         public void initialize()
         {
             try
@@ -99,182 +148,244 @@ namespace Sensor_Aware_PT
                  * readThreadRunA, readThreadRunB...etc */
                 mReadThread.Name = String.Format( "readThreadRun{0}", mID );
                 mReadThread.IsBackground = true;
+                /** Setup the serial port */
+                mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
+                mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
+                mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
+                try
+                {
+                    mSerialPort.Open();
+                    changeState( SensorState.Initialized );
+                    
+                    Logger.Info( "Sensor {0} initialized", mID );
+                    OnInitializationComplete();
+                }
+                catch( Exception e )
+                {
+                    Logger.Error( "Sensor {0} serial port open exception: {1}", mID, e.Message );
+                    changeState( SensorState.NotPresent );
+                    /** Send the sensor ready, assume listeners check for IsActive */
+                    OnInitializationComplete();
+                    return;
+                }
+
+
                 /** Start the read thread */
-                mReadThread.Start();
+                //mReadThread.Start();
             }
             catch( Exception e)
             {
-                Logger.Error( e.Message );
+                 Logger.Error( e.Message );
             }
   
         }
 
-        /** Background thread that loops infinitely for incoming data */
+        /// <summary>
+        /// Called to activate the sensor, after it has been initialized.
+        /// </summary>
+        public void activate()
+        {
+            if (mSensorState == SensorState.Initialized)
+                mReadThread.Start();
+            else
+                throw new Exception(String.Format("Cannot activate sensor {0} since it is not initialized", mID));
+        }
+
+        /// <summary>
+        /// Reads a float from the serial port. The Razor sends out 4-byte floats which are little endian, which
+        /// are converted to big endian.
+        /// </summary>
+        /// <returns>4-byte float read from the serial stream</returns>
+        private float readFloat()
+        {
+            /** Convert from little endian (Razor) to big endian (.net) and interpret as float */
+            byte[] val = new byte[4];
+            for( int k = 0; k < 4; k++ )
+            {
+                val[ k ] = (byte)mSerialPort.ReadByte();
+            }
+            /** BitConverter is assumed to be big-endian by default */
+            return BitConverter.ToSingle( val, 0 );
+
+        }
+
+        /// <summary>
+        /// Reads a token from the serial port, optionally waiting until the token is recieved.
+        /// </summary>
+        /// <returns>True if the token was read, false if not</returns>
+        private bool readToken(String token) 
+        {
+
+            if( mSerialPort.BytesToRead < token.Length )
+                return false;
+                
+            /** Check if incoming bytes match token */
+            for( int i = 0; i < token.Length; i++ )
+            {
+                if( mSerialPort.ReadChar() != token[ i ] )
+                    return false;
+            }
+
+            return true;
+        }
+
+
+
+        /// <summary>
+        /// Background thread that initializes the serial port, opens it, begins communication,
+        /// and loops infinitely for data.
+        /// </summary>
         private void readThreadRun()
         {
-            /** Setup the serial port */
-            mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
-            mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
-            mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
-
-            mSerialPort.Open();
-            changeState( SensorState.Initialized );
-            Logger.Info("Sensor {0} read thread started", mID);
             if (mSensorState == SensorState.Initialized)
             {
-                changeState(SensorState.ReadingInput);
+                
                 try
                 {
+                    //Thread.Sleep( 3000 );
+                    Logger.Info( "Sensor {0} synchronization started", mID );
+
+                    mSerialPort.DiscardInBuffer();
+                    
+                    /** Sets the output parameters */
+                    mSerialPort.Write( "#ob" );  /** Turn on binary output */
+                    mSerialPort.Write( "#o1" );  /** Turn on continuous streaming output */
+                    mSerialPort.Write( "#oe0" ); /** Disable error message output*/
+
+                    /** Clear the input buffer and then request the sync token */
+                    mSerialPort.DiscardInBuffer();
+                    mSerialPort.Write( "#s00" );  
+                    bool synchronized = false;
+
+                    /** Wait until we are synchronized */
+                    do
+                    {
+                        synchronized = readToken( "#SYNCH00\r\n");
+                    }
+                    while(!synchronized);
+
+                    Logger.Info("Sensor {0} synchronization complete", mID);
+                    changeState( SensorState.Activated );
+                    OnActivationComplete();
+                    /** Send the sensor ready event */
+
                     while (true)
                     {
-                        string dataLine = mSerialPort.ReadLine();
-                        Logger.Info( "Sensor {0} data {1}", mID, dataLine );
+                        /** Read the data and add to circular buffer */
+                        SensorDataEntry newData = readDataEntry();
+                        mData.Add(newData);
+                        /** Call the event to notify and listeners */
+                        DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
+                        OnDataReceived( dataEventArgs );
+
+                        //Logger.Info( "Sensor {0} data: {1}, {2}, {3}", mID, newData.orientation.X, newData.orientation.Y, newData.orientation.Z );
                     }
                 }
                 catch (Exception e)
                 {
-                    mReadErrors++;
-                    if( MAX_READ_ERRORS <= mReadErrors )
+                    //mReadErrors++;
+                    //if( MAX_READ_ERRORS <= mReadErrors )
                     {
                         Logger.Error( "Sensor {0} read thread exception: {1}", mID, e.Message );
                         throw new Exception( String.Format( "Sensor {0} read thread exception: {1}", mID, e.Message ) );
                     }
-                    else
-                    {
-                    }
- 
                 }
             }
             else
             {
-                throw new Exception("Tried to read data before initialized");
+                Logger.Error("Tried to read data before initialized");
             }
         }
 
-        /** Self explanatory.*/
-        private void changeState(SensorState newState)
+        private void OnDataReceived( DataReceivedEventArgs arg )
         {
-            Logger.Info("Sensor {0} changing state from {1} to {2}", mID, mSensorState, newState);
-            mSensorState = newState;
-        }
-
-<<<<<<< HEAD
-        /** Takes an input line and spits a vector 3 out */
-        public static Vector3 parseInput(string input)
-        {
-            Vector3 retVal = new Vector3();
-            //TODO actual parsing shit
-            return retVal;
-=======
-        /** Takes an input line and determines what to do with it */
-        public void parseInput(string input)
-        {
+            /** This copy is for thread safety */
+            DataReceivedHandler handler = DataReceived;
             try
             {
-                if( input.StartsWith( "#" ) )
+                if (handler != null) 
                 {
-
-
-                    /** First get the vector of data, provided we have a complete line */
-                    Vector3 vecData = parseDataLine( input );
-                    /** Also get the previous entry */
-                    SensorDataEntry prevEntry = mData.Last();
-                    /** New frame check */
-                    if( input.StartsWith( "#YPR" ) )
-                    {
-                        /** since its a new frame, print the previous frame */
-                        printDataEntry( prevEntry );
-                        /** New frame, add to buffer */
-                        mData.Add( prepareEntry( vecData ) );
-                        return;
-                    }
-                    /** Get the last added frame */
-                    
-                    /** Then determine which property to update */
-                    if( input.StartsWith( "#ACC" ) )
-                    {
-                        prevEntry.accelerometer = vecData;
-                        return;
-                    }
-                    else if( input.StartsWith( "#MAG" ) )
-                    {
-                        prevEntry.magnetometer = vecData;
-                        return;
-                    }
-                    else if( input.StartsWith( "#GYR" ) )
-                    {
-                        prevEntry.gyroscope = vecData;
-                        /** This also happens to be the end of this frame */
-                    }
+                    handler(this, arg);
                 }
             }
-            catch( Exception e)
+            catch(Exception e)
             {
-
-                Logger.Error( "Sensor {0} string parsing exception: {1}", mID, e.Message );
+                throw e;
             }
-           
         }
 
-        /** Prints a data entry to the log */
-        private void printDataEntry( SensorDataEntry dataEntry )
-        {
-            try
-            {
-                /*
-                string output = String.Format( "Angle{{{0},{1},{2}}}, Accel{{{3},{4},{5}}}, Mag{{{6},{7},{8}}}, Gyro{{{9},{10},{11}}}",
-                dataEntry.orientation.X,
-                dataEntry.orientation.Y,
-                dataEntry.orientation.Z,
-                dataEntry.accelerometer.X,
-                dataEntry.accelerometer.Y,
-                dataEntry.accelerometer.Z,
-                dataEntry.magnetometer.X,
-                dataEntry.magnetometer.Y,
-                dataEntry.magnetometer.Z,
-                dataEntry.gyroscope.X,
-                dataEntry.gyroscope.Y,
-                dataEntry.gyroscope.Z );
-                */
-
-                string output = String.Format( "Angle{{{0},{1},{2}}}",
-dataEntry.orientation.X,
-dataEntry.orientation.Y,
-dataEntry.orientation.Z );
-
-                Logger.Info( "Sensor {0}: {1}", mID, output );
-            }
-            catch( Exception e)
-            {
-
-                Logger.Error( "Sensor {0} string printing exception: {1}", mID, e.Message );
-            }
-            
-        }
-
-        /** Parses a line of data from the sensor */
-        private Vector3 parseDataLine( String dataLine )
-        {
-
-            dataLine = dataLine.Substring( 6 ); /** Gets rid of the ##YPR or ##GYR or ##ACC*/
-            String[] values = dataLine.Split( ',' ); /** Split on comma */
-            Vector3 vecData = new Vector3();
-            vecData.X = float.Parse( values[ 0 ] );
-            vecData.Y = float.Parse( values[ 1 ] );
-            vecData.Z = float.Parse( values[ 2 ] );
-            return vecData;
->>>>>>> 4d8b45f692eb6eb7aa7d26a8461d1886227449dc
-        }
-
-        /** Packs an orientation into a data entry struct along with sequence and timestamp */
-        private SensorDataEntry prepareEntry(Vector3 orientation)
+        /// <summary>
+        ///  Packs a data entry struct along with sequence and timestamp
+        /// </summary>
+        /// <param name="orientation">orientation angle</param>
+        /// <param name="accel">accelerometer vector</param>
+        /// <param name="mag">magnetometer vector</param>
+        /// <param name="gyro">gyroscope vector</param>
+        /// <returns></returns>
+        private SensorDataEntry prepareEntry( Vector3 orientation, Vector3 accel, Vector3 mag, Vector3 gyro )
         {
             SensorDataEntry newEntry = new SensorDataEntry();
             newEntry.orientation = orientation;
+            newEntry.accelerometer = accel;
+            newEntry.magnetometer = mag;
+            newEntry.gyroscope = gyro;
             newEntry.sequenceNumber = mSequenceNum++;
             newEntry.timeStamp = DateTime.Now;
 
             return newEntry;
+        }
+
+        /// <summary>
+        /// Dumps the contents of the history buffer to a text file
+        /// </summary>
+        public void dumpBuffer()
+        {
+            DateTime datet = DateTime.Now;
+            String filePath = "CircularBufferDump " + mID + " "  + datet.ToString( "MM_dd" ) + ".log";
+            
+            
+                FileStream files = File.Create( filePath );
+                files.Close();
+            
+            try
+            {
+                StreamWriter sw = File.AppendText( filePath );
+
+                foreach( SensorDataEntry dataEntry in mData )
+                {
+
+                    try
+                    {
+                        string output = String.Format( "Angle{{{0},{1},{2}}}, Accel{{{3},{4},{5}}}, Mag{{{6},{7},{8}}}, Gyro{{{9},{10},{11}}}",
+                        dataEntry.orientation.X,
+                        dataEntry.orientation.Y,
+                        dataEntry.orientation.Z,
+                        dataEntry.accelerometer.X,
+                        dataEntry.accelerometer.Y,
+                        dataEntry.accelerometer.Z,
+                        dataEntry.magnetometer.X,
+                        dataEntry.magnetometer.Y,
+                        dataEntry.magnetometer.Z,
+                        dataEntry.gyroscope.X,
+                        dataEntry.gyroscope.Y,
+                        dataEntry.gyroscope.Z );
+                        sw.WriteLine( output );
+                        
+                    }
+                    catch( Exception e )
+                    {
+                        throw e;
+                    }
+                }
+
+
+                sw.Flush();
+                sw.Close();
+            }
+            catch( Exception e )
+            {
+                Console.WriteLine( e.Message.ToString() );
+            }
         }
 
         public void reset()
@@ -282,13 +393,30 @@ dataEntry.orientation.Z );
 
         }
 
-        internal SensorDataEntry getEntry()
+        /// <summary>
+        /// Gets the newest entry from the history buffer
+        /// </summary>
+        /// <returns></returns>
+        internal SensorDataEntry getLastEntry()
         {
-            /** This is a crime, yes I know oh gods I know */
-            if( mData.Count > 0 )
-                return mData.Last();
-            else
-                return new SensorDataEntry();
+            /** The list will never be empty because on creation I add an empty  entry */
+            return mData.Last();
+        }
+
+        public bool IsActivated
+        {
+            get
+            {
+                return mSensorState == SensorState.Activated;
+            }
+        }
+
+        public bool IsInitialized
+        {
+            get
+            {
+                return mSensorState == SensorState.Initialized;
+            }
         }
     }
 }

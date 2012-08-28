@@ -5,8 +5,10 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Drawing;
 using OpenTK;
+using System.Collections.Generic;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
+using System.ComponentModel;
 
 namespace Sensor_Aware_PT
 {
@@ -14,12 +16,8 @@ namespace Sensor_Aware_PT
     {
         //private bool loaded = false;
         private bool bRunning = true;
-
-        //private SerialPort port;
-        private Thread ReadThread;
         private Nexus mSensorManager;
-        private ExperimentalDisplay ed = new ExperimentalDisplay();
-
+        
         public MainForm()
         {
             InitializeComponent();
@@ -27,21 +25,51 @@ namespace Sensor_Aware_PT
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-
+            chart1.Series[0].Points.Add(5f);
+            chart1.Series[0].Points.Add(7f);
+            chart1.Series[0].Points.Add(5f);
             string[] ports = SerialPort.GetPortNames();
 
             foreach( string s in ports )
             {
                 Logger.Info( "{0}", s );
             }
-            
-            ReadThread = new Thread( () =>
+
+            mSensorManager = new Nexus();
+            mSensorManager.InitializationComplete += new Nexus.InitializationCompleteHandler( mSensorManager_NexusInitializedEvent );
+            mSensorManager.initialize();
+        }
+
+        /// <summary>
+        /// Handles the nexus ready event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void mSensorManager_NexusInitializedEvent( object sender, EventArgs e )
+        {
+            /** If the nexus is now ready, query for the active sensors and attach a cuboid window to them */
+            List<Sensor> activeSensors = mSensorManager.getActivatedSensors();
+            foreach( Sensor s in activeSensors )
+                attachCuboidWindow( s );
+        }
+
+
+        /// <summary>
+        /// Takes a sensor and attaches a cuboid window to it
+        /// </summary>
+        /// <param name="sensor"></param>
+        private void attachCuboidWindow(Sensor sensor)
+        {
+            /** Create new cuboid form attached to this sensor*/
+            Form_3Dcuboid cuboid = new Form_3Dcuboid();
+            /** Create background worker to show the form and run it asynchronously */
+            BackgroundWorker cuboidWorker = new BackgroundWorker();
+            cuboidWorker.DoWork += new DoWorkEventHandler( delegate
             {
-                ed.Run( 60, 60 );
+                cuboid.setSensor( sensor );
+                cuboid.ShowDialog();
             } );
-            ReadThread.IsBackground = true;
-            ReadThread.Start();
-            
+            cuboidWorker.RunWorkerAsync();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -54,31 +82,5 @@ namespace Sensor_Aware_PT
            // Thread.CurrentThread.Join();
            // port.Close();
         }
-<<<<<<< HEAD
-
-        private void glControl1_Load(object sender, EventArgs e)
-        {
-            loaded = true;
-        }
-
-        private void glControl1_Resize(object sender, EventArgs e)
-        {
-            if (!loaded)
-                return;
-        }
-
-        private void glControl1_Paint(object sender, PaintEventArgs e)
-        {
-            if (!loaded)
-                return;
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            glControl1.SwapBuffers();
-        }
-
-
-
-
-=======
->>>>>>> 4d8b45f692eb6eb7aa7d26a8461d1886227449dc
     }
 }

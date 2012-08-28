@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
-using System.Threading;
+using System.ComponentModel;
+using System.IO.Ports;
 using System.Text;
+using System.Threading;
 
 namespace Sensor_Aware_PT
 {
@@ -15,6 +17,7 @@ namespace Sensor_Aware_PT
         /// The main entry point for the application.
         /// </summary>
         ///     
+
         
         [DllImport( "kernel32.dll" )]
         static extern bool AttachConsole(int dwProcessId);
@@ -44,12 +47,8 @@ namespace Sensor_Aware_PT
             }
             // redirect console output to parent process;
             // must be before any calls to Console.WriteLine()
-            // AttachConsole( ATTACH_PARENT_PROCESS );
 
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    Console.WriteLine(i );
-            //}
+           // AttachConsole( ATTACH_PARENT_PROCESS );
 
         }
 
@@ -80,6 +79,7 @@ namespace Sensor_Aware_PT
             }
         }
     }
+    
 }
 
 
