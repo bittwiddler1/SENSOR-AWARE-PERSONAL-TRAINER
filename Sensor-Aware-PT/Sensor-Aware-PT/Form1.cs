@@ -14,7 +14,7 @@ namespace Sensor_Aware_PT
 {
     public partial class MainForm : Form
     {
-        //private bool loaded = false;
+        private bool loaded = false;
         private bool bRunning = true;
         private Nexus mSensorManager;
         
@@ -82,5 +82,6 @@ namespace Sensor_Aware_PT
            // Thread.CurrentThread.Join();
            // port.Close();
         }
+
     }
 }

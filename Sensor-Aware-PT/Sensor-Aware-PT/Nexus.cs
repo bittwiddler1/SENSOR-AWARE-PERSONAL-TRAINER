@@ -33,14 +33,6 @@ namespace Sensor_Aware_PT
         }
     }
 
-    /** Struct to hold info on each line of sensor data */
-    public struct SensorDataEntry
-    {
-        public Vector3 orientation;
-        public DateTime timeStamp;
-        public int sequenceNumber;
-    }
-
     class Nexus
     {
         #region Constants
@@ -283,6 +275,7 @@ namespace Sensor_Aware_PT
             {
                 fileStream.Close();
             }
+
         }
 
         /// <summary>

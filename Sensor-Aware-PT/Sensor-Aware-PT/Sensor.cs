@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using OpenTK;
+using System.IO;
 
 namespace Sensor_Aware_PT
 {
@@ -18,7 +19,6 @@ namespace Sensor_Aware_PT
         public DateTime timeStamp = new DateTime();
         public int sequenceNumber;
     }
-
 
 
     /** Created to encapsulate a sensor */
@@ -312,6 +312,95 @@ namespace Sensor_Aware_PT
             {
                 throw e;
             }
+        }
+
+        private void OnActivationComplete()
+        {
+            ActivationCompleteHandler handler = ActivationComplete;
+            try
+            {
+                if( handler != null )
+                {
+                    handler( this, EventArgs.Empty);
+                }
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
+        }
+
+        private void OnInitializationComplete()
+        {
+            InitializationCompleteHandler handler = InitializationComplete;
+            try
+            {
+                if (handler != null)
+                {
+                    handler(this, EventArgs.Empty);
+                }
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
+        }
+
+        /// <summary>
+        /// Reads a full data entry from the serial stream and returns the prepared entry
+        /// </summary>
+        /// <returns>A packed SensorDataEntry</returns>
+        private SensorDataEntry readDataEntry()
+        {
+
+            /** Read the 4 vectors of data */
+            Vector3 vecData = new Vector3( readFloat(), readFloat(), readFloat() );
+            Vector3 accData = new Vector3( readFloat(), readFloat(), readFloat() );
+            Vector3 magData = new Vector3( readFloat(), readFloat(), readFloat() );
+            Vector3 gyroData = new Vector3( readFloat(), readFloat(), readFloat() );
+            /** Returned the packed entry */
+            return prepareEntry( vecData, accData, magData, gyroData );
+        }
+
+        /// <summary>
+        /// Change the state of this sensor
+        /// </summary>
+        /// <param name="newState">The new state</param>
+        private void changeState(SensorState newState)
+        {
+            Logger.Info("Sensor {0} changing state from {1} to {2}", mID, mSensorState, newState);
+            mSensorState = newState;
+        }
+
+        /// <summary>
+        /// Prints a data entry to the log
+        /// </summary>
+        /// <param name="dataEntry">The entry to print</param>
+        private void printDataEntry( SensorDataEntry dataEntry )
+        {
+            try
+            {
+                string output = String.Format( "Angle{{{0},{1},{2}}}, Accel{{{3},{4},{5}}}, Mag{{{6},{7},{8}}}, Gyro{{{9},{10},{11}}}",
+                dataEntry.orientation.X,
+                dataEntry.orientation.Y,
+                dataEntry.orientation.Z,
+                dataEntry.accelerometer.X,
+                dataEntry.accelerometer.Y,
+                dataEntry.accelerometer.Z,
+                dataEntry.magnetometer.X,
+                dataEntry.magnetometer.Y,
+                dataEntry.magnetometer.Z,
+                dataEntry.gyroscope.X,
+                dataEntry.gyroscope.Y,
+                dataEntry.gyroscope.Z );
+
+                Logger.Info( "Sensor {0} data: {1}", mID, output );
+            }
+            catch( Exception e)
+            {
+                Logger.Error( "Sensor {0} string printing exception: {1}", mID, e.Message );
+            }
+            
         }
 
         /// <summary>
