@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Management;
 using System.Xml.Serialization;
 
-using OpenTK;
 
 namespace Sensor_Aware_PT
 {
@@ -51,7 +48,7 @@ namespace Sensor_Aware_PT
         /** List to hold the Sensor objects */
         Dictionary<String, Sensor> mSensorDict;
         Dictionary<String, SensorIdentification> mSensorIDDict;
-        SerializableDictionary<String, String> mConfigFileDataDict;
+        //SerializableDictionary<String, String> mConfigFileDataDict;
         Sensor[] mAvailableSensors;
 
         private Boolean bGenerateConfig = true;
@@ -88,25 +85,56 @@ namespace Sensor_Aware_PT
             {
                 if (File.Exists(this.ConfigFilePath))
                 {
-                    Logger.Info("Config file detected");
-                    Console.WriteLine("Use the detected config file? If not, you will be prompted for sensor data and a config will be created for you [Y/N]");
-                    String response = Console.ReadLine()[0].ToString();
-
-                    if (response.ToLower() != "y")
+                    String response;
+                    Logger.Info("Config file detected at {0}", this.ConfigFilePath);
+                    Logger.Info("Prompting user to determine whether to use it...");
+                    do
                     {
-                        this.readConfigFile();
-                        this.bGenerateConfig = false;
-                    }
+                        Console.WriteLine("Use the detected config file? [Y/N]");
+                        Console.WriteLine("If \"No\", you will be prompted for sensor identification data and a config will be saved for future use.");
+                        response = Console.ReadLine()[0].ToString();
+
+                        if (response.ToLower() == "y")
+                        {
+                            Logger.Info("User chose to use existing config file. (User Input = {0})", response.ToLower()[0]);
+                            this.readConfigFile();
+                            this.bGenerateConfig = false;
+                        }
+                        else if (response.ToLower() == "n")
+                        {
+                            Logger.Info("User chose not to use existing config file. (User Input = {0})", response.ToLower()[0]);
+                            this.bGenerateConfig = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Input not understood. Please try again. Enter something starting with y or n");
+                        }
+                    } while (response.ToLower() != "y" && response.ToLower() != "n");
+                    
+                } 
+                else
+                {
+                    this.bGenerateConfig = true;
                 }
+
                 if (this.bGenerateConfig)
                 {
-
+                    mStartOfInit = System.DateTime.Now;
                     this.probeWmiComPorts();
-                    this.saveConfig();
+                    this.saveConfigFile();
 
-                    System.TimeSpan timeleft = System.DateTime.Now - mStartOfInit;
-                    Logger.Info("Delaying for {0} seconds while sensors initialize...", timeleft.TotalSeconds);
-                    Thread.Sleep((int)timeleft.TotalMilliseconds);
+                    System.TimeSpan timeSpent = System.DateTime.Now - mStartOfInit;
+                    double timeLeft = 60.0 - (int)timeSpent.TotalSeconds;
+                    Logger.Info("Delaying for {0} seconds while sensors initialize...", (int)timeLeft);
+                    Thread.Sleep((int)(timeLeft * 1000));
+                }
+                else
+                {
+                    foreach (SensorIdentification idStruct in mSensorIDDict.Values)
+                    {
+                        /** Create the Sensor with its SensorID **/
+                        mSensorDict[idStruct.Id] = new Sensor(idStruct);
+                    }
                 }
 
                 
@@ -128,7 +156,7 @@ namespace Sensor_Aware_PT
             }
         }
 
-        private void saveConfig()
+        private void saveConfigFile()
         {
             StreamWriter fileStream;
 
@@ -137,14 +165,18 @@ namespace Sensor_Aware_PT
             {
                 fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
             }
-            catch (DirectoryNotFoundException e)
+            catch (DirectoryNotFoundException)
             {
                 Directory.CreateDirectory(Path.Combine(AppDataDirPath, CFG_DIR));
                 fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
-
             }
-            XmlSerializer serializer = new XmlSerializer(mConfigFileDataDict.GetType());
-            serializer.Serialize(fileStream, mConfigFileDataDict);
+
+            SensorIdentification[] tmpArray = mSensorIDDict.Values.ToArray();
+            XmlSerializer serializer = new XmlSerializer(tmpArray.GetType());
+            serializer.Serialize(fileStream, tmpArray);
+
+            //XmlSerializer serializer = new XmlSerializer(mConfigFileDataDict.GetType());
+            //serializer.Serialize(fileStream, mConfigFileDataDict);
             fileStream.Flush();
             fileStream.Close();
         }
@@ -158,7 +190,7 @@ namespace Sensor_Aware_PT
     
             mSensorDict   = new Dictionary<String,Sensor>();                   // The actual sensor objects
             mSensorIDDict = new Dictionary<String, SensorIdentification>();
-            mConfigFileDataDict = new SerializableDictionary<String, String>();
+            //mConfigFileDataDict = new SerializableDictionary<String, String>();
         }
         
         /// <summary>
@@ -184,16 +216,16 @@ namespace Sensor_Aware_PT
                  * we ignore this one **/
                 if ("000000000000" != MacAddress)
                 {
-                    if (mConfigFileDataDict == null)
-                    {
-                        mConfigFileDataDict = new SerializableDictionary<string, string>();
-                    }
+                    //if (mConfigFileDataDict == null)
+                    //{
+                    //    mConfigFileDataDict = new SerializableDictionary<string, string>();
+                    //}
 
                     Console.WriteLine();
                     Console.WriteLine("Please enter the sensor id for MAC address {0} [ex: A,B,C,ARM,...etc]", MacAddress);
                     Console.Write(">");
                     sensorIDstring = Console.ReadLine();
-                    mConfigFileDataDict[deviceID] = sensorIDstring;
+                    //mConfigFileDataDict[deviceID] = sensorIDstring;
 
                     SensorIdentification sensorID = new SensorIdentification(sensorIDstring, MacAddress, deviceID);
 
@@ -281,10 +313,18 @@ namespace Sensor_Aware_PT
             StreamReader fileStream = null;
             try
             {
+                // Get an array of sensor IDs from the xml file
                 fileStream = new StreamReader(ConfigFilePath);
-                XmlSerializer serializer = new XmlSerializer(mConfigFileDataDict.GetType());
 
-                mConfigFileDataDict = serializer.Deserialize(fileStream) as SerializableDictionary<String, String>;
+                SensorIdentification[] tmpArray = new SensorIdentification[1] {null};
+                XmlSerializer serializer = new XmlSerializer(tmpArray.GetType());
+
+                // Take each array object and insert it into the id dictionary
+                tmpArray = serializer.Deserialize(fileStream) as SensorIdentification[];
+                foreach (SensorIdentification id in tmpArray)
+                {
+                    mSensorIDDict[id.Id] = id;
+                }
             }
             catch (Exception)
             {
