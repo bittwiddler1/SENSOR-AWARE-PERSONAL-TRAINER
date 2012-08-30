@@ -44,8 +44,9 @@ namespace Sensor_Aware_PT
 
         /** Path to config file **/
         static String AppDataDirPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        static String ConfigFilePath = Path.Combine(new String[] { AppDataDirPath, CFG_DIR, "config.xml" });
+        String ConfigFilePath = Path.Combine(new String[] { AppDataDirPath, CFG_DIR, "config.xml" });
         #endregion
+
         #region instance variables
         /** List to hold the Sensor objects */
         Dictionary<String, Sensor> mSensorDict;
@@ -53,9 +54,10 @@ namespace Sensor_Aware_PT
         SerializableDictionary<String, String> mConfigFileDataDict;
         Sensor[] mAvailableSensors;
 
-        private Boolean bGenerateConfig = false;
+        private Boolean bGenerateConfig = true;
         /** This keeps track of the # of ready events we hve received */
         private static int mReadySensorCount = 0;
+        System.DateTime mStartOfInit;
 
         #endregion
         #region Event handling stuff
@@ -76,9 +78,47 @@ namespace Sensor_Aware_PT
 
         public void initialize()
         {
+            this.Configure();
+            
+        }
+
+        private void Configure()
+        {
             try
             {
-                initializeConfigFileDataDict();
+                if (File.Exists(this.ConfigFilePath))
+                {
+                    Logger.Info("Config file detected");
+                    Console.WriteLine("Use the detected config file? If not, you will be prompted for sensor data and a config will be created for you [Y/N]");
+                    String response = Console.ReadLine()[0].ToString();
+
+                    if (response.ToLower() != "y")
+                    {
+                        this.readConfigFile();
+                        this.bGenerateConfig = false;
+                    }
+                }
+                if (this.bGenerateConfig)
+                {
+
+                    this.probeWmiComPorts();
+                    this.saveConfig();
+
+                    System.TimeSpan timeleft = System.DateTime.Now - mStartOfInit;
+                    Logger.Info("Delaying for {0} seconds while sensors initialize...", timeleft.TotalSeconds);
+                    Thread.Sleep((int)timeleft.TotalMilliseconds);
+                }
+
+                
+                mAvailableSensors = mSensorDict.Values.ToArray();
+                foreach (Sensor s in mAvailableSensors)
+                {
+                    /** Register the ready event */
+                    s.InitializationComplete += new Sensor.InitializationCompleteHandler(Sensor_InitializationCompleteEvent);
+                }
+
+                /** Initialize the first member */
+                mAvailableSensors[0].initialize();
             }
             catch( Exception e )
             {
@@ -86,8 +126,27 @@ namespace Sensor_Aware_PT
                 bGenerateConfig = true;
                 Logger.Info( "Manual input will be required to configure the sensor array" );
             }
+        }
 
-            enumerateSensors();
+        private void saveConfig()
+        {
+            StreamWriter fileStream;
+
+            /** Generate the config file **/
+            try
+            {
+                fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                Directory.CreateDirectory(Path.Combine(AppDataDirPath, CFG_DIR));
+                fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
+
+            }
+            XmlSerializer serializer = new XmlSerializer(mConfigFileDataDict.GetType());
+            serializer.Serialize(fileStream, mConfigFileDataDict);
+            fileStream.Flush();
+            fileStream.Close();
         }
 
         #region Initialization and enumeration
@@ -105,7 +164,7 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Queries the system for bluetooth COM ports and enumerates the sensors using the provided data.
         /// </summary>
-        private void enumerateSensors()
+        private void probeWmiComPorts()
         {
             Logger.Info( "Serial port enumeration started" );
    
@@ -125,25 +184,16 @@ namespace Sensor_Aware_PT
                  * we ignore this one **/
                 if ("000000000000" != MacAddress)
                 {
-                    if (false == bGenerateConfig)
+                    if (mConfigFileDataDict == null)
                     {
-                        sensorIDstring = mConfigFileDataDict[MacAddress] as String;
-                        Logger.Info("Matching MAC {0} to sensor ID \"{1}\"", MacAddress, sensorIDstring);
+                        mConfigFileDataDict = new SerializableDictionary<string, string>();
                     }
-                    // Temporarily: prompt for the sensor ID
-                    else 
-                    {
-                        if (mConfigFileDataDict == null)
-                        {
-                            mConfigFileDataDict = new SerializableDictionary<string, string>();
-                        }
 
-                        Console.WriteLine();
-                        Console.WriteLine("Please enter the sensor id for MAC address {0} [ex: A,B,C,ARM,...etc]", MacAddress);
-                        Console.Write(">");
-                        sensorIDstring = Console.ReadLine();
-                        mConfigFileDataDict[MacAddress] = sensorIDstring;
-                    }
+                    Console.WriteLine();
+                    Console.WriteLine("Please enter the sensor id for MAC address {0} [ex: A,B,C,ARM,...etc]", MacAddress);
+                    Console.Write(">");
+                    sensorIDstring = Console.ReadLine();
+                    mConfigFileDataDict[deviceID] = sensorIDstring;
 
                     SensorIdentification sensorID = new SensorIdentification(sensorIDstring, MacAddress, deviceID);
 
@@ -152,36 +202,6 @@ namespace Sensor_Aware_PT
                     mSensorIDDict[sensorIDstring] = sensorID;
                 }
             }
-            if (true == bGenerateConfig)
-            {
-                StreamWriter fileStream;
-                /** Generate the config file **/
-                try
-                {
-                    fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
-                }
-                catch (DirectoryNotFoundException e)
-                {
-                    Directory.CreateDirectory(Path.Combine(AppDataDirPath, CFG_DIR));
-                    fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
-
-                }
-                XmlSerializer serializer = new XmlSerializer(mConfigFileDataDict.GetType());
-                serializer.Serialize(fileStream, mConfigFileDataDict);
-                fileStream.Flush();
-                fileStream.Close();
-            }
-
-            //sList = new Sensor[ mSensorDict.Count ];
-            mAvailableSensors = mSensorDict.Values.ToArray();
-            foreach( Sensor  s in mAvailableSensors )
-            {
-                /** Register the ready event */
-                s.InitializationComplete += new Sensor.InitializationCompleteHandler( Sensor_InitializationCompleteEvent );
-            }
-
-            /** Initialize the first member */
-            mAvailableSensors[ 0 ].initialize();
         }
 
         /// <summary>
@@ -213,7 +233,6 @@ namespace Sensor_Aware_PT
             }
             else
             {
-                
                 {
                     Logger.Info( "Initializing sensor list index {0}", mReadySensorCount );
                     mAvailableSensors[ mReadySensorCount ].initialize();
@@ -257,7 +276,7 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Reads the config file at %APPDATA%/Sensor-Aware-PT/config.xml
         /// </summary>
-        private void initializeConfigFileDataDict()
+        private void readConfigFile()
         {
             StreamReader fileStream = null;
             try
@@ -275,7 +294,6 @@ namespace Sensor_Aware_PT
             {
                 fileStream.Close();
             }
-
         }
 
         /// <summary>
