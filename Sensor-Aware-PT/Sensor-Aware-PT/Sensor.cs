@@ -150,8 +150,8 @@ namespace Sensor_Aware_PT
                 mReadThread.IsBackground = true;
                 /** Setup the serial port */
                 mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
-                mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
-                mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
+                mSerialPort.ReadTimeout = Timeout.Infinite;
+                mSerialPort.WriteTimeout = Timeout.Infinite;
                 try
                 {
                     mSerialPort.Open();

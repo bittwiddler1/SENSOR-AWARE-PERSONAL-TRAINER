@@ -236,6 +236,7 @@ namespace Sensor_Aware_PT
             }
         }
 
+
         /// <summary>
         /// This event gets raised after each sensor completes its initialize routine. Even if a sensor fails to initialize,
         /// it will fire this event.
@@ -247,7 +248,7 @@ namespace Sensor_Aware_PT
             Logger.Info( "Nexus has recieved ready notification from sensor {0}", ( ( Sensor ) sender ).Id );
             mReadySensorCount++;
             /** Check to see if all sensors have been initialized, if so then reset the count */
-            if( mReadySensorCount == mSensorDict.Count )
+            if( mReadySensorCount == mAvailableSensors.Count() )
             {
                 Logger.Info( "Nexus has intialized all sensors and is preparing to begin reading" );
                 mReadySensorCount = 0;
@@ -258,6 +259,7 @@ namespace Sensor_Aware_PT
                     {
                         mReadySensorCount++;
                         s.ActivationComplete += new Sensor.ActivationCompleteHandler( Sensor_ActivationCompleteEvent );
+                        Thread.Sleep( 2000 );
                         s.activate();
                     }
                 }
@@ -398,7 +400,7 @@ namespace Sensor_Aware_PT
         public List<Sensor> getActivatedSensors()
         {
             List<Sensor> activeSensors = new List<Sensor>();
-            foreach(Sensor s in mSensorDict.Values)
+            foreach(Sensor s in  mAvailableSensors)
             {
                 if( s.IsActivated )
                     activeSensors.Add( s );
