@@ -83,7 +83,6 @@
     <Compile Include="RingBuffer.cs" />
     <Compile Include="Sensor.cs" />
     <Compile Include="Nexus.cs" />
-    <Compile Include="SerializeableDictionary.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
