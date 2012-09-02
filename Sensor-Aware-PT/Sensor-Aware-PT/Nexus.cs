@@ -125,8 +125,11 @@ namespace Sensor_Aware_PT
 
                     System.TimeSpan timeSpent = System.DateTime.Now - mStartOfInit;
                     double timeLeft = 60.0 - (int)timeSpent.TotalSeconds;
-                    Logger.Info("Delaying for {0} seconds while sensors initialize...", (int)timeLeft);
-                    Thread.Sleep((int)(timeLeft * 1000));
+                    if (timeLeft > 0)
+                    {
+                        Logger.Info("Delaying for {0} seconds while sensors initialize...", (int)timeLeft);
+                        Thread.Sleep((int)(timeLeft * 1000));
+                    }
                 }
                 else
                 {
