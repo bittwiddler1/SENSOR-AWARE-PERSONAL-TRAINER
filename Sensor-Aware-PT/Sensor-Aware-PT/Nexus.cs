@@ -30,7 +30,7 @@ namespace Sensor_Aware_PT
         }
     }
 
-    class Nexus
+    class Nexus : IObservable<SensorDataEntry>
     {
         #region Constants
         /** baud rate for the com ports */
@@ -48,13 +48,16 @@ namespace Sensor_Aware_PT
         /** List to hold the Sensor objects */
         Dictionary<String, Sensor> mSensorDict;
         Dictionary<String, SensorIdentification> mSensorIDDict;
-        //SerializableDictionary<String, String> mConfigFileDataDict;
+        
         Sensor[] mAvailableSensors;
-
         private Boolean bGenerateConfig = true;
+
         /** This keeps track of the # of ready events we hve received */
         private static int mReadySensorCount = 0;
         System.DateTime mStartOfInit;
+
+        List<IObserver<SensorDataEntry>> mObservers = new List<IObserver<SensorDataEntry>>();
+        object mLock;
 
         #endregion
         #region Event handling stuff
@@ -78,6 +81,52 @@ namespace Sensor_Aware_PT
             this.Configure();
             
         }
+
+        #region ObserverPattern
+        public IDisposable Subscribe(IObserver<SensorDataEntry> observer)
+        {
+            lock (mLock)
+            {
+                if (mObservers.Contains(observer) == false)
+                {
+                    mObservers.Add(observer);
+                }
+
+                return new Unsubscriber(mObservers, observer);
+            }
+        }
+
+        private class Unsubscriber : IDisposable
+        {
+            private List<IObserver<SensorDataEntry>> mList;
+            private IObserver<SensorDataEntry> mObserver;
+
+            public Unsubscriber(List<IObserver<SensorDataEntry>> list, IObserver<SensorDataEntry> observer)
+            {
+                this.mList     = list;
+                this.mObserver = observer;
+            }
+
+            public void Dispose()
+            {
+                if (this.mObserver != null && this.mList.Contains(mObserver))
+                {
+                    this.mList.Remove(mObserver);
+                }
+            }
+        }
+
+        public void NotifyObservers()
+        {
+            foreach (Sensor sensor in mSensorDict.Values)
+            {            
+                foreach (IObserver<SensorDataEntry> observer in mObservers)
+                {
+                    observer.OnNext(sensor.getLastEntry());
+                }
+            }
+        }
+        #endregion
 
         private void Configure()
         {
@@ -128,7 +177,7 @@ namespace Sensor_Aware_PT
                     if (timeLeft > 0)
                     {
                         Logger.Info("Delaying for {0} seconds while sensors initialize...", (int)timeLeft);
-                        Thread.Sleep((int)(timeLeft * 1000));
+                        Thread.Sleep((int)(timeLeft * 1000));   
                     }
                 }
                 else
@@ -183,6 +232,8 @@ namespace Sensor_Aware_PT
             fileStream.Flush();
             fileStream.Close();
         }
+
+       
 
         #region Initialization and enumeration
         /// <summary>
