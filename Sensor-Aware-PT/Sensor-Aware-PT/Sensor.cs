@@ -30,8 +30,9 @@ namespace Sensor_Aware_PT
         /** Max number of values to keep in history */
         static int HISTORY_BUFFER_SIZE = 500;
 
-        private const int MAX_READ_ERRORS = 3; 
+        private const int MAX_READ_ERRORS = 3;
 
+        static int SYNCHRONIZATION_RETRIES = 50;
         /** Friendly sensor ID A-D */
         private string mID;
         private int mReadErrors;
@@ -68,14 +69,18 @@ namespace Sensor_Aware_PT
 
         /** Circular buffer to hold the data input */
         private RingBuffer<SensorDataEntry> mData;
-        
+
+        /** Lock on the read thread when resynchronizing */
+        private static readonly object mSynchronizationLock = new object();
+
         /** Sensor state */
         enum SensorState
         {
             Uninitialized,
             Initialized,
             Activated,
-            NotPresent
+            NotPresent,
+            Deactivated
         };
         private SensorState mSensorState = SensorState.Uninitialized; /** Default state for the sensor */
         
@@ -505,6 +510,49 @@ namespace Sensor_Aware_PT
             get
             {
                 return mSensorState == SensorState.Initialized;
+            }
+        }
+
+        public void resynchronize()
+        {
+            lock( mSynchronizationLock )
+            {
+
+                if( mSensorState == SensorState.Activated )
+                {
+                    Logger.Info( "Sensor {0} RE-synchronization started", mID );
+                    int retryCounter = 0;
+                    mSerialPort.DiscardInBuffer();
+
+                    /** Sets the output parameters */
+                    mSerialPort.Write( "#ob" );  /** Turn on binary output */
+                    mSerialPort.Write( "#o1" );  /** Turn on continuous streaming output */
+                    mSerialPort.Write( "#oe0" ); /** Disable error message output*/
+
+                    /** Clear the input buffer and then request the sync token */
+                    mSerialPort.DiscardInBuffer();
+                    mSerialPort.Write( "#s00" );
+                    bool synchronized = false;
+
+                    /** Wait until we are synchronized or fail*/
+
+                    do
+                    {
+                        synchronized = readToken( "#SYNCH00\r\n" );
+                        retryCounter++;
+                    }
+                    while( !synchronized && retryCounter < SYNCHRONIZATION_RETRIES );
+
+                    if( synchronized )
+                    {
+                        Logger.Info( "Sensor {0} RE-synchronization complete", mID );
+                    }
+                    else
+                    {
+                        Logger.Error( "Sensor {0} RE-synchronization FAILED", mID );
+                        changeState( SensorState.Deactivated );
+                    }
+                }
             }
         }
     }

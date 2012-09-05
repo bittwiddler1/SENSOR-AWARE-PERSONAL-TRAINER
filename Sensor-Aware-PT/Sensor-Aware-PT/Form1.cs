@@ -49,8 +49,21 @@ namespace Sensor_Aware_PT
         {
             /** If the nexus is now ready, query for the active sensors and attach a cuboid window to them */
             List<Sensor> activeSensors = mSensorManager.getActivatedSensors();
-            foreach( Sensor s in activeSensors )
-                attachCuboidWindow( s );
+            //foreach( Sensor s in activeSensors )
+            //attachCuboidWindow( s );
+            {
+                Sensor s = activeSensors[ 0 ];
+                Sensor s2 = activeSensors[ 1 ];
+                ExperimentalForm cuboid = new ExperimentalForm( s, s2, mSensorManager );
+                /** Create background worker to show the form and run it asynchronously */
+                BackgroundWorker cuboidWorker = new BackgroundWorker();
+                cuboidWorker.DoWork += new DoWorkEventHandler( delegate
+                {
+                    cuboid.ShowDialog();
+
+                } );
+                cuboidWorker.RunWorkerAsync();
+            }
         }
 
 
@@ -81,6 +94,11 @@ namespace Sensor_Aware_PT
         {
            // Thread.CurrentThread.Join();
            // port.Close();
+        }
+
+        private void chart1_Click( object sender, EventArgs e )
+        {
+
         }
 
     }

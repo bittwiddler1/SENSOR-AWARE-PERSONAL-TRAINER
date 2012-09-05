@@ -30,7 +30,7 @@ namespace Sensor_Aware_PT
         }
     }
 
-    class Nexus
+    public class Nexus
     {
         #region Constants
         /** baud rate for the com ports */
@@ -407,5 +407,19 @@ namespace Sensor_Aware_PT
             }
             return activeSensors;
         }
+
+        /// <summary>
+        /// Resynchronizes all activated sensors.
+        /// </summary>
+        public void resynchronize()
+        {
+            List<Sensor> activeSensors = getActivatedSensors();
+
+            foreach( Sensor s in activeSensors )
+            {
+                s.resynchronize();
+            }
+        }
     }
+
 }
