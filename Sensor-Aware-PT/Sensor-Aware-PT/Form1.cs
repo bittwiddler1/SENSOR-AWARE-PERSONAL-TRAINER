@@ -12,7 +12,7 @@ using System.ComponentModel;
 
 namespace Sensor_Aware_PT
 {
-    public partial class MainForm : Form
+    public partial class MainForm : Form, IObserver<DataFrame>
     {
         private bool loaded = false;
         private bool bRunning = true;
@@ -35,7 +35,7 @@ namespace Sensor_Aware_PT
                 Logger.Info( "{0}", s );
             }
 
-            mSensorManager = new Nexus();
+            mSensorManager = Nexus.Instance;
             mSensorManager.InitializationComplete += new Nexus.InitializationCompleteHandler( mSensorManager_NexusInitializedEvent );
             mSensorManager.initialize();
         }
@@ -47,23 +47,38 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void mSensorManager_NexusInitializedEvent( object sender, EventArgs e )
         {
-            /** If the nexus is now ready, query for the active sensors and attach a cuboid window to them */
-            List<Sensor> activeSensors = mSensorManager.getActivatedSensors();
-            //foreach( Sensor s in activeSensors )
-            //attachCuboidWindow( s );
-            {
-                Sensor s = activeSensors[ 0 ];
-                Sensor s2 = activeSensors[ 1 ];
-                ExperimentalForm cuboid = new ExperimentalForm( s, s2, mSensorManager );
-                /** Create background worker to show the form and run it asynchronously */
-                BackgroundWorker cuboidWorker = new BackgroundWorker();
-                cuboidWorker.DoWork += new DoWorkEventHandler( delegate
-                {
-                    cuboid.ShowDialog();
+            ///** If the nexus is now ready, query for the active sensors and attach a cuboid window to them */
+            //List<Sensor> activeSensors = mSensorManager.getActivatedSensors();
+            ////foreach( Sensor s in activeSensors )
+            ////attachCuboidWindow( s );
+            //{
+            //    Sensor s = activeSensors[ 0 ];
+            //    Sensor s2 = activeSensors[ 1 ];
+            //    Sensor s3 = activeSensors[ 2 ];
+            //    Sensor s4 = activeSensors[ 3 ];
+            //    ExperimentalForm cuboid = new ExperimentalForm( s, s2,s3, s4,mSensorManager );
+            //    /** Create background worker to show the form and run it asynchronously */
+            //    BackgroundWorker cuboidWorker = new BackgroundWorker();
+            //    cuboidWorker.DoWork += new DoWorkEventHandler( delegate
+            //    {
+            //        cuboid.ShowDialog();
 
+            //    } );
+            //    cuboidWorker.RunWorkerAsync();
+            //}
+            
+            //mSensorManager.Subscribe( this );
+
+            ExperimentalForm EF = new ExperimentalForm();
+
+            BackgroundWorker bg = new BackgroundWorker();
+
+            bg.DoWork += new DoWorkEventHandler( delegate
+                {
+                    EF.ShowDialog();
                 } );
-                cuboidWorker.RunWorkerAsync();
-            }
+            bg.RunWorkerAsync();
+
         }
 
 
@@ -101,5 +116,33 @@ namespace Sensor_Aware_PT
 
         }
 
+
+        #region IObserver<NexusDataFrame> Members
+
+        public void OnCompleted()
+        {
+            //throw new NotImplementedException();
+        }
+
+        public void OnError( Exception error )
+        {
+            //throw new NotImplementedException();
+        }
+
+        public void OnNext( DataFrame value )
+        {
+            //throw new NotImplementedException();
+            Logger.Info( "Nexus data frame {0}", value.sequenceNumber );
+            foreach( KeyValuePair<String, SensorDataEntry> kv in value.concurrentData )
+            {
+                Logger.Info( "Sensor {0} data frame: {1},{2},{3}",
+                    kv.Key, 
+                    kv.Value.orientation.X,
+                    kv.Value.orientation.Y,
+                    kv.Value.orientation.Z );
+            }
+        }
+
+        #endregion
     }
 }

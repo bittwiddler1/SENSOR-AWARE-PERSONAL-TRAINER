@@ -64,6 +64,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bone.cs" />
+    <Compile Include="DataFrame.cs" />
+    <Compile Include="DataStructures.cs" />
     <Compile Include="ExperimentalForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,30 +11,12 @@ using System.Xml.Serialization;
 
 namespace Sensor_Aware_PT
 {
-    /** Holds ID and MAC of each sensor */
-    public class SensorIdentification
+    public class Nexus : IObservable<DataFrame>
     {
-        public string Id;
-        public string Mac;
-        public string PortName;
-
-        public SensorIdentification()
-        {
-            Id = Mac = PortName = String.Empty;
-        }
-
-        public SensorIdentification(string _id, string _mac, string port = "")
-        {
-            Id = _id;
-            Mac = _mac;
-            PortName = port;
-        }
-    }
-
-
-    
-    public class Nexus : IObservable<SensorDataEntry>
-    {
+        #region singleton implementation variables
+        private static volatile Nexus mInstance;
+        private static object mInstanceLock = new object();
+        #endregion
         #region Constants
         /** baud rate for the com ports */
         public const int SENSOR_BAUD_RATE = 57600;
@@ -42,26 +25,38 @@ namespace Sensor_Aware_PT
         private const String CFG_DIR = "Sensor-Aware-PT";
 
         /** Path to config file **/
-        static String AppDataDirPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        String ConfigFilePath = Path.Combine(new String[] { AppDataDirPath, CFG_DIR, "config.xml" });
+        private static String AppDataDirPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private String ConfigFilePath = Path.Combine(new String[] { AppDataDirPath, CFG_DIR, "config.xml" });
         #endregion
 
         #region instance variables
         /** List to hold the Sensor objects */
-        Dictionary<String, Sensor> mSensorDict;
-        Dictionary<String, SensorIdentification> mSensorIDDict;
+        private Dictionary<String, Sensor> mSensorDict;
+        private Dictionary<String, SensorIdentification> mSensorIDDict;
         
-        Sensor[] mAvailableSensors;
+        private Sensor[] mAvailableSensors;
         private Boolean bGenerateConfig = true;
 
         /** This keeps track of the # of ready events we hve received */
         private static int mReadySensorCount = 0;
-        System.DateTime mStartOfInit;
+        private System.DateTime mStartOfInit;
 
-        List<IObserver<SensorDataEntry>> mObservers = new List<IObserver<SensorDataEntry>>();
-        object mLock;
+        /** Observable pattern & lock */
+        private List<IObserver<DataFrame>> mObservers = new List<IObserver<DataFrame>>();
+        private readonly object mObserverLock = new object();
+
+        /** Counter for data frames */
+        private int mCurrentFrameNumber = 0;
+
+        /** Keeps the # of active sensors */
+
+        private int mActiveSensorCount = 0;
+        /** Holds the lists of data frames that haven't been pushed */
+        private List<DataFrame> mDataFrameList = new List<DataFrame>();
+        private static object mFrameLock = new object();
 
         #endregion
+
         #region Event handling stuff
 
         /** Delegate & event for when all sensors are initialized and reading */
@@ -71,11 +66,28 @@ namespace Sensor_Aware_PT
         #endregion
 
         /// <summary>
-        /// The default constructor. Duh. :P
+        /// Default constructor is private since this is a singleton. Use Nexus.Instance instead
         /// </summary>
-        public Nexus()
+        private Nexus()
         {
             initializeVariables();
+        }
+
+        public static Nexus Instance
+        {
+            get
+            {
+                /** Double check locking because the .net guide said to use it */
+                if( mInstance == null )
+                {
+                    lock( mInstanceLock )
+                    {
+                        if( mInstance == null )
+                            mInstance = new Nexus();
+                    }
+                }
+                return mInstance;
+            }
         }
 
         public void initialize()
@@ -85,9 +97,9 @@ namespace Sensor_Aware_PT
         }
 
         #region ObserverPattern
-        public IDisposable Subscribe(IObserver<SensorDataEntry> observer)
+        public IDisposable Subscribe( IObserver<DataFrame> observer )
         {
-            lock (mLock)
+            lock (mObserverLock)
             {
                 if (mObservers.Contains(observer) == false)
                 {
@@ -100,10 +112,10 @@ namespace Sensor_Aware_PT
 
         private class Unsubscriber : IDisposable
         {
-            private List<IObserver<SensorDataEntry>> mList;
-            private IObserver<SensorDataEntry> mObserver;
+            private List<IObserver<DataFrame>> mList;
+            private IObserver<DataFrame> mObserver;
 
-            public Unsubscriber(List<IObserver<SensorDataEntry>> list, IObserver<SensorDataEntry> observer)
+            public Unsubscriber( List<IObserver<DataFrame>> list, IObserver<DataFrame> observer )
             {
                 this.mList     = list;
                 this.mObserver = observer;
@@ -118,18 +130,74 @@ namespace Sensor_Aware_PT
             }
         }
 
-        public void NotifyObservers()
+        public void NotifyObservers(DataFrame dataFrame)
         {
-            foreach (Sensor sensor in mSensorDict.Values)
-            {            
-                foreach (IObserver<SensorDataEntry> observer in mObservers)
+            foreach( IObserver<DataFrame> observer in mObservers )
+            {
+                observer.OnNext(dataFrame);
+
+            }
+        }
+
+        /// <summary>
+        /// When a sensor has new data this event gets called.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Sensor_DataReceived( object sender, Sensor.DataReceivedEventArgs e )
+        {
+            /** So I don't get confused, heres what I am doing.
+             * 1. New data frame comes in
+             * 2. Check the list of data frames to see if this seq. num exists
+             *  2a. Sequence exists, so get that data frame
+             *  2b. Add data to dataframe
+             *  2c. Increment dataframe counter
+             *  2d. Check to see if the dataframe counter equals the number of active sensors
+             *  2e. If counter == #active, remove the frame and push
+             * 3. The data frame doesn't exist, so create it and add the data.
+             * */
+            lock( mFrameLock )
+            {
+                Sensor sensor = ( Sensor ) sender;
+
+                /** Check to see if frame exists */
+                DataFrame foundFrame = mDataFrameList.Find( s => s.sequenceNumber == e.Data.sequenceNumber );
+
+                if( foundFrame != null )
                 {
-                    observer.OnNext(sensor.getLastEntry());
+                    /** Frame exists */
+                    foundFrame.addDataEntry( sensor.Id, e.Data );
+                    /** Check to see if frame is ready for sending */
+                    if( foundFrame.sensorCount == mActiveSensorCount )
+                    {
+                        /** Remove frame from the list and push it */
+                        mDataFrameList.Remove( foundFrame );
+                        NotifyObservers( foundFrame );
+                    }
+
+                }
+                else
+                {
+                    /** Frame doesn't exist. Create and add to list */
+                    DataFrame newFrame = new DataFrame( mCurrentFrameNumber++, DateTime.Now );
+                    newFrame.addDataEntry( sensor.Id, e.Data );
+
+                    /** Corner case 1 sensor */
+                    if( mActiveSensorCount == 1 )
+                    {
+                        NotifyObservers( newFrame );
+                    }
+                    else
+                    {
+                        mDataFrameList.Add( newFrame );
+                    }
                 }
             }
+            
         }
         #endregion
 
+        #region Configuration
         private void Configure()
         {
             try
@@ -235,8 +303,39 @@ namespace Sensor_Aware_PT
             fileStream.Close();
         }
 
-       
+        /// <summary>
+        /// Reads the config file at %APPDATA%/Sensor-Aware-PT/config.xml
+        /// </summary>
+        private void readConfigFile()
+        {
+            StreamReader fileStream = null;
+            try
+            {
+                // Get an array of sensor IDs from the xml file
+                fileStream = new StreamReader( ConfigFilePath );
 
+                SensorIdentification[] tmpArray = new SensorIdentification[ 1 ] { null };
+                XmlSerializer serializer = new XmlSerializer( tmpArray.GetType() );
+
+                // Take each array object and insert it into the id dictionary
+                tmpArray = serializer.Deserialize( fileStream ) as SensorIdentification[];
+                foreach( SensorIdentification id in tmpArray )
+                {
+                    mSensorIDDict[ id.Id ] = id;
+                }
+            }
+            catch( Exception )
+            {
+                throw;
+            }
+            finally
+            {
+                fileStream.Close();
+            }
+        }
+
+        #endregion
+        
         #region Initialization and enumeration
         /// <summary>
         ///  Initialize all the member variables
@@ -343,10 +442,13 @@ namespace Sensor_Aware_PT
             if( mReadySensorCount == 0 )
             {
                 Logger.Info( "Nexus has synchronized and started reading for all initialized sensors and is activated complete" );
+                foreach( Sensor s in getActivatedSensors() )
+                {
+                    s.DataReceived += new Sensor.DataReceivedHandler( Sensor_DataReceived );
+                }
                 OnNexusInitializationComplete();
             }
         }
-
 
         private void OnNexusInitializationComplete()
         {
@@ -363,36 +465,7 @@ namespace Sensor_Aware_PT
                 throw e;
             }
         }
-        /// <summary>
-        /// Reads the config file at %APPDATA%/Sensor-Aware-PT/config.xml
-        /// </summary>
-        private void readConfigFile()
-        {
-            StreamReader fileStream = null;
-            try
-            {
-                // Get an array of sensor IDs from the xml file
-                fileStream = new StreamReader(ConfigFilePath);
 
-                SensorIdentification[] tmpArray = new SensorIdentification[1] {null};
-                XmlSerializer serializer = new XmlSerializer(tmpArray.GetType());
-
-                // Take each array object and insert it into the id dictionary
-                tmpArray = serializer.Deserialize(fileStream) as SensorIdentification[];
-                foreach (SensorIdentification id in tmpArray)
-                {
-                    mSensorIDDict[id.Id] = id;
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            finally
-            {
-                fileStream.Close();
-            }
-        }
 
         /// <summary>
         /// Queries WMI for Bluetooth COM Ports. Provides useful information on the Console as it does.
@@ -449,6 +522,7 @@ namespace Sensor_Aware_PT
         }
         #endregion
 
+        #region Nexus commands
         /// <summary>
         /// Gets the sensors which are available/reading already
         /// </summary>
@@ -456,11 +530,17 @@ namespace Sensor_Aware_PT
         public List<Sensor> getActivatedSensors()
         {
             List<Sensor> activeSensors = new List<Sensor>();
+            
             foreach(Sensor s in  mAvailableSensors)
             {
                 if( s.IsActivated )
                     activeSensors.Add( s );
             }
+
+            /** Update the active sensor count */
+            if( mActiveSensorCount != activeSensors.Count )
+                mActiveSensorCount = activeSensors.Count;
+
             return activeSensors;
         }
 
@@ -475,7 +555,24 @@ namespace Sensor_Aware_PT
             {
                 s.resynchronize();
             }
+
+            mCurrentFrameNumber = 0;
         }
+
+        /// <summary>
+        /// Resets the sequence counters of all activated sensors
+        /// </summary>
+        private void resetSensorSequence()
+        {
+            foreach( Sensor s in getActivatedSensors() )
+            {
+                s.resetSequence();
+            }
+
+            mCurrentFrameNumber = 0;
+        }
+
+        #endregion
     }
 
 }
