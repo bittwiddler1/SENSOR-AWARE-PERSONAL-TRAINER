@@ -11,7 +11,7 @@ using System.Xml.Serialization;
 
 namespace Sensor_Aware_PT
 {
-    public class Nexus : IObservable<DataFrame>
+    public class Nexus : IObservable<SensorDataEntry>
     {
         #region singleton implementation variables
         private static volatile Nexus mInstance;
@@ -42,7 +42,7 @@ namespace Sensor_Aware_PT
         private System.DateTime mStartOfInit;
 
         /** Observable pattern & lock */
-        private List<IObserver<DataFrame>> mObservers = new List<IObserver<DataFrame>>();
+        private List<IObserver<SensorDataEntry>> mObservers = new List<IObserver<SensorDataEntry>>();
         private readonly object mObserverLock = new object();
 
         /** Counter for data frames */
@@ -52,7 +52,8 @@ namespace Sensor_Aware_PT
 
         private int mActiveSensorCount = 0;
         /** Holds the lists of data frames that haven't been pushed */
-        private List<DataFrame> mDataFrameList = new List<DataFrame>();
+        //private List<DataFrame> mDataFrameList = new List<DataFrame>();
+        private Dictionary<int, DataFrame> mDataFrameList = new Dictionary<int,DataFrame>();
         private static object mFrameLock = new object();
 
         #endregion
@@ -97,7 +98,7 @@ namespace Sensor_Aware_PT
         }
 
         #region ObserverPattern
-        public IDisposable Subscribe( IObserver<DataFrame> observer )
+        public IDisposable Subscribe( IObserver<SensorDataEntry> observer )
         {
             lock (mObserverLock)
             {
@@ -112,10 +113,10 @@ namespace Sensor_Aware_PT
 
         private class Unsubscriber : IDisposable
         {
-            private List<IObserver<DataFrame>> mList;
-            private IObserver<DataFrame> mObserver;
+            private List<IObserver<SensorDataEntry>> mList;
+            private IObserver<SensorDataEntry> mObserver;
 
-            public Unsubscriber( List<IObserver<DataFrame>> list, IObserver<DataFrame> observer )
+            public Unsubscriber( List<IObserver<SensorDataEntry>> list, IObserver<SensorDataEntry> observer )
             {
                 this.mList     = list;
                 this.mObserver = observer;
@@ -130,9 +131,9 @@ namespace Sensor_Aware_PT
             }
         }
 
-        public void NotifyObservers(DataFrame dataFrame)
+        public void NotifyObservers( SensorDataEntry dataFrame )
         {
-            foreach( IObserver<DataFrame> observer in mObservers )
+            foreach( IObserver<SensorDataEntry> observer in mObservers )
             {
                 observer.OnNext(dataFrame);
 
@@ -146,54 +147,7 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void Sensor_DataReceived( object sender, Sensor.DataReceivedEventArgs e )
         {
-            /** So I don't get confused, heres what I am doing.
-             * 1. New data frame comes in
-             * 2. Check the list of data frames to see if this seq. num exists
-             *  2a. Sequence exists, so get that data frame
-             *  2b. Add data to dataframe
-             *  2c. Increment dataframe counter
-             *  2d. Check to see if the dataframe counter equals the number of active sensors
-             *  2e. If counter == #active, remove the frame and push
-             * 3. The data frame doesn't exist, so create it and add the data.
-             * */
-            lock( mFrameLock )
-            {
-                Sensor sensor = ( Sensor ) sender;
-
-                /** Check to see if frame exists */
-                DataFrame foundFrame = mDataFrameList.Find( s => s.sequenceNumber == e.Data.sequenceNumber );
-
-                if( foundFrame != null )
-                {
-                    /** Frame exists */
-                    foundFrame.addDataEntry( sensor.Id, e.Data );
-                    /** Check to see if frame is ready for sending */
-                    if( foundFrame.sensorCount == mActiveSensorCount )
-                    {
-                        /** Remove frame from the list and push it */
-                        mDataFrameList.Remove( foundFrame );
-                        NotifyObservers( foundFrame );
-                    }
-
-                }
-                else
-                {
-                    /** Frame doesn't exist. Create and add to list */
-                    DataFrame newFrame = new DataFrame( mCurrentFrameNumber++, DateTime.Now );
-                    newFrame.addDataEntry( sensor.Id, e.Data );
-
-                    /** Corner case 1 sensor */
-                    if( mActiveSensorCount == 1 )
-                    {
-                        NotifyObservers( newFrame );
-                    }
-                    else
-                    {
-                        mDataFrameList.Add( newFrame );
-                    }
-                }
-            }
-            
+            NotifyObservers( e.Data );
         }
         #endregion
 
@@ -557,6 +511,7 @@ namespace Sensor_Aware_PT
             }
 
             mCurrentFrameNumber = 0;
+            mDataFrameList.Clear();
         }
 
         /// <summary>

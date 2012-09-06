@@ -15,6 +15,7 @@ namespace Sensor_Aware_PT
         public Vector3 magnetometer = new Vector3();
         public DateTime timeStamp = new DateTime();
         public int sequenceNumber;
+        public string id;
     }
 
     /** Holds ID and MAC of each sensor */

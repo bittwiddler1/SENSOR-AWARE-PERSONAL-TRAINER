@@ -14,7 +14,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Sensor_Aware_PT
 {
-    public partial class ExperimentalForm : Form, IObserver<DataFrame>
+    public partial class ExperimentalForm : Form, IObserver<SensorDataEntry>
     {
         private Bone[] mBones = new Bone[ 4 ];
         private bool mLoaded = false;
@@ -66,6 +66,36 @@ namespace Sensor_Aware_PT
             mBones[ 1 ].addChild( mBones[ 2 ] );
 
             Nexus.Instance.Subscribe( this );
+
+            List<Sensor> SSS = Nexus.Instance.getActivatedSensors();
+            foreach( Sensor s in SSS )
+            {
+                //s.DataReceived += new Sensor.DataReceivedHandler( s_DataReceived );
+            }
+
+
+        }
+
+        void s_DataReceived( object sender, Sensor.DataReceivedEventArgs e )
+        {
+            Sensor s = ( Sensor ) sender;
+
+            switch( s.Id )
+            {
+
+                case "A":
+                    mBones[ 0 ].updateOrientation( e.Data.orientation );
+                    break;
+                case "B":
+                    mBones[ 1 ].updateOrientation( e.Data.orientation );
+                    break;
+                case "C":
+                    mBones[ 2 ].updateOrientation( e.Data.orientation );
+                    break;
+                case "D":
+                    mBones[ 3 ].updateOrientation( e.Data.orientation );
+                    break;
+            }
         }
 
         void formUpdateTimer_Tick( object sender, EventArgs e )
@@ -147,36 +177,33 @@ namespace Sensor_Aware_PT
 
         #region IObserver<DataFrame> Members
 
-        void IObserver<DataFrame>.OnCompleted()
+        void IObserver<SensorDataEntry>.OnCompleted()
         {
             //throw new NotImplementedException();
         }
 
-        void IObserver<DataFrame>.OnError( Exception error )
+        void IObserver<SensorDataEntry>.OnError( Exception error )
         {
             //throw new NotImplementedException();
         }
 
-        void IObserver<DataFrame>.OnNext( DataFrame value )
+        void IObserver<SensorDataEntry>.OnNext( SensorDataEntry value )
         {
-            foreach(KeyValuePair<String, SensorDataEntry> kvp in value.concurrentData)
+            switch(value.id)
             {
-                switch( kvp.Key )
-                {
 
-                    case "A":
-                        mBones[ 0 ].updateOrientation( kvp.Value.orientation );
-                        break;
-                    case "B":
-                        mBones[ 1 ].updateOrientation( kvp.Value.orientation );
-                        break;
-                    case "C":
-                        mBones[ 2 ].updateOrientation( kvp.Value.orientation );
-                        break;
-                    case "D":
-                        mBones[ 3 ].updateOrientation( kvp.Value.orientation );
-                        break;
-                }
+                case "A":
+                    mBones[ 0 ].updateOrientation( value.orientation );
+                    break;
+                case "B":
+                    mBones[ 1 ].updateOrientation( value.orientation );
+                    break;
+                case "C":
+                    mBones[ 2 ].updateOrientation( value.orientation );
+                    break;
+                case "D":
+                    mBones[ 3 ].updateOrientation( value.orientation );
+                    break;
             }
         }
 

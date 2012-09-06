@@ -412,7 +412,7 @@ namespace Sensor_Aware_PT
             newEntry.gyroscope = gyro;
             newEntry.sequenceNumber = mSequenceNum++;
             newEntry.timeStamp = DateTime.Now;
-
+            newEntry.id = String.Copy( mID );
             return newEntry;
         }
 
@@ -484,6 +484,15 @@ namespace Sensor_Aware_PT
             return mData.Last();
         }
 
+         ~Sensor()
+        {
+
+            if(mSerialPort != null)
+            {
+                if( mSerialPort.IsOpen )
+                    mSerialPort.Close();
+            }
+        }
         public bool IsActivated
         {
             get
