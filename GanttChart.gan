@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Sensor-Aware-Personal-Trainer" company="JB FitTech" webLink="http://" view-date="2012-08-28" view-index="0" gantt-divider-location="495" resource-divider-location="300" version="2.0">
+<project name="Sensor-Aware-Personal-Trainer" company="JB FitTech" webLink="http://" view-date="2012-05-01" view-index="0" gantt-divider-location="533" resource-divider-location="300" version="2.0">
     <description><![CDATA[A sensor-based utility to assist gym trainees in learning basic exercise form.]]></description>
-    <view zooming-state="default:3" id="gantt-chart"/>
+    <view zooming-state="default:9" id="gantt-chart"/>
     <view id="resource-table">
         <field id="0" name="Name" width="50" order="0"/>
         <field id="1" name="Default role" width="50" order="1"/>
@@ -32,7 +32,11 @@
             <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
             <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
         </taskproperties>
-        <task id="20" name="Basic Sensor Data Retrieval Code" color="#8cb6ce" meeting="true" start="2012-09-15" duration="72" complete="50" priority="2" expand="true"/>
+        <task id="20" name="M1:Basic Sensor Data Retrieval Code" color="#8cb6ce" meeting="true" start="2012-09-15" duration="1" complete="50" priority="2" expand="true"/>
+        <task id="73" name="M2: Basic Exercise Analysis" color="#8cb6ce" meeting="true" start="2012-10-06" duration="1" complete="0" expand="true"/>
+        <task id="75" name="M3: Camera Integration" color="#8cb6ce" meeting="true" start="2012-10-26" duration="1" complete="0" expand="true"/>
+        <task id="77" name="M4: Modularization and Programmable Exercise Database" color="#8cb6ce" meeting="true" start="2012-11-30" duration="1" complete="0" expand="true"/>
+        <task id="79" name="M5: Presentation?" color="#8cb6ce" meeting="true" start="2012-12-04" duration="1" complete="0" expand="true"/>
         <task id="4" name="Order &amp; Build Sensors" color="#8cb6ce" meeting="false" start="2012-06-11" duration="61" complete="100" expand="true"/>
         <task id="0" name="Setup GitHub and Create Basic C# Solution Files" color="#8cb6ce" meeting="false" start="2012-08-20" duration="1" complete="100" expand="true"/>
         <task id="8" name="Sensor and SensorManager Class basics" color="#8cb6ce" meeting="false" start="2012-08-21" duration="5" complete="100" expand="true">
@@ -42,18 +46,45 @@
         <task id="24" name="Create Code to probe WMI and Save/Load a Config" color="#8cb6ce" meeting="false" start="2012-08-26" duration="2" complete="100" expand="true">
             <depend id="23" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="17" name="Figure out why We can't use more than 3 IMUs" color="#8cb6ce" meeting="false" start="2012-08-26" duration="6" complete="80" priority="4" expand="true">
+        <task id="17" name="Figure out why We can't use more than 3 IMUs" color="#8cb6ce" meeting="false" start="2012-08-26" duration="6" complete="100" priority="4" expand="true">
             <depend id="30" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="23" name="Fix the wmi com port reinitialization bug" color="#8cb6ce" meeting="false" start="2012-08-28" duration="1" complete="0" expand="true">
+        <task id="23" name="Fix the wmi com port reinitialization bug" color="#8cb6ce" meeting="false" start="2012-08-28" duration="1" complete="100" expand="true">
             <depend id="28" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="28" name="Review Exception handling" color="#8cb6ce" meeting="false" start="2012-08-29" duration="1" complete="0" expand="true"/>
-        <task id="30" name="Fix port timeouts; reinitialize ports" color="#8cb6ce" meeting="false" start="2012-09-01" duration="1" complete="0" expand="true"/>
-        <task id="33" name="SensorRecorder module" color="#8cb6ce" meeting="false" start="2012-08-29" duration="5" complete="0" expand="true">
-            <depend id="34" type="2" difference="0" hardness="Strong"/>
+        <task id="28" name="Review Exception handling" color="#8cb6ce" meeting="false" start="2012-08-29" duration="1" complete="100" expand="true"/>
+        <task id="30" name="Fix port timeouts; reinitialize ports" color="#8cb6ce" meeting="false" start="2012-09-01" duration="10" complete="100" expand="true"/>
+        <task id="42" name="Basic 3D Bone-Joint rendering" color="#8cb6ce" meeting="false" start="2012-09-01" duration="7" complete="100" expand="true">
+            <depend id="43" type="2" difference="0" hardness="Strong"/>
+            <depend id="46" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="34" name="SensorPlayback Module" color="#8cb6ce" meeting="false" start="2012-09-03" duration="2" complete="0" expand="true"/>
+        <task id="38" name="Find way to attach sensors to body" color="#8cb6ce" meeting="false" start="2012-09-11" duration="7" complete="0" expand="true">
+            <depend id="44" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="33" name="SensorRecorder module" color="#8cb6ce" meeting="false" start="2012-09-17" duration="7" complete="0" expand="true">
+            <depend id="44" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="34" name="SensorPlayback Module" color="#8cb6ce" meeting="false" start="2012-09-17" duration="7" complete="0" expand="true">
+            <depend id="44" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="43" name="Set up Skeleton Model System" color="#8cb6ce" meeting="false" start="2012-09-08" duration="6" complete="0" expand="true">
+            <depend id="59" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="44" name="Collect and Analyze Data" color="#8cb6ce" meeting="false" start="2012-09-24" duration="7" complete="0" expand="true">
+            <depend id="46" type="2" difference="0" hardness="Strong"/>
+            <depend id="59" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="46" name="Camera Integration" color="#8cb6ce" meeting="false" start="2012-10-01" duration="28" complete="0" expand="true">
+            <depend id="57" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="57" name="Create modular exercise database" color="#8cb6ce" meeting="false" start="2012-10-29" duration="15" complete="0" expand="true">
+            <depend id="58" type="2" difference="0" hardness="Strong"/>
+            <depend id="59" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="58" name="Create user interface" color="#8cb6ce" meeting="false" start="2012-11-13" duration="13" complete="0" expand="true">
+            <depend id="59" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="59" name="Integration testing" color="#8cb6ce" meeting="false" start="2012-11-26" duration="9" complete="0" expand="true"/>
     </tasks>
     <resources/>
     <allocations/>
@@ -67,9 +98,9 @@
         <displaycolumn property-id="tpd9" order="-1" width="75" visible="false"/>
         <displaycolumn property-id="tpd1" order="-1" width="75" visible="false"/>
         <displaycolumn property-id="tpd0" order="-1" width="75" visible="false"/>
-        <displaycolumn property-id="tpd3" order="0" width="196" visible="true"/>
-        <displaycolumn property-id="tpd4" order="1" width="148" visible="true"/>
-        <displaycolumn property-id="tpd5" order="2" width="147" visible="true"/>
+        <displaycolumn property-id="tpd3" order="0" width="242" visible="true"/>
+        <displaycolumn property-id="tpd4" order="1" width="127" visible="true"/>
+        <displaycolumn property-id="tpd5" order="2" width="160" visible="true"/>
     </taskdisplaycolumns>
     <previous/>
     <roles roleset-name="Default"/>
