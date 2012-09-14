@@ -16,6 +16,8 @@ namespace Sensor_Aware_PT
     {
         private bool loaded = false;
         private bool bRunning = true;
+        ExperimentalForm EF = new ExperimentalForm();
+
         private Nexus mSensorManager;
         
         public MainForm()
@@ -25,9 +27,6 @@ namespace Sensor_Aware_PT
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            chart1.Series[0].Points.Add(5f);
-            chart1.Series[0].Points.Add(7f);
-            chart1.Series[0].Points.Add(5f);
             string[] ports = SerialPort.GetPortNames();
 
             foreach( string s in ports )
@@ -37,6 +36,7 @@ namespace Sensor_Aware_PT
 
             mSensorManager = Nexus.Instance;
             mSensorManager.InitializationComplete += new Nexus.InitializationCompleteHandler( mSensorManager_NexusInitializedEvent );
+            
             mSensorManager.initialize();
         }
 
@@ -68,16 +68,6 @@ namespace Sensor_Aware_PT
             //}
             
             //mSensorManager.Subscribe( this );
-
-            ExperimentalForm EF = new ExperimentalForm();
-
-            BackgroundWorker bg = new BackgroundWorker();
-
-            bg.DoWork += new DoWorkEventHandler( delegate
-                {
-                    EF.ShowDialog();
-                } );
-            bg.RunWorkerAsync();
 
         }
 
@@ -111,11 +101,6 @@ namespace Sensor_Aware_PT
            // port.Close();
         }
 
-        private void chart1_Click( object sender, EventArgs e )
-        {
-
-        }
-
 
         #region IObserver<NexusDataFrame> Members
 
@@ -144,5 +129,16 @@ namespace Sensor_Aware_PT
         }
 
         #endregion
+
+        private void button1_Click( object sender, EventArgs e )
+        {
+
+            BackgroundWorker bg = new BackgroundWorker();
+
+            bg.DoWork += new DoWorkEventHandler( delegate
+            {
+                EF.ShowDialog();
+            } );
+        }
     }
 }
