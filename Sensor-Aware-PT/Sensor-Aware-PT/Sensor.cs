@@ -61,14 +61,17 @@ namespace Sensor_Aware_PT
         /** Lock on the read thread when resynchronizing */
         private readonly object mSynchronizationLock = new object();
 
-        /** Sensor state */
+        /// <summary>
+        /// Holds the state of the sensor
+        /// </summary>
         enum SensorState
         {
-            Uninitialized,
-            Initialized,
-            Activated,
-            NotPresent,
-            Deactivated
+            Uninitialized, /** Nothing has happened yet */
+            Initialized, /** Serial port was created and opened */
+            Activated, /** Serial port is now reading data */
+            NotPresent, /** Serial port did not open */
+            Deactivated, /** Serial port was open but failed to resync */
+            PreActivated /** Serial port is open but has not started reading data */
         };
         private SensorState mSensorState = SensorState.Uninitialized; /** Default state for the sensor */
         
@@ -143,8 +146,9 @@ namespace Sensor_Aware_PT
                 mReadThread.IsBackground = true;
                 /** Setup the serial port */
                 mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
-                mSerialPort.ReadTimeout = Timeout.Infinite;
-                mSerialPort.WriteTimeout = Timeout.Infinite;
+                mSerialPort.ReadTimeout = 1000;
+                mSerialPort.WriteTimeout = 1000;
+                mSerialPort.DataReceived += new SerialDataReceivedEventHandler( mSerialPort_DataReceived );
                 try
                 {
                     mSerialPort.Open();
@@ -169,16 +173,31 @@ namespace Sensor_Aware_PT
             }
   
         }
+        /// <summary>
+        /// Event to handle data coming in on the serial port. This is only important after opening the serial port while
+        /// waiting for it to begin the activation process. Data comes in during the wait and must be purged or the buffer will overflow
+        /// on some implementations and cause problems.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void mSerialPort_DataReceived( object sender, SerialDataReceivedEventArgs e )
+        {
+            if( mSensorState == SensorState.Initialized )
+            {
+                if( mSerialPort.BytesToRead > 0 )
+                    mSerialPort.ReadExisting();
+            }
+        }
 
         /// <summary>
         /// Called to activate the sensor, after it has been initialized.
         /// </summary>
         public void activate()
         {
-            if (mSensorState == SensorState.Initialized)
+            if( mSensorState == SensorState.Initialized )
                 mReadThread.Start();
             else
-                throw new Exception(String.Format("Cannot activate sensor {0} since it is not initialized", mID));
+                throw new Exception( String.Format( "Cannot activate sensor {0} since it is not initialized", mID ) );
         }
 
         /// <summary>
@@ -205,9 +224,13 @@ namespace Sensor_Aware_PT
         /// <returns>True if the token was read, false if not</returns>
         private bool readToken(String token) 
         {
-
+            if(mSerialPort.BytesToRead != 0)
+                Logger.Info( "Sensor {0} bytes to read {1}", mID, mSerialPort.BytesToRead );
             if( mSerialPort.BytesToRead < token.Length )
+            {
+                
                 return false;
+            }
                 
             /** Check if incoming bytes match token */
             for( int i = 0; i < token.Length; i++ )
@@ -227,8 +250,10 @@ namespace Sensor_Aware_PT
         /// </summary>
         private void readThreadRun()
         {
+            
             if (mSensorState == SensorState.Initialized)
             {
+                changeState( SensorState.PreActivated );
                 
                 try
                 {
