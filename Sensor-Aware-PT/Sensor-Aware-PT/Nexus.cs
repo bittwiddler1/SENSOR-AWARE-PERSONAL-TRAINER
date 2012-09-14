@@ -1,40 +1,22 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
-using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Management;
 using System.Xml.Serialization;
 
-using OpenTK;
 
 namespace Sensor_Aware_PT
 {
-    /** Holds ID and MAC of each sensor */
-    public class SensorIdentification
+    public class Nexus : IObservable<SensorDataEntry>
     {
-        public string Id;
-        public string Mac;
-        public string PortName;
-
-        public SensorIdentification()
-        {
-            Id = Mac = PortName = String.Empty;
-        }
-
-        public SensorIdentification(string _id, string _mac, string port = "")
-        {
-            Id = _id;
-            Mac = _mac;
-            PortName = port;
-        }
-    }
-
-    class Nexus
-    {
+        #region singleton implementation variables
+        private static volatile Nexus mInstance;
+        private static object mInstanceLock = new object();
+        #endregion
         #region Constants
         /** baud rate for the com ports */
         public const int SENSOR_BAUD_RATE = 57600;
@@ -43,21 +25,39 @@ namespace Sensor_Aware_PT
         private const String CFG_DIR = "Sensor-Aware-PT";
 
         /** Path to config file **/
-        static String AppDataDirPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        static String ConfigFilePath = Path.Combine(new String[] { AppDataDirPath, CFG_DIR, "config.xml" });
+        private static String AppDataDirPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private String ConfigFilePath = Path.Combine(new String[] { AppDataDirPath, CFG_DIR, "config.xml" });
         #endregion
+
         #region instance variables
         /** List to hold the Sensor objects */
-        Dictionary<String, Sensor> mSensorDict;
-        Dictionary<String, SensorIdentification> mSensorIDDict;
-        SerializableDictionary<String, String> mConfigFileDataDict;
-        Sensor[] mAvailableSensors;
+        private Dictionary<String, Sensor> mSensorDict;
+        private Dictionary<String, SensorIdentification> mSensorIDDict;
+        
+        private Sensor[] mAvailableSensors;
+        private Boolean bGenerateConfig = true;
 
-        private Boolean bGenerateConfig = false;
         /** This keeps track of the # of ready events we hve received */
         private static int mReadySensorCount = 0;
+        private System.DateTime mStartOfInit;
+
+        /** Observable pattern & lock */
+        private List<IObserver<SensorDataEntry>> mObservers = new List<IObserver<SensorDataEntry>>();
+        private readonly object mObserverLock = new object();
+
+        /** Counter for data frames */
+        private int mCurrentFrameNumber = 0;
+
+        /** Keeps the # of active sensors */
+
+        private int mActiveSensorCount = 0;
+        /** Holds the lists of data frames that haven't been pushed */
+        //private List<DataFrame> mDataFrameList = new List<DataFrame>();
+        private Dictionary<int, DataFrame> mDataFrameList = new Dictionary<int,DataFrame>();
+        private static object mFrameLock = new object();
 
         #endregion
+
         #region Event handling stuff
 
         /** Delegate & event for when all sensors are initialized and reading */
@@ -67,18 +67,162 @@ namespace Sensor_Aware_PT
         #endregion
 
         /// <summary>
-        /// The default constructor. Duh. :P
+        /// Default constructor is private since this is a singleton. Use Nexus.Instance instead
         /// </summary>
-        public Nexus()
+        private Nexus()
         {
             initializeVariables();
         }
 
+        public static Nexus Instance
+        {
+            get
+            {
+                /** Double check locking because the .net guide said to use it */
+                if( mInstance == null )
+                {
+                    lock( mInstanceLock )
+                    {
+                        if( mInstance == null )
+                            mInstance = new Nexus();
+                    }
+                }
+                return mInstance;
+            }
+        }
+
         public void initialize()
+        {
+            this.Configure();
+            
+        }
+
+        #region ObserverPattern
+        public IDisposable Subscribe( IObserver<SensorDataEntry> observer )
+        {
+            lock (mObserverLock)
+            {
+                if (mObservers.Contains(observer) == false)
+                {
+                    mObservers.Add(observer);
+                }
+
+                return new Unsubscriber(mObservers, observer);
+            }
+        }
+
+        private class Unsubscriber : IDisposable
+        {
+            private List<IObserver<SensorDataEntry>> mList;
+            private IObserver<SensorDataEntry> mObserver;
+
+            public Unsubscriber( List<IObserver<SensorDataEntry>> list, IObserver<SensorDataEntry> observer )
+            {
+                this.mList     = list;
+                this.mObserver = observer;
+            }
+
+            public void Dispose()
+            {
+                if (this.mObserver != null && this.mList.Contains(mObserver))
+                {
+                    this.mList.Remove(mObserver);
+                }
+            }
+        }
+
+        public void NotifyObservers( SensorDataEntry dataFrame )
+        {
+            foreach( IObserver<SensorDataEntry> observer in mObservers )
+            {
+                observer.OnNext(dataFrame);
+
+            }
+        }
+
+        /// <summary>
+        /// When a sensor has new data this event gets called.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Sensor_DataReceived( object sender, Sensor.DataReceivedEventArgs e )
+        {
+            NotifyObservers( e.Data );
+        }
+        #endregion
+
+        #region Configuration
+        private void Configure()
         {
             try
             {
-                initializeConfigFileDataDict();
+                if (File.Exists(this.ConfigFilePath))
+                {
+                    String response;
+                    Logger.Info("Config file detected at {0}", this.ConfigFilePath);
+                    Logger.Info("Prompting user to determine whether to use it...");
+                    do
+                    {
+                        Console.WriteLine("Use the detected config file? [Y/N]");
+                        Console.WriteLine("If \"No\", you will be prompted for sensor identification data and a config will be saved for future use.");
+                        response = Console.ReadLine()[0].ToString();
+
+                        if (response.ToLower() == "y")
+                        {
+                            Logger.Info("User chose to use existing config file. (User Input = {0})", response.ToLower()[0]);
+                            this.readConfigFile();
+                            this.bGenerateConfig = false;
+                        }
+                        else if (response.ToLower() == "n")
+                        {
+                            Logger.Info("User chose not to use existing config file. (User Input = {0})", response.ToLower()[0]);
+                            this.bGenerateConfig = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Input not understood. Please try again. Enter something starting with y or n");
+                        }
+                    } while (response.ToLower() != "y" && response.ToLower() != "n");
+                    
+                } 
+                else
+                {
+                    this.bGenerateConfig = true;
+                }
+
+                if (this.bGenerateConfig)
+                {
+                    mStartOfInit = System.DateTime.Now;
+                    this.probeWmiComPorts();
+                    this.saveConfigFile();
+
+                    System.TimeSpan timeSpent = System.DateTime.Now - mStartOfInit;
+                    double timeLeft = 60.0 - (int)timeSpent.TotalSeconds;
+                    if (timeLeft > 0)
+                    {
+                        Logger.Info("Delaying for {0} seconds while sensors initialize...", (int)timeLeft);
+                        Thread.Sleep((int)(timeLeft * 1000));   
+                    }
+                }
+                else
+                {
+                    foreach (SensorIdentification idStruct in mSensorIDDict.Values)
+                    {
+                        /** Create the Sensor with its SensorID **/
+                        mSensorDict[idStruct.Id] = new Sensor(idStruct);
+                    }
+                }
+
+                
+                mAvailableSensors = mSensorDict.Values.ToArray();
+                foreach (Sensor s in mAvailableSensors)
+                {
+                    /** Register the ready event */
+                    s.InitializationComplete += new Sensor.InitializationCompleteHandler(Sensor_InitializationCompleteEvent);
+                }
+
+                /** Initialize the first member */
+                mAvailableSensors[0].initialize();
             }
             catch( Exception e )
             {
@@ -86,10 +230,66 @@ namespace Sensor_Aware_PT
                 bGenerateConfig = true;
                 Logger.Info( "Manual input will be required to configure the sensor array" );
             }
-
-            enumerateSensors();
         }
 
+        private void saveConfigFile()
+        {
+            StreamWriter fileStream;
+
+            /** Generate the config file **/
+            try
+            {
+                fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                Directory.CreateDirectory(Path.Combine(AppDataDirPath, CFG_DIR));
+                fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
+            }
+
+            SensorIdentification[] tmpArray = mSensorIDDict.Values.ToArray();
+            XmlSerializer serializer = new XmlSerializer(tmpArray.GetType());
+            serializer.Serialize(fileStream, tmpArray);
+
+            //XmlSerializer serializer = new XmlSerializer(mConfigFileDataDict.GetType());
+            //serializer.Serialize(fileStream, mConfigFileDataDict);
+            fileStream.Flush();
+            fileStream.Close();
+        }
+
+        /// <summary>
+        /// Reads the config file at %APPDATA%/Sensor-Aware-PT/config.xml
+        /// </summary>
+        private void readConfigFile()
+        {
+            StreamReader fileStream = null;
+            try
+            {
+                // Get an array of sensor IDs from the xml file
+                fileStream = new StreamReader( ConfigFilePath );
+
+                SensorIdentification[] tmpArray = new SensorIdentification[ 1 ] { null };
+                XmlSerializer serializer = new XmlSerializer( tmpArray.GetType() );
+
+                // Take each array object and insert it into the id dictionary
+                tmpArray = serializer.Deserialize( fileStream ) as SensorIdentification[];
+                foreach( SensorIdentification id in tmpArray )
+                {
+                    mSensorIDDict[ id.Id ] = id;
+                }
+            }
+            catch( Exception )
+            {
+                throw;
+            }
+            finally
+            {
+                fileStream.Close();
+            }
+        }
+
+        #endregion
+        
         #region Initialization and enumeration
         /// <summary>
         ///  Initialize all the member variables
@@ -99,13 +299,13 @@ namespace Sensor_Aware_PT
     
             mSensorDict   = new Dictionary<String,Sensor>();                   // The actual sensor objects
             mSensorIDDict = new Dictionary<String, SensorIdentification>();
-            mConfigFileDataDict = new SerializableDictionary<String, String>();
+            //mConfigFileDataDict = new SerializableDictionary<String, String>();
         }
         
         /// <summary>
         /// Queries the system for bluetooth COM ports and enumerates the sensors using the provided data.
         /// </summary>
-        private void enumerateSensors()
+        private void probeWmiComPorts()
         {
             Logger.Info( "Serial port enumeration started" );
    
@@ -125,25 +325,16 @@ namespace Sensor_Aware_PT
                  * we ignore this one **/
                 if ("000000000000" != MacAddress)
                 {
-                    if (false == bGenerateConfig)
-                    {
-                        sensorIDstring = mConfigFileDataDict[MacAddress] as String;
-                        Logger.Info("Matching MAC {0} to sensor ID \"{1}\"", MacAddress, sensorIDstring);
-                    }
-                    // Temporarily: prompt for the sensor ID
-                    else 
-                    {
-                        if (mConfigFileDataDict == null)
-                        {
-                            mConfigFileDataDict = new SerializableDictionary<string, string>();
-                        }
+                    //if (mConfigFileDataDict == null)
+                    //{
+                    //    mConfigFileDataDict = new SerializableDictionary<string, string>();
+                    //}
 
-                        Console.WriteLine();
-                        Console.WriteLine("Please enter the sensor id for MAC address {0} [ex: A,B,C,ARM,...etc]", MacAddress);
-                        Console.Write(">");
-                        sensorIDstring = Console.ReadLine();
-                        mConfigFileDataDict[MacAddress] = sensorIDstring;
-                    }
+                    Console.WriteLine();
+                    Console.WriteLine("Please enter the sensor id for MAC address {0} [ex: A,B,C,ARM,...etc]", MacAddress);
+                    Console.Write(">");
+                    sensorIDstring = Console.ReadLine();
+                    //mConfigFileDataDict[deviceID] = sensorIDstring;
 
                     SensorIdentification sensorID = new SensorIdentification(sensorIDstring, MacAddress, deviceID);
 
@@ -152,37 +343,8 @@ namespace Sensor_Aware_PT
                     mSensorIDDict[sensorIDstring] = sensorID;
                 }
             }
-            if (true == bGenerateConfig)
-            {
-                StreamWriter fileStream;
-                /** Generate the config file **/
-                try
-                {
-                    fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
-                }
-                catch (DirectoryNotFoundException e)
-                {
-                    Directory.CreateDirectory(Path.Combine(AppDataDirPath, CFG_DIR));
-                    fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
-
-                }
-                XmlSerializer serializer = new XmlSerializer(mConfigFileDataDict.GetType());
-                serializer.Serialize(fileStream, mConfigFileDataDict);
-                fileStream.Flush();
-                fileStream.Close();
-            }
-
-            //sList = new Sensor[ mSensorDict.Count ];
-            mAvailableSensors = mSensorDict.Values.ToArray();
-            foreach( Sensor  s in mAvailableSensors )
-            {
-                /** Register the ready event */
-                s.InitializationComplete += new Sensor.InitializationCompleteHandler( Sensor_InitializationCompleteEvent );
-            }
-
-            /** Initialize the first member */
-            mAvailableSensors[ 0 ].initialize();
         }
+
 
         /// <summary>
         /// This event gets raised after each sensor completes its initialize routine. Even if a sensor fails to initialize,
@@ -195,7 +357,7 @@ namespace Sensor_Aware_PT
             Logger.Info( "Nexus has recieved ready notification from sensor {0}", ( ( Sensor ) sender ).Id );
             mReadySensorCount++;
             /** Check to see if all sensors have been initialized, if so then reset the count */
-            if( mReadySensorCount == mSensorDict.Count )
+            if( mReadySensorCount == mAvailableSensors.Count() )
             {
                 Logger.Info( "Nexus has intialized all sensors and is preparing to begin reading" );
                 mReadySensorCount = 0;
@@ -206,6 +368,7 @@ namespace Sensor_Aware_PT
                     {
                         mReadySensorCount++;
                         s.ActivationComplete += new Sensor.ActivationCompleteHandler( Sensor_ActivationCompleteEvent );
+                        Thread.Sleep( 2000 );
                         s.activate();
                     }
                 }
@@ -213,7 +376,6 @@ namespace Sensor_Aware_PT
             }
             else
             {
-                
                 {
                     Logger.Info( "Initializing sensor list index {0}", mReadySensorCount );
                     mAvailableSensors[ mReadySensorCount ].initialize();
@@ -234,10 +396,13 @@ namespace Sensor_Aware_PT
             if( mReadySensorCount == 0 )
             {
                 Logger.Info( "Nexus has synchronized and started reading for all initialized sensors and is activated complete" );
+                foreach( Sensor s in getActivatedSensors() )
+                {
+                    s.DataReceived += new Sensor.DataReceivedHandler( Sensor_DataReceived );
+                }
                 OnNexusInitializationComplete();
             }
         }
-
 
         private void OnNexusInitializationComplete()
         {
@@ -254,29 +419,7 @@ namespace Sensor_Aware_PT
                 throw e;
             }
         }
-        /// <summary>
-        /// Reads the config file at %APPDATA%/Sensor-Aware-PT/config.xml
-        /// </summary>
-        private void initializeConfigFileDataDict()
-        {
-            StreamReader fileStream = null;
-            try
-            {
-                fileStream = new StreamReader(ConfigFilePath);
-                XmlSerializer serializer = new XmlSerializer(mConfigFileDataDict.GetType());
 
-                mConfigFileDataDict = serializer.Deserialize(fileStream) as SerializableDictionary<String, String>;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            finally
-            {
-                fileStream.Close();
-            }
-
-        }
 
         /// <summary>
         /// Queries WMI for Bluetooth COM Ports. Provides useful information on the Console as it does.
@@ -333,6 +476,7 @@ namespace Sensor_Aware_PT
         }
         #endregion
 
+        #region Nexus commands
         /// <summary>
         /// Gets the sensors which are available/reading already
         /// </summary>
@@ -340,12 +484,50 @@ namespace Sensor_Aware_PT
         public List<Sensor> getActivatedSensors()
         {
             List<Sensor> activeSensors = new List<Sensor>();
-            foreach(Sensor s in mSensorDict.Values)
+            
+            foreach(Sensor s in  mAvailableSensors)
             {
                 if( s.IsActivated )
                     activeSensors.Add( s );
             }
+
+            /** Update the active sensor count */
+            if( mActiveSensorCount != activeSensors.Count )
+                mActiveSensorCount = activeSensors.Count;
+
             return activeSensors;
         }
+
+        /// <summary>
+        /// Resynchronizes all activated sensors.
+        /// </summary>
+        public void resynchronize()
+        {
+            List<Sensor> activeSensors = getActivatedSensors();
+
+            foreach( Sensor s in activeSensors )
+            {
+                s.resynchronize();
+            }
+
+            mCurrentFrameNumber = 0;
+            mDataFrameList.Clear();
+        }
+
+        /// <summary>
+        /// Resets the sequence counters of all activated sensors
+        /// </summary>
+        private void resetSensorSequence()
+        {
+            foreach( Sensor s in getActivatedSensors() )
+            {
+                s.resetSequence();
+            }
+
+            mCurrentFrameNumber = 0;
+        }
+
+        #endregion
     }
+
 }

@@ -9,17 +9,6 @@ using System.IO;
 
 namespace Sensor_Aware_PT
 {
-    /** Struct to hold info on each line of sensor data */
-    public class SensorDataEntry
-    {
-        public Vector3 orientation = new Vector3();
-        public Vector3 accelerometer = new Vector3();
-        public Vector3 gyroscope = new Vector3();
-        public Vector3 magnetometer = new Vector3();
-        public DateTime timeStamp = new DateTime();
-        public int sequenceNumber;
-    }
-
 
     /** Created to encapsulate a sensor */
     public class Sensor
@@ -30,7 +19,7 @@ namespace Sensor_Aware_PT
         /** Max number of values to keep in history */
         static int HISTORY_BUFFER_SIZE = 500;
 
-        private const int MAX_READ_ERRORS = 3; 
+        private const int MAX_READ_ERRORS = 3;
 
         /** Friendly sensor ID A-D */
         private string mID;
@@ -68,14 +57,21 @@ namespace Sensor_Aware_PT
 
         /** Circular buffer to hold the data input */
         private RingBuffer<SensorDataEntry> mData;
-        
-        /** Sensor state */
+
+        /** Lock on the read thread when resynchronizing */
+        private readonly object mSynchronizationLock = new object();
+
+        /// <summary>
+        /// Holds the state of the sensor
+        /// </summary>
         enum SensorState
         {
-            Uninitialized,
-            Initialized,
-            Activated,
-            NotPresent
+            Uninitialized, /** Nothing has happened yet */
+            Initialized, /** Serial port was created and opened */
+            Activated, /** Serial port is now reading data */
+            NotPresent, /** Serial port did not open */
+            Deactivated, /** Serial port was open but failed to resync */
+            PreActivated /** Serial port is open but has not started reading data */
         };
         private SensorState mSensorState = SensorState.Uninitialized; /** Default state for the sensor */
         
@@ -150,8 +146,9 @@ namespace Sensor_Aware_PT
                 mReadThread.IsBackground = true;
                 /** Setup the serial port */
                 mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
-                mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
-                mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
+                mSerialPort.ReadTimeout = 1000;
+                mSerialPort.WriteTimeout = 1000;
+                mSerialPort.DataReceived += new SerialDataReceivedEventHandler( mSerialPort_DataReceived );
                 try
                 {
                     mSerialPort.Open();
@@ -169,9 +166,6 @@ namespace Sensor_Aware_PT
                     return;
                 }
 
-
-                /** Start the read thread */
-                //mReadThread.Start();
             }
             catch( Exception e)
             {
@@ -179,16 +173,31 @@ namespace Sensor_Aware_PT
             }
   
         }
+        /// <summary>
+        /// Event to handle data coming in on the serial port. This is only important after opening the serial port while
+        /// waiting for it to begin the activation process. Data comes in during the wait and must be purged or the buffer will overflow
+        /// on some implementations and cause problems.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void mSerialPort_DataReceived( object sender, SerialDataReceivedEventArgs e )
+        {
+            if( mSensorState == SensorState.Initialized )
+            {
+                if( mSerialPort.BytesToRead > 0 )
+                    mSerialPort.ReadExisting();
+            }
+        }
 
         /// <summary>
         /// Called to activate the sensor, after it has been initialized.
         /// </summary>
         public void activate()
         {
-            if (mSensorState == SensorState.Initialized)
+            if( mSensorState == SensorState.Initialized )
                 mReadThread.Start();
             else
-                throw new Exception(String.Format("Cannot activate sensor {0} since it is not initialized", mID));
+                throw new Exception( String.Format( "Cannot activate sensor {0} since it is not initialized", mID ) );
         }
 
         /// <summary>
@@ -215,9 +224,13 @@ namespace Sensor_Aware_PT
         /// <returns>True if the token was read, false if not</returns>
         private bool readToken(String token) 
         {
-
+            if(mSerialPort.BytesToRead != 0)
+                Logger.Info( "Sensor {0} bytes to read {1}", mID, mSerialPort.BytesToRead );
             if( mSerialPort.BytesToRead < token.Length )
+            {
+                
                 return false;
+            }
                 
             /** Check if incoming bytes match token */
             for( int i = 0; i < token.Length; i++ )
@@ -237,8 +250,10 @@ namespace Sensor_Aware_PT
         /// </summary>
         private void readThreadRun()
         {
+            
             if (mSensorState == SensorState.Initialized)
             {
+                changeState( SensorState.PreActivated );
                 
                 try
                 {
@@ -269,15 +284,17 @@ namespace Sensor_Aware_PT
                     OnActivationComplete();
                     /** Send the sensor ready event */
 
-                    while (true)
+                    while (mSensorState == SensorState.Activated)
                     {
-                        /** Read the data and add to circular buffer */
-                        SensorDataEntry newData = readDataEntry();
-                        mData.Add(newData);
-                        /** Call the event to notify and listeners */
-                        DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
-                        OnDataReceived( dataEventArgs );
-
+                        lock( mSynchronizationLock )
+                        {
+                            /** Read the data and add to circular buffer */
+                            SensorDataEntry newData = readDataEntry();
+                            mData.Add( newData );
+                            /** Call the event to notify and listeners */
+                            DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
+                            OnDataReceived( dataEventArgs );
+                        }
                         //Logger.Info( "Sensor {0} data: {1}, {2}, {3}", mID, newData.orientation.X, newData.orientation.Y, newData.orientation.Z );
                     }
                 }
@@ -420,7 +437,7 @@ namespace Sensor_Aware_PT
             newEntry.gyroscope = gyro;
             newEntry.sequenceNumber = mSequenceNum++;
             newEntry.timeStamp = DateTime.Now;
-
+            newEntry.id = String.Copy( mID );
             return newEntry;
         }
 
@@ -492,6 +509,15 @@ namespace Sensor_Aware_PT
             return mData.Last();
         }
 
+         ~Sensor()
+        {
+
+            if(mSerialPort != null)
+            {
+                if( mSerialPort.IsOpen )
+                    mSerialPort.Close();
+            }
+        }
         public bool IsActivated
         {
             get
@@ -506,6 +532,57 @@ namespace Sensor_Aware_PT
             {
                 return mSensorState == SensorState.Initialized;
             }
+        }
+
+        /// <summary>
+        /// Resynchronizes the sensor. Sensor data may become out of sync, causing the data boundries to be wrong
+        /// leading to junk data. The resynchronization process uses a lock to prevent the read thread
+        /// from interfering until resynchronization is complete.
+        /// </summary>
+        public void resynchronize()
+        {
+            lock( mSynchronizationLock )
+            {
+
+                if( mSensorState == SensorState.Activated )
+                {
+                    Logger.Info( "Sensor {0} RE-synchronization started", mID );
+                    /** Clear the input buffer and then request the sync token */
+
+                    mSerialPort.DiscardInBuffer();
+                    mSerialPort.Write( "#s00" );
+                    bool synchronized = false;
+                    //TODO add a timeout for waiting to resync
+                    /** Wait until we are synchronized or fail*/
+                    do
+                    {
+                        synchronized = readToken( "#SYNCH00\r\n" );
+                    }
+                    while( !synchronized );
+
+                    if( synchronized )
+                    {
+                        /** Reset sequence and clear the buffer */
+                        mData.Clear();
+                        resetSequence();
+                        Logger.Info( "Sensor {0} RE-synchronization complete", mID );
+
+                    }
+                    else
+                    {
+                        Logger.Error( "Sensor {0} RE-synchronization FAILED", mID );
+                        changeState( SensorState.Deactivated );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Resets the sequence counter
+        /// </summary>
+        internal void resetSequence()
+        {
+            mSequenceNum = 0;
         }
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.IO;
 
 namespace Sensor_Aware_PT
 {
@@ -51,7 +50,7 @@ namespace Sensor_Aware_PT
             
             Console.Write("[{0:D4}] [{1}] ",
                 threadId,
-                DateTime.Now.ToString("HH:mm:ss.fff"));
+                DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"));
             Console.Write(prefix);
             Console.WriteLine(text, args);
             /*
