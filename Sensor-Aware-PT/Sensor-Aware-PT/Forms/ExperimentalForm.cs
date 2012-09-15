@@ -75,14 +75,15 @@ namespace Sensor_Aware_PT
             
             //Nexus.Instance.Subscribe( this );
             //Nexus.Instance.Subscribe( mUpperSkeleton );
-            SensorDataPlayer sdp = new SensorDataPlayer();
-            sdp.Subscribe( this );
-            sdp.Subscribe( mUpperSkeleton );
-            sdp.replayFile( "data.bin" );
+            //SensorDataPlayer sdp = new SensorDataPlayer();
+            //sdp.replayFile( "data.bin" );
 
+        }
 
-
-
+        public void subscribeToSource( IObservable<SensorDataEntry> source )
+        {
+            source.Subscribe( this );
+            source.Subscribe( mUpperSkeleton );
         }
 
         void formUpdateTimer_Tick( object sender, EventArgs e )
@@ -125,24 +126,31 @@ namespace Sensor_Aware_PT
         /// </summary>
         private void simpleOpenGlControl_Paint( object sender, PaintEventArgs e )
         {
-            GL.Clear( ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit );    // Clear screen and DepthBuffer
-            
-            GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill );
+            if( mLoaded )
+            {
+                lock( this )
+                {
+                    simpleOpenGlControl.MakeCurrent();
+                    GL.Clear( ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit );    // Clear screen and DepthBuffer
 
-            // Set camera view and distance
-            Matrix4 lookat = Matrix4.LookAt( 0, 0, 50, 0, 0, 0, 0, 1, 0 );
-            
-            GL.MatrixMode( MatrixMode.Modelview );
-            GL.LoadIdentity();
-            //Tao.OpenGL.u.gluLookAt( 0, 0, 15, 0, 0, 0, 0, 1, 0 );
-            GL.LoadMatrix( ref lookat );
+                    GL.PolygonMode( MaterialFace.Front, PolygonMode.Fill );
 
-            //GL.PushMatrix();
-            //mBones[ 0 ].drawBone();
-            mUpperSkeleton.draw();
-            simpleOpenGlControl.SwapBuffers();
-            //GL.PopMatrix();
-            //GL.Flush();
+                    // Set camera view and distance
+                    Matrix4 lookat = Matrix4.LookAt( 0, 0, 50, 0, 0, 0, 0, 1, 0 );
+
+                    GL.MatrixMode( MatrixMode.Modelview );
+                    GL.LoadIdentity();
+                    //Tao.OpenGL.u.gluLookAt( 0, 0, 15, 0, 0, 0, 0, 1, 0 );
+                    GL.LoadMatrix( ref lookat );
+
+                    //GL.PushMatrix();
+                    //mBones[ 0 ].drawBone();
+                    mUpperSkeleton.draw();
+                    simpleOpenGlControl.SwapBuffers();
+                    //GL.PopMatrix();
+                    //GL.Flush();
+                }
+            }
         }
 
         #endregion
@@ -213,6 +221,17 @@ namespace Sensor_Aware_PT
                 {
                     Logger.Info( "{0}", s.ToString() );
                 }
+            }
+        }
+
+        private void ExperimentalForm_FormClosing( object sender, FormClosingEventArgs e )
+        {
+            lock( this )
+            {
+                formUpdateTimer.Stop();
+                mLoaded = false;
+                simpleOpenGlControl.Context.Dispose();
+                simpleOpenGlControl.Dispose();
             }
         }
     }

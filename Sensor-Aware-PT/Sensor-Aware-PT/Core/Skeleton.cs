@@ -76,9 +76,15 @@ namespace Sensor_Aware_PT
         //LEFT -90, 0, 180
         //RIGHT 90, 0, -180
 
+        private static bool mInitialized = false;
+
         public Skeleton()
         {
-            initializeBoneLengths();
+            if( !mInitialized )
+            {
+                initializeBoneLengths();
+                mInitialized = true;
+            }
         }
 
         /// <summary>

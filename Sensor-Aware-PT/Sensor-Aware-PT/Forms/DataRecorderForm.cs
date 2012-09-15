@@ -20,21 +20,22 @@ namespace Sensor_Aware_PT
 
         private void SensorDataView_Load( object sender, EventArgs e )
         {
-            
 
+            mRecorder = new SensorDataRecorder();
         }
 
         private void button1_Click( object sender, EventArgs e )
         {
             if( !init )
             {
-                mRecorder = new SensorDataRecorder();
+                
                 init = true;
             }
 
             if( !mRecorder.IsRecording )
             {
                 mRecorder.beginRecording();
+                dataGridView1.DataSource = null;
                 button1.Text = "Stop Recording";
                 this.Text = "RECORDING!!";
             }
@@ -45,21 +46,47 @@ namespace Sensor_Aware_PT
                 this.Text = "IDLE";
                 BindingList<SensorDataEntry> blist = new BindingList<SensorDataEntry>( datas );
                 dataGridView1.DataSource = blist;
-                mRecorder.saveRecording( "data.bin" );
-                
             }
         }
 
-        private void newRecordingToolStripMenuItem_Click( object sender, EventArgs e )
+        private void button2_Click( object sender, EventArgs e )
         {
-            SaveFileDialog saveDialog = new SaveFileDialog();
-            saveDialog.Filter = "Sensor Data|*.imu";
-            saveDialog.Title = "Save sensor data";
-            DialogResult result = saveDialog.ShowDialog();
+            if( mRecorder.HasData )
+            {
+                SaveFileDialog saveDialog = new SaveFileDialog();
+                saveDialog.Filter = "Sensor Data|*.imu";
+                saveDialog.Title = "Save sensor data";
+                DialogResult result = saveDialog.ShowDialog();
+
+                if( result == System.Windows.Forms.DialogResult.OK )
+                {
+                    mRecorder.saveRecording( saveDialog.FileName );
+                }
+            }
+            else
+            {
+                MessageBox.Show( "You haven't recorded any data yet, so what exactly are you trying to save, sir?",
+                    "YOU DUMBASS", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error );
+            }
+        }
+
+        private void button3_Click( object sender, EventArgs e )
+        {
+            OpenFileDialog openDialog = new OpenFileDialog();
+            openDialog.Filter = "Sensor Data|*.imu";
+            openDialog.Title = "Load sensor replay data";
+
+            DialogResult result = openDialog.ShowDialog();
 
             if( result == System.Windows.Forms.DialogResult.OK )
             {
-
+                SensorDataPlayer sdp = new SensorDataPlayer();
+                ExperimentalForm EF = new ExperimentalForm();
+                EF.subscribeToSource( sdp );
+                EF.Show();
+                sdp.replayFile( openDialog.FileName );
+                
             }
         }
     }

@@ -15,6 +15,7 @@ namespace Sensor_Aware_PT
         public Vector3 gyroscope = new Vector3();
         public Vector3 magnetometer = new Vector3();
         public DateTime timeStamp = new DateTime();
+        public TimeSpan timeSpan;
         public int sequenceNumber;
         public string id;
 
@@ -57,7 +58,7 @@ namespace Sensor_Aware_PT
         {
             get
             {
-                return ( long ) TimeSpan.FromTicks( timeStamp.Ticks ).TotalMilliseconds;
+                return ( long ) timeStamp.Ticks;
                 
             }
         }

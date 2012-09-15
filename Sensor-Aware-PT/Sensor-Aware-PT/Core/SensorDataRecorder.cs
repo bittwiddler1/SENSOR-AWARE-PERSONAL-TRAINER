@@ -49,6 +49,14 @@ namespace Sensor_Aware_PT
             }
         }
 
+        public bool HasData
+        {
+            get
+            {
+                return mDataList.Count > 0;
+            }
+        }
+
         public SensorDataRecorder()
         {
             Nexus.Instance.Subscribe( this );
@@ -59,6 +67,7 @@ namespace Sensor_Aware_PT
         /// </summary>
         public void beginRecording()
         {
+            Logger.Info( "Started recording sensor data" );
             mIsRecording = true;
             mDataList.Clear();
             mStartTime = DateTime.Now;
@@ -74,15 +83,17 @@ namespace Sensor_Aware_PT
             if( mIsRecording )
             {
                 mIsRecording = false;
-
+                DateTime stopTime = DateTime.Now;
                 /** We subtract the start time from each of the entries. This makes it so that the first entry is at time 0...etc
                  * so that replaying it is easier*/
                 for( int i = 0; i < mDataList.Count; i++ )
                 {
                     TimeSpan t = mDataList[ i ].timeStamp.Subtract( mStartTime );
                     mDataList[ i ].timeStamp = new DateTime( t.Ticks );
+                    mDataList[ i ].timeSpan = new TimeSpan( t.Ticks );
                 }
 
+                Logger.Info( "Recorded {0} seconds of data with {1} entries", ( stopTime - mStartTime ).TotalSeconds, mDataList.Count );
                 return mDataList;
             }
             return null;
@@ -90,6 +101,7 @@ namespace Sensor_Aware_PT
 
         public void saveRecording( String outputFile )
         {
+            Logger.Info( "Writing sensor recording to file {0}", outputFile );
             Stream outStream = File.Open( outputFile, FileMode.Create );
             BinaryFormatter outputFormatter = new BinaryFormatter();
             outputFormatter.Serialize( outStream, mDataList );

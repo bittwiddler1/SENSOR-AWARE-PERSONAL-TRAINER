@@ -90,6 +90,7 @@
             this.Controls.Add(this.simpleOpenGlControl);
             this.Name = "ExperimentalForm";
             this.Text = "Skeletal Viewer";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExperimentalForm_FormClosing);
             this.Load += new System.EventHandler(this.ExperimentalForm_Load);
             this.ResumeLayout(false);
 

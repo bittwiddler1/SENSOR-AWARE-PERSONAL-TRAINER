@@ -17,7 +17,7 @@ namespace Sensor_Aware_PT
     {
         
         
-        ExperimentalForm EF = new ExperimentalForm();
+        
         SensorDataView SDV = new SensorDataView();
 
         private Nexus mSensorManager;
@@ -89,6 +89,7 @@ namespace Sensor_Aware_PT
 
         private void button1_Click( object sender, EventArgs e )
         {
+            /*
 
             BackgroundWorker bg = new BackgroundWorker();
 
@@ -98,18 +99,27 @@ namespace Sensor_Aware_PT
             } );
 
             bg.RunWorkerAsync();
+             * */
+            ExperimentalForm EF = new ExperimentalForm();
+            EF.subscribeToSource( Nexus.Instance );
+            EF.Show();
         }
 
         private void button2_Click( object sender, EventArgs e )
         {
+            /*
             BackgroundWorker bg = new BackgroundWorker();
 
             bg.DoWork += new DoWorkEventHandler( delegate
             {
                 SDV.ShowDialog();
+                
             } );
 
             bg.RunWorkerAsync();
+             * */
+
+            SDV.Show();
         }
     }
 }

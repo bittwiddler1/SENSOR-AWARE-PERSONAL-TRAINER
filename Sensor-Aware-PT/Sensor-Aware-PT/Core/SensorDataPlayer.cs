@@ -5,21 +5,19 @@ using System.Text;
 using System.Timers;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Diagnostics;
 namespace Sensor_Aware_PT
 {
-    public class SensorDataPlayer
+    public class SensorDataPlayer : IObservable<SensorDataEntry>
     {
-        private const String CFG_DIR = "Sensor-Aware-PT";
-
-        /** Path to config file **/
-        private static String AppDataDirPath = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData );
-        private DateTime mStartTime;
+        private Stopwatch mTimeCounter = new Stopwatch();
         private object mObserverLock = new object();
         private int mCurrentIndex = 0;
         private int mMaxIndex = 0;
         List<IObserver<SensorDataEntry>> mObservers = new List<IObserver<SensorDataEntry>>();
         Timer mReplayTimer = new Timer();
         private List<SensorDataEntry> mDataList;
+        
 
         #region ObserverPattern
         public IDisposable Subscribe( IObserver<SensorDataEntry> observer )
@@ -67,20 +65,19 @@ namespace Sensor_Aware_PT
 
         public SensorDataPlayer()
         {
-            mReplayTimer.Interval = 1;
+            mReplayTimer.Interval = .1;
             mReplayTimer.Elapsed += new ElapsedEventHandler( mReplayTimer_Elapsed );
             mReplayTimer.Enabled = false;
         }
 
         public void replayFile( string filename )
         {
-            String inputPath = Path.Combine( new String[] { AppDataDirPath, CFG_DIR, filename } );
-            Stream inputStream = File.OpenRead( inputPath );
+            Stream inputStream = File.OpenRead( filename );
             BinaryFormatter inputFormatter = new BinaryFormatter();
 
             mDataList = ( List<SensorDataEntry> ) inputFormatter.Deserialize( inputStream );
             mMaxIndex = mDataList.Count;
-            mStartTime = DateTime.Now;
+            mTimeCounter.Start();
             mReplayTimer.Start();
         }
 
@@ -88,16 +85,17 @@ namespace Sensor_Aware_PT
         {
             if( mCurrentIndex < mMaxIndex )
             {
-                TimeSpan t = DateTime.Now - mStartTime;
-                if( t.TotalMilliseconds >= mDataList[ mCurrentIndex ].Timestamp )
+                SensorDataEntry data = mDataList[ mCurrentIndex ];
+                if( mTimeCounter.Elapsed.CompareTo(data.timeSpan) >= 0)
                 {
-                    NotifyObservers( mDataList[ mCurrentIndex ] );
+                    NotifyObservers( data);
                     mCurrentIndex++;
                 }
             }
             else
             {
                 mReplayTimer.Stop();
+                mTimeCounter.Reset();
                 mMaxIndex = 0;
                 mCurrentIndex = 0;
                 mDataList.Clear();
