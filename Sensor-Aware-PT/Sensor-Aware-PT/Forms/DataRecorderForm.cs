@@ -20,7 +20,7 @@ namespace Sensor_Aware_PT
 
         private void SensorDataView_Load( object sender, EventArgs e )
         {
-            button1.Text = "START";
+            
 
         }
 
@@ -32,21 +32,34 @@ namespace Sensor_Aware_PT
                 init = true;
             }
 
-            if( !mRecorder.isRecording )
+            if( !mRecorder.IsRecording )
             {
                 mRecorder.beginRecording();
-                button1.Text = "STOP";
+                button1.Text = "Stop Recording";
                 this.Text = "RECORDING!!";
             }
             else
             {
                 List<SensorDataEntry> datas = mRecorder.stopRecording();
-                button1.Text = "START";
+                button1.Text = "Start Recording";
                 this.Text = "IDLE";
                 BindingList<SensorDataEntry> blist = new BindingList<SensorDataEntry>( datas );
                 dataGridView1.DataSource = blist;
-                mRecorder.writeFile( "data.bin" );
+                mRecorder.saveRecording( "data.bin" );
                 
+            }
+        }
+
+        private void newRecordingToolStripMenuItem_Click( object sender, EventArgs e )
+        {
+            SaveFileDialog saveDialog = new SaveFileDialog();
+            saveDialog.Filter = "Sensor Data|*.imu";
+            saveDialog.Title = "Save sensor data";
+            DialogResult result = saveDialog.ShowDialog();
+
+            if( result == System.Windows.Forms.DialogResult.OK )
+            {
+
             }
         }
     }

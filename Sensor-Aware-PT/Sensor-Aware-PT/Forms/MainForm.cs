@@ -13,7 +13,7 @@ using System.Diagnostics;
 
 namespace Sensor_Aware_PT
 {
-    public partial class MainForm : Form, IObserver<DataFrame>
+    public partial class MainForm : Form
     {
         
         
@@ -35,19 +35,7 @@ namespace Sensor_Aware_PT
             {
                 Logger.Info( "{0}", s );
             }
-
-            long a, b, c;
-            c = Stopwatch.Frequency;
-            a = Stopwatch.GetTimestamp();
-            double d = ( double ) ( a / c );
-            Logger.Info( a.ToString() );
-            Logger.Info( "Stop watch is high res? {0}", Stopwatch.IsHighResolution );
-            b = Stopwatch.GetTimestamp();
-            Stopwatch jg;
             
-            double ef = ( double ) ( b / c );
-            Logger.Info( b.ToString() );
-
             mSensorManager = Nexus.Instance;
             mSensorManager.InitializationComplete += new Nexus.InitializationCompleteHandler( mSensorManager_NexusInitializedEvent );
             
@@ -87,25 +75,6 @@ namespace Sensor_Aware_PT
 
         }
 
-
-        /// <summary>
-        /// Takes a sensor and attaches a cuboid window to it
-        /// </summary>
-        /// <param name="sensor"></param>
-        private void attachCuboidWindow(Sensor sensor)
-        {
-            /** Create new cuboid form attached to this sensor*/
-            Form_3Dcuboid cuboid = new Form_3Dcuboid();
-            /** Create background worker to show the form and run it asynchronously */
-            BackgroundWorker cuboidWorker = new BackgroundWorker();
-            cuboidWorker.DoWork += new DoWorkEventHandler( delegate
-            {
-                cuboid.setSensor( sensor );
-                cuboid.ShowDialog();
-            } );
-            cuboidWorker.RunWorkerAsync();
-        }
-
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             //bRunning = false;
@@ -117,34 +86,6 @@ namespace Sensor_Aware_PT
            // port.Close();
         }
 
-
-        #region IObserver<NexusDataFrame> Members
-
-        public void OnCompleted()
-        {
-            //throw new NotImplementedException();
-        }
-
-        public void OnError( Exception error )
-        {
-            //throw new NotImplementedException();
-        }
-
-        public void OnNext( DataFrame value )
-        {
-            //throw new NotImplementedException();
-            Logger.Info( "Nexus data frame {0}", value.sequenceNumber );
-            foreach( KeyValuePair<String, SensorDataEntry> kv in value.concurrentData )
-            {
-                Logger.Info( "Sensor {0} data frame: {1},{2},{3}",
-                    kv.Key, 
-                    kv.Value.orientation.X,
-                    kv.Value.orientation.Y,
-                    kv.Value.orientation.Z );
-            }
-        }
-
-        #endregion
 
         private void button1_Click( object sender, EventArgs e )
         {

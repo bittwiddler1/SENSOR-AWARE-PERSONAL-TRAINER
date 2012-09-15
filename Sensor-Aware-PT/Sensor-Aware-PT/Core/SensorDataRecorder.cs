@@ -27,7 +27,7 @@ namespace Sensor_Aware_PT
 
         void IObserver<SensorDataEntry>.OnNext( SensorDataEntry value )
         {
-            if( isRecording )
+            if( mIsRecording )
             {
                 mDataList.Add( value );
             }
@@ -35,51 +35,52 @@ namespace Sensor_Aware_PT
 
         #endregion
 
-        private const String CFG_DIR = "Sensor-Aware-PT";
 
-        /** Path to config file **/
-        private static String AppDataDirPath = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData );
+        private List<SensorDataEntry> mDataList = new List<SensorDataEntry>();
+        private DateTime mStartTime;
 
+        private bool mIsRecording = false;
 
-        List<SensorDataEntry> mDataList = new List<SensorDataEntry>();
-        DateTime mStartTime;
-        public bool isRecording = false;
+        public bool IsRecording
+        {
+            get
+            {
+                return mIsRecording;
+            }
+        }
 
         public SensorDataRecorder()
         {
             Nexus.Instance.Subscribe( this );
         }
 
-        public SensorDataRecorder( String outputFile )
-        {
-
-        }
-
+        /// <summary>
+        /// Starts recording data from Nexus. Additionally, clears any old data.
+        /// </summary>
         public void beginRecording()
         {
-            isRecording = true;
+            mIsRecording = true;
             mDataList.Clear();
             mStartTime = DateTime.Now;
-
         }
 
+        /// <summary>
+        /// Stops recording data from nexus
+        /// </summary>
+        /// <returns>A <c>List<SensorDataEntry></c> which contains the recorded entries. 
+        /// The timestamps have been changed into an appropriate form for a timespan, used by the replayer.</returns>
         public List<SensorDataEntry> stopRecording()
         {
-            if( isRecording )
+            if( mIsRecording )
             {
-                isRecording = false;
+                mIsRecording = false;
 
                 /** We subtract the start time from each of the entries. This makes it so that the first entry is at time 0...etc
                  * so that replaying it is easier*/
                 for( int i = 0; i < mDataList.Count; i++ )
                 {
-                    DateTime dd = mDataList[ i ].timeStamp;
                     TimeSpan t = mDataList[ i ].timeStamp.Subtract( mStartTime );
-                    DateTime t2 = mDataList[ i ].timeStamp.Add( -t );
                     mDataList[ i ].timeStamp = new DateTime( t.Ticks );
-
-                    Logger.Info( "now={0}, span={1}, later={2}, start={3}", dd.Ticks, t.Ticks, t2.Ticks, mStartTime.Ticks );
-
                 }
 
                 return mDataList;
@@ -87,16 +88,13 @@ namespace Sensor_Aware_PT
             return null;
         }
 
-        public void writeFile( String outputFile )
+        public void saveRecording( String outputFile )
         {
-            String outputPath = Path.Combine( new String[] { AppDataDirPath, CFG_DIR, outputFile } );
-            Stream outStream = File.Open( outputPath, FileMode.Create );
+            Stream outStream = File.Open( outputFile, FileMode.Create );
             BinaryFormatter outputFormatter = new BinaryFormatter();
-
             outputFormatter.Serialize( outStream, mDataList );
             outStream.Flush();
             outStream.Close();
-
         }
     }
 }

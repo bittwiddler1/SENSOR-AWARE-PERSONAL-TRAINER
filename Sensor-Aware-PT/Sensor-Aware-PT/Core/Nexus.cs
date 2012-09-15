@@ -51,9 +51,6 @@ namespace Sensor_Aware_PT
         /** Keeps the # of active sensors */
 
         private int mActiveSensorCount = 0;
-        /** Holds the lists of data frames that haven't been pushed */
-        //private List<DataFrame> mDataFrameList = new List<DataFrame>();
-        private Dictionary<int, DataFrame> mDataFrameList = new Dictionary<int,DataFrame>();
         private static object mFrameLock = new object();
 
         #endregion
@@ -511,7 +508,6 @@ namespace Sensor_Aware_PT
             }
 
             mCurrentFrameNumber = 0;
-            mDataFrameList.Clear();
         }
 
         /// <summary>
