@@ -71,6 +71,10 @@ namespace Sensor_Aware_PT
         protected static Vector3 ORIENT_RIGHT = new Vector3( 90, 0, -180 );
         protected static Vector3 ORIENT_DOWN = new Vector3( -180, -90, -180 );
         protected static Vector3 ORIENT_UP = new Vector3( -90, 90f, 90 );
+        //straight down -180, -90, -180
+        //straight up -90, 90, 90
+        //LEFT -90, 0, 180
+        //RIGHT 90, 0, -180
 
         public Skeleton()
         {
@@ -138,11 +142,6 @@ namespace Sensor_Aware_PT
         private void createUpperBody()
         {
             Bone Back, ArmUL, ArmUR, ArmLL, ArmLR, ShoulderL, ShoulderR;
-                //straight down -180, -90, -180
-
-//straight up -90, 90, 90
-            //LEFT -90, 0, 180
-//RIGHT 90, 0, -180
             Back = new Bone( mBoneLengthMapping[ BoneType.BackUpper ], new Vector3() );
             ArmUL = new Bone(mBoneLengthMapping[BoneType.ArmUpperL], new Vector3());
             ArmUR = new Bone(mBoneLengthMapping[BoneType.ArmUpperR], new Vector3());

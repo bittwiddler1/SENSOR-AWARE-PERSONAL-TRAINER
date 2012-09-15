@@ -92,6 +92,7 @@
     <Compile Include="RingBuffer.cs" />
     <Compile Include="Sensor.cs" />
     <Compile Include="Nexus.cs" />
+    <Compile Include="SensorDataRecorder.cs" />
     <Compile Include="Skeleton.cs" />
     <EmbeddedResource Include="ExperimentalForm.resx">
       <DependentUpon>ExperimentalForm.cs</DependentUpon>

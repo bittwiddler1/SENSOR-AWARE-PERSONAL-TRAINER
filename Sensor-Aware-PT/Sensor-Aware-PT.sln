@@ -3,6 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sensor-Aware-PT", "Sensor-Aware-PT\Sensor-Aware-PT.csproj", "{CD8D24DA-6D29-4DE8-9F04-EB0EE0B022A0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{15CC18E0-5716-47BC-B584-C6BB88F17291}"
+	ProjectSection(SolutionItems) = preProject
+		Sensor-Aware-PT.vsd = Sensor-Aware-PT.vsd
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
