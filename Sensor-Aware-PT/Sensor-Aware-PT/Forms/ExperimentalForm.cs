@@ -73,8 +73,12 @@ namespace Sensor_Aware_PT
 
 
             
-            Nexus.Instance.Subscribe( this );
-            Nexus.Instance.Subscribe( mUpperSkeleton );
+            //Nexus.Instance.Subscribe( this );
+            //Nexus.Instance.Subscribe( mUpperSkeleton );
+            SensorDataPlayer sdp = new SensorDataPlayer();
+            sdp.Subscribe( this );
+            sdp.Subscribe( mUpperSkeleton );
+            sdp.replayFile( "data.bin" );
 
 
 

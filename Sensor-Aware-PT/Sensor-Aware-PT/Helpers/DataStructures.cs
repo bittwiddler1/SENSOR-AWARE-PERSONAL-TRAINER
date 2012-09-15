@@ -7,6 +7,7 @@ using OpenTK;
 namespace Sensor_Aware_PT
 {
     /** Struct to hold info on each line of sensor data */
+    [Serializable()]
     public class SensorDataEntry
     {
         public Vector3 orientation = new Vector3();
@@ -34,6 +35,39 @@ namespace Sensor_Aware_PT
          gyroscope.Z ,
          id
          );
+        }
+
+        public Vector3 Orientation
+        {
+            get
+            {
+                return orientation;
+            }
+        }
+
+        public String Id
+        {
+            get
+            {
+                return id;
+            }
+        }
+
+        public long Timestamp
+        {
+            get
+            {
+                return ( long ) TimeSpan.FromTicks( timeStamp.Ticks ).TotalMilliseconds;
+                
+            }
+        }
+
+        public int Sequence
+        {
+            get
+            {
+                return sequenceNumber;
+            }
         }
     }
 

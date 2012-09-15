@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace Sensor_Aware_PT
 {
@@ -17,6 +18,7 @@ namespace Sensor_Aware_PT
         
         
         ExperimentalForm EF = new ExperimentalForm();
+        SensorDataView SDV = new SensorDataView();
 
         private Nexus mSensorManager;
         
@@ -33,6 +35,18 @@ namespace Sensor_Aware_PT
             {
                 Logger.Info( "{0}", s );
             }
+
+            long a, b, c;
+            c = Stopwatch.Frequency;
+            a = Stopwatch.GetTimestamp();
+            double d = ( double ) ( a / c );
+            Logger.Info( a.ToString() );
+            Logger.Info( "Stop watch is high res? {0}", Stopwatch.IsHighResolution );
+            b = Stopwatch.GetTimestamp();
+            Stopwatch jg;
+            
+            double ef = ( double ) ( b / c );
+            Logger.Info( b.ToString() );
 
             mSensorManager = Nexus.Instance;
             mSensorManager.InitializationComplete += new Nexus.InitializationCompleteHandler( mSensorManager_NexusInitializedEvent );
@@ -68,6 +82,8 @@ namespace Sensor_Aware_PT
             //}
             
             //mSensorManager.Subscribe( this );
+
+            
 
         }
 
@@ -138,6 +154,18 @@ namespace Sensor_Aware_PT
             bg.DoWork += new DoWorkEventHandler( delegate
             {
                 EF.ShowDialog();
+            } );
+
+            bg.RunWorkerAsync();
+        }
+
+        private void button2_Click( object sender, EventArgs e )
+        {
+            BackgroundWorker bg = new BackgroundWorker();
+
+            bg.DoWork += new DoWorkEventHandler( delegate
+            {
+                SDV.ShowDialog();
             } );
 
             bg.RunWorkerAsync();

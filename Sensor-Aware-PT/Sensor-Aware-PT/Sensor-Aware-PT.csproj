@@ -63,46 +63,40 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bone.cs" />
-    <Compile Include="DataFrame.cs" />
-    <Compile Include="DataStructures.cs" />
-    <Compile Include="ExperimentalForm.cs">
+    <Compile Include="Core\Bone.cs" />
+    <Compile Include="Helpers\DataStructures.cs" />
+    <Compile Include="Forms\ExperimentalForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExperimentalForm.designer.cs">
+    <Compile Include="Forms\ExperimentalForm.designer.cs">
       <DependentUpon>ExperimentalForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form1.cs">
+    <Compile Include="Forms\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
+    <Compile Include="Forms\Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form_3Dcuboid\Form_3Dcuboid.cs">
-      <SubType>Form</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Compile>
-    <Compile Include="Form_3Dcuboid\Form_3Dcuboid.designer.cs">
-      <DependentUpon>Form_3Dcuboid.cs</DependentUpon>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Compile>
-    <Compile Include="Logger.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Helpers\Logger.cs" />
+    <Compile Include="Core\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RingBuffer.cs" />
-    <Compile Include="Sensor.cs" />
-    <Compile Include="Nexus.cs" />
-    <Compile Include="SensorDataRecorder.cs" />
-    <Compile Include="Skeleton.cs" />
-    <EmbeddedResource Include="ExperimentalForm.resx">
+    <Compile Include="Helpers\RingBuffer.cs" />
+    <Compile Include="Core\Sensor.cs" />
+    <Compile Include="Core\Nexus.cs" />
+    <Compile Include="Core\SensorDataPlayer.cs" />
+    <Compile Include="Forms\DataRecorderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\DataRecorderForm.Designer.cs">
+      <DependentUpon>DataRecorderForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Core\SensorDataRecorder.cs" />
+    <Compile Include="Core\Skeleton.cs" />
+    <EmbeddedResource Include="Forms\ExperimentalForm.resx">
       <DependentUpon>ExperimentalForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
+    <EmbeddedResource Include="Forms\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Form_3Dcuboid\Form_3Dcuboid.resx">
-      <DependentUpon>Form_3Dcuboid.cs</DependentUpon>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -114,6 +108,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Forms\SensorDataView.resx">
+      <DependentUpon>DataRecorderForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -128,52 +125,16 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Form_3Dcuboid\Back.png">
+    <Content Include="Tao Framework\Tao.OpenGl.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Form_3Dcuboid\BackInv.png">
+    <Content Include="Tao Framework\Tao.OpenGl.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Form_3Dcuboid\Bottom.png">
+    <Content Include="Tao Framework\Tao.Platform.Windows.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Form_3Dcuboid\BottomInv.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\Front.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\FrontInv.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\Left.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\LeftInv.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\Right.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\RightInv.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\Tao.OpenGl.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\Tao.OpenGl.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\Tao.Platform.Windows.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\Tao.Platform.Windows.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\Top.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Form_3Dcuboid\TopInv.png">
+    <Content Include="Tao Framework\Tao.Platform.Windows.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
