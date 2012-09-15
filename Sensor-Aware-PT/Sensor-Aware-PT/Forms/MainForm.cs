@@ -15,11 +15,6 @@ namespace Sensor_Aware_PT
 {
     public partial class MainForm : Form
     {
-        
-        
-        
-        SensorDataView SDV = new SensorDataView();
-
         private Nexus mSensorManager;
         
         public MainForm()
@@ -118,8 +113,13 @@ namespace Sensor_Aware_PT
 
             bg.RunWorkerAsync();
              * */
-
+            SensorDataView SDV = new SensorDataView();
             SDV.Show();
+        }
+
+        private void button3_Click( object sender, EventArgs e )
+        {
+
         }
     }
 }

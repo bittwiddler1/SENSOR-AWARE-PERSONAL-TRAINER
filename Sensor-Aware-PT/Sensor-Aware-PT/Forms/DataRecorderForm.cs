@@ -85,7 +85,18 @@ namespace Sensor_Aware_PT
                 ExperimentalForm EF = new ExperimentalForm();
                 EF.subscribeToSource( sdp );
                 EF.Show();
-                sdp.replayFile( openDialog.FileName );
+
+                BackgroundWorker bg = new BackgroundWorker();
+
+                bg.DoWork += new DoWorkEventHandler( delegate
+                {
+                    sdp.replayFile( openDialog.FileName );
+
+                } );
+
+                bg.RunWorkerAsync();
+
+                
                 
             }
         }

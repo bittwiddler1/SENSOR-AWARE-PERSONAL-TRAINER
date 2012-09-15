@@ -6,6 +6,7 @@ using System.Timers;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics;
+using System.Threading;
 namespace Sensor_Aware_PT
 {
     public class SensorDataPlayer : IObservable<SensorDataEntry>
@@ -15,7 +16,7 @@ namespace Sensor_Aware_PT
         private int mCurrentIndex = 0;
         private int mMaxIndex = 0;
         List<IObserver<SensorDataEntry>> mObservers = new List<IObserver<SensorDataEntry>>();
-        Timer mReplayTimer = new Timer();
+        System.Timers.Timer mReplayTimer = new System.Timers.Timer();
         private List<SensorDataEntry> mDataList;
         
 
@@ -78,7 +79,27 @@ namespace Sensor_Aware_PT
             mDataList = ( List<SensorDataEntry> ) inputFormatter.Deserialize( inputStream );
             mMaxIndex = mDataList.Count;
             mTimeCounter.Start();
-            mReplayTimer.Start();
+            //mReplayTimer.Start();
+            
+            while( mCurrentIndex < mMaxIndex )
+            {
+                SensorDataEntry data = mDataList[ mCurrentIndex ];
+                if( mTimeCounter.Elapsed.CompareTo( data.timeSpan ) >= 0 )
+                {
+                    NotifyObservers( data );
+                    mCurrentIndex++;
+                }
+                Thread.Sleep( 0 );
+            };
+
+            
+            
+                //mReplayTimer.Stop();
+                mTimeCounter.Reset();
+                mMaxIndex = 0;
+                mCurrentIndex = 0;
+                mDataList.Clear();
+            
         }
 
         void mReplayTimer_Elapsed( object sender, ElapsedEventArgs e )
