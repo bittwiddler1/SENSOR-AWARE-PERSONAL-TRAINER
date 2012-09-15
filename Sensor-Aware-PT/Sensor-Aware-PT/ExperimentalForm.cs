@@ -17,6 +17,8 @@ namespace Sensor_Aware_PT
     public partial class ExperimentalForm : Form, IObserver<SensorDataEntry>
     {
         private Bone[] mBones = new Bone[ 4 ];
+        Dictionary<String, SensorDataEntry> mLastSensorData = new Dictionary<string, SensorDataEntry>();
+        Skeleton mUpperSkeleton = new Skeleton( SkeletonType.UpperBody );
         private bool mLoaded = false;
         public ExperimentalForm()
         {
@@ -55,6 +57,9 @@ namespace Sensor_Aware_PT
 
             GL.ClearColor( Color.CornflowerBlue );
 
+            mUpperSkeleton.createMapping( "B", BoneType.ArmUpperL );
+            mUpperSkeleton.createMapping( "C", BoneType.ArmLowerL );
+            /*
 
             mBones[ 0 ]= new Bone( 2f, new Vector3( 0, 0, 0 ) );
             mBones[ 1 ] = new Bone(3f, new Vector3(0,0,0));
@@ -64,38 +69,16 @@ namespace Sensor_Aware_PT
             mBones[ 0 ].addChild( mBones[ 1 ] );
             mBones[ 0 ].addChild( mBones[ 3 ] );
             mBones[ 1 ].addChild( mBones[ 2 ] );
+            */
 
+
+            
             Nexus.Instance.Subscribe( this );
-
-            List<Sensor> SSS = Nexus.Instance.getActivatedSensors();
-            foreach( Sensor s in SSS )
-            {
-                //s.DataReceived += new Sensor.DataReceivedHandler( s_DataReceived );
-            }
+            Nexus.Instance.Subscribe( mUpperSkeleton );
 
 
-        }
 
-        void s_DataReceived( object sender, Sensor.DataReceivedEventArgs e )
-        {
-            Sensor s = ( Sensor ) sender;
 
-            switch( s.Id )
-            {
-
-                case "A":
-                    mBones[ 0 ].updateOrientation( e.Data.orientation );
-                    break;
-                case "B":
-                    mBones[ 1 ].updateOrientation( e.Data.orientation );
-                    break;
-                case "C":
-                    mBones[ 2 ].updateOrientation( e.Data.orientation );
-                    break;
-                case "D":
-                    mBones[ 3 ].updateOrientation( e.Data.orientation );
-                    break;
-            }
         }
 
         void formUpdateTimer_Tick( object sender, EventArgs e )
@@ -151,7 +134,8 @@ namespace Sensor_Aware_PT
             GL.LoadMatrix( ref lookat );
 
             //GL.PushMatrix();
-            mBones[ 0 ].drawBone();
+            //mBones[ 0 ].drawBone();
+            mUpperSkeleton.draw();
             simpleOpenGlControl.SwapBuffers();
             //GL.PopMatrix();
             //GL.Flush();
@@ -161,8 +145,8 @@ namespace Sensor_Aware_PT
         
         private void button1_Click( object sender, EventArgs e )
         {
-            foreach( Bone b in mBones )
-                b.setYawOffset();
+            //foreach( Bone b in mBones )
+              //  b.setYawOffset();
         }
 
         private void button2_Click( object sender, EventArgs e )
@@ -189,6 +173,7 @@ namespace Sensor_Aware_PT
 
         void IObserver<SensorDataEntry>.OnNext( SensorDataEntry value )
         {
+            /*
             switch(value.id)
             {
 
@@ -205,8 +190,26 @@ namespace Sensor_Aware_PT
                     mBones[ 3 ].updateOrientation( value.orientation );
                     break;
             }
+             * */
+            lock( mLastSensorData )
+            {
+                mLastSensorData[ value.id ] = value;
+            }
+            
+            
         }
 
         #endregion
+
+        private void button3_Click( object sender, EventArgs e )
+        {
+            lock( mLastSensorData )
+            {
+                foreach( SensorDataEntry s in mLastSensorData.Values )
+                {
+                    Logger.Info( "{0}", s.ToString() );
+                }
+            }
+        }
     }
 }

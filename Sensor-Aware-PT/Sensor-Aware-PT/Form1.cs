@@ -139,6 +139,8 @@ namespace Sensor_Aware_PT
             {
                 EF.ShowDialog();
             } );
+
+            bg.RunWorkerAsync();
         }
     }
 }

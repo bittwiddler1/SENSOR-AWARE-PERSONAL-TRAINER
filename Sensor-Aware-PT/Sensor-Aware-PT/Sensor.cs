@@ -148,10 +148,12 @@ namespace Sensor_Aware_PT
                 mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
                 mSerialPort.ReadTimeout = 1000;
                 mSerialPort.WriteTimeout = 1000;
+                mSerialPort.ErrorReceived += new SerialErrorReceivedEventHandler( mSerialPort_ErrorReceived );
                 mSerialPort.DataReceived += new SerialDataReceivedEventHandler( mSerialPort_DataReceived );
                 try
                 {
                     mSerialPort.Open();
+                    mSerialPort.ReadByte();
                     changeState( SensorState.Initialized );
                     
                     Logger.Info( "Sensor {0} initialized", mID );
@@ -172,6 +174,11 @@ namespace Sensor_Aware_PT
                  Logger.Error( e.Message );
             }
   
+        }
+
+        void mSerialPort_ErrorReceived( object sender, SerialErrorReceivedEventArgs e )
+        {
+            throw new NotImplementedException();
         }
         /// <summary>
         /// Event to handle data coming in on the serial port. This is only important after opening the serial port while
@@ -224,8 +231,8 @@ namespace Sensor_Aware_PT
         /// <returns>True if the token was read, false if not</returns>
         private bool readToken(String token) 
         {
-            if(mSerialPort.BytesToRead != 0)
-                Logger.Info( "Sensor {0} bytes to read {1}", mID, mSerialPort.BytesToRead );
+            //if(mSerialPort.BytesToRead != 0)
+                //Logger.Info( "Sensor {0} bytes to read {1}", mID, mSerialPort.BytesToRead );
             if( mSerialPort.BytesToRead < token.Length )
             {
                 

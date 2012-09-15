@@ -16,6 +16,25 @@ namespace Sensor_Aware_PT
         public DateTime timeStamp = new DateTime();
         public int sequenceNumber;
         public string id;
+
+        public override string ToString()
+        {
+            return String.Format( "Sensor {12}:\nAngle{{{0},{1},{2}}}\n Accel{{{3},{4},{5}}}\n Mag{{{6},{7},{8}}}\n Gyro{{{9},{10},{11}}}",
+         orientation.X,
+         orientation.Y,
+         orientation.Z,
+         accelerometer.X,
+         accelerometer.Y,
+         accelerometer.Z,
+         magnetometer.X,
+         magnetometer.Y,
+         magnetometer.Z,
+         gyroscope.X,
+         gyroscope.Y,
+         gyroscope.Z ,
+         id
+         );
+        }
     }
 
     /** Holds ID and MAC of each sensor */

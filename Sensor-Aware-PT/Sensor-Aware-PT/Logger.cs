@@ -19,17 +19,23 @@ namespace Sensor_Aware_PT
 
         public static void Info(string text, params object[] args)
         {
+            Console.ForegroundColor = ConsoleColor.Yellow;
             DoLog("INFO ", text, args);
+            Console.ResetColor();
         }
 
         public static void Warning(string text, params object[] args)
         {
+            Console.ForegroundColor = ConsoleColor.Cyan;
             DoLog("WARNING ", text, args);
+            Console.ResetColor();
         }
 
         public static void Error(string text, params object[] args)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             DoLog("!!!ERROR!!! ", text, args);
+            Console.ResetColor();
         }
 
         public static void WaitForEnter()
