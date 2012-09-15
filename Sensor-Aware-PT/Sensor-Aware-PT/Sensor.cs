@@ -15,7 +15,7 @@ namespace Sensor_Aware_PT
     {
         #region Constants and Variables
         /** Timeout in ms for IO */
-        static int SERIAL_IO_TIMEOUT = 20000;
+        static int SERIAL_IO_TIMEOUT = 1000;
         /** Max number of values to keep in history */
         static int HISTORY_BUFFER_SIZE = 500;
 
@@ -23,7 +23,7 @@ namespace Sensor_Aware_PT
 
         /** Friendly sensor ID A-D */
         private string mID;
-        private int mReadErrors;
+        //private int mReadErrors;
 
         public string Id
         {
@@ -146,22 +146,22 @@ namespace Sensor_Aware_PT
                 mReadThread.IsBackground = true;
                 /** Setup the serial port */
                 mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
-                mSerialPort.ReadTimeout = 1000;
-                mSerialPort.WriteTimeout = 1000;
-                mSerialPort.ErrorReceived += new SerialErrorReceivedEventHandler( mSerialPort_ErrorReceived );
+                mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
+                mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
                 mSerialPort.DataReceived += new SerialDataReceivedEventHandler( mSerialPort_DataReceived );
                 try
                 {
                     mSerialPort.Open();
+                    /** This readByte is because some BT serial ports open even if not connected, but fail the read */
                     mSerialPort.ReadByte();
                     changeState( SensorState.Initialized );
                     
                     Logger.Info( "Sensor {0} initialized", mID );
                     OnInitializationComplete();
                 }
-                catch( Exception e )
+                catch(Exception)
                 {
-                    Logger.Error( "Sensor {0} serial port open exception: {1}", mID, e.Message );
+                    Logger.Error( "Sensor {0} is not available", mID );
                     changeState( SensorState.NotPresent );
                     /** Send the sensor ready, assume listeners check for IsActive */
                     OnInitializationComplete();
@@ -176,10 +176,6 @@ namespace Sensor_Aware_PT
   
         }
 
-        void mSerialPort_ErrorReceived( object sender, SerialErrorReceivedEventArgs e )
-        {
-            throw new NotImplementedException();
-        }
         /// <summary>
         /// Event to handle data coming in on the serial port. This is only important after opening the serial port while
         /// waiting for it to begin the activation process. Data comes in during the wait and must be purged or the buffer will overflow
@@ -197,8 +193,9 @@ namespace Sensor_Aware_PT
         }
 
         /// <summary>
-        /// Called to activate the sensor, after it has been initialized.
+        /// Activates the sensor after it has been initialized.
         /// </summary>
+        /// <exception cref="Exception">Thrown when unable to activate a sensor due to not being initialized</exception>
         public void activate()
         {
             if( mSensorState == SensorState.Initialized )
@@ -321,6 +318,10 @@ namespace Sensor_Aware_PT
             }
         }
 
+        /// <summary>
+        /// Raises the DataReceived event
+        /// </summary>
+        /// <param name="arg"></param>
         private void OnDataReceived( DataReceivedEventArgs arg )
         {
             /** This copy is for thread safety */
@@ -338,6 +339,9 @@ namespace Sensor_Aware_PT
             }
         }
 
+        /// <summary>
+        /// Raises the activation complete event
+        /// </summary>
         private void OnActivationComplete()
         {
             ActivationCompleteHandler handler = ActivationComplete;
@@ -354,6 +358,9 @@ namespace Sensor_Aware_PT
             }
         }
 
+        /// <summary>
+        /// Raises the initialization complete event
+        /// </summary>
         private void OnInitializationComplete()
         {
             InitializationCompleteHandler handler = InitializationComplete;
@@ -404,20 +411,7 @@ namespace Sensor_Aware_PT
         {
             try
             {
-                string output = String.Format( "Angle{{{0},{1},{2}}}, Accel{{{3},{4},{5}}}, Mag{{{6},{7},{8}}}, Gyro{{{9},{10},{11}}}",
-                dataEntry.orientation.X,
-                dataEntry.orientation.Y,
-                dataEntry.orientation.Z,
-                dataEntry.accelerometer.X,
-                dataEntry.accelerometer.Y,
-                dataEntry.accelerometer.Z,
-                dataEntry.magnetometer.X,
-                dataEntry.magnetometer.Y,
-                dataEntry.magnetometer.Z,
-                dataEntry.gyroscope.X,
-                dataEntry.gyroscope.Y,
-                dataEntry.gyroscope.Z );
-
+                string output = dataEntry.ToString();
                 Logger.Info( "Sensor {0} data: {1}", mID, output );
             }
             catch( Exception e)

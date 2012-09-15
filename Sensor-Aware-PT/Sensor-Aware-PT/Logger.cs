@@ -6,36 +6,62 @@ using System.Text;
 namespace Sensor_Aware_PT
 {
     // TODO rework to use numbers for log level so we can selectively filter shit out
-    public class Logger
+    public static class Logger
     {
-        private Logger()
-        {
-        }
-
+        public static int mLogLevel = 3;
+        /// <summary>
+        /// Log level 0
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="args"></param>
         public static void Print(string text, params object[] args)
         {
             DoLog("", text, args);
         }
 
+        /// <summary>
+        /// Log level 1
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="args"></param>
         public static void Info(string text, params object[] args)
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            DoLog("INFO ", text, args);
-            Console.ResetColor();
+            if( mLogLevel >= 1 )
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                DoLog( "INFO ", text, args );
+                Console.ResetColor();
+            }
         }
 
+        /// <summary>
+        /// Log level 2
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="args"></param>
         public static void Warning(string text, params object[] args)
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            DoLog("WARNING ", text, args);
-            Console.ResetColor();
+            if( mLogLevel >= 2 )
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                DoLog( "WARNING ", text, args );
+                Console.ResetColor();
+            }
         }
 
+        /// <summary>
+        /// Log level 3
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="args"></param>
         public static void Error(string text, params object[] args)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            DoLog("!!!ERROR!!! ", text, args);
-            Console.ResetColor();
+            if( mLogLevel >= 3 )
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                DoLog( "ERROR ", text, args );
+                Console.ResetColor();
+            }
         }
 
         public static void WaitForEnter()

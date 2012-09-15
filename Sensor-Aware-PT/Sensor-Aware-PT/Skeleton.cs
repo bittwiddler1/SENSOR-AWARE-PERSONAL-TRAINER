@@ -6,6 +6,9 @@ using OpenTK;
 
 namespace Sensor_Aware_PT
 {
+    /// <summary>
+    /// Defines different bone types on a body
+    /// </summary>
     public enum BoneType
     {
         ArmLowerL, ArmLowerR,
@@ -19,6 +22,9 @@ namespace Sensor_Aware_PT
         ShoulderL, ShoulderR
     }
 
+    /// <summary>
+    /// Defines the different skeletal types available
+    /// </summary>
     public enum SkeletonType
     {
         UpperBody,
@@ -28,38 +34,74 @@ namespace Sensor_Aware_PT
         TRex
     }
 
-
+    /// <summary>
+    /// Models a simple skeleton
+    /// </summary>
     public class Skeleton : IObserver<SensorDataEntry>
     {
+        /// <summary>
+        /// Holds all the <c>Bone</c>s in this Skeleton
+        /// </summary>
         protected List<Bone> mBones = new List<Bone>();
-        /** Maps a sensor ID to a specific bone */
+
+        /// <summary>
+        /// Maps a sensor ID to a specific bone
+        /// </summary>
         protected Dictionary<String, Bone> mSensorBoneMapping = new Dictionary<String, Bone>();
-        /** Maps a bone type to it's length */
-        protected Dictionary<BoneType, float> mBoneLengthMapping = new Dictionary<BoneType, float>();
-        /** Maps a bonetype to a specific bone */
+
+        /// <summary>
+        /// Maps a bone type to it's length
+        /// </summary>
+        protected static Dictionary<BoneType, float> mBoneLengthMapping = new Dictionary<BoneType, float>();
+
+        /// <summary>
+        /// Maps a bonetype to a specific bone 
+        /// </summary>
         protected Dictionary<BoneType, Bone> mBoneTypeMapping = new Dictionary<BoneType, Bone>();
+        
+        /// <summary>
+        /// Used to keep track of the fixed parent bone, which varies between skeleton types
+        /// </summary>
         protected Bone mParentBone;
+
+        /// <summary>
+        /// These are default orientation values for bones
+        /// </summary>
+        protected static Vector3 ORIENT_LEFT = new Vector3( -90, 0, 180 );
+        protected static Vector3 ORIENT_RIGHT = new Vector3( 90, 0, -180 );
+        protected static Vector3 ORIENT_DOWN = new Vector3( -180, -90, -180 );
+        protected static Vector3 ORIENT_UP = new Vector3( -90, 90f, 90 );
 
         public Skeleton()
         {
-            // Default bone length mappings
-            mBoneLengthMapping.Add(BoneType.BackUpper, 3f);
-            mBoneLengthMapping.Add(BoneType.BackLower, 3f);
-            mBoneLengthMapping.Add(BoneType.ArmLowerL, 2f);
-            mBoneLengthMapping.Add(BoneType.ArmLowerR, 2f);
-            mBoneLengthMapping.Add(BoneType.ArmUpperL, 2f);
-            mBoneLengthMapping.Add(BoneType.ArmUpperR, 2f);
-            mBoneLengthMapping.Add(BoneType.LegLowerL, 2.5f);
-            mBoneLengthMapping.Add(BoneType.LegLowerR, 2.5f);
-            mBoneLengthMapping.Add(BoneType.LegUpperL, 2.5f);
-            mBoneLengthMapping.Add(BoneType.LegUpperR, 2.5f);
-            mBoneLengthMapping.Add(BoneType.ShoulderL, 1.5f);
-            mBoneLengthMapping.Add(BoneType.ShoulderR, 1.5f);
+            initializeBoneLengths();
         }
 
+        /// <summary>
+        /// Sets up the default bonetype to bone length mappings
+        /// </summary>
+        private static void initializeBoneLengths()
+        {
+            mBoneLengthMapping.Add( BoneType.BackUpper, 3f );
+            mBoneLengthMapping.Add( BoneType.BackLower, 3f );
+            mBoneLengthMapping.Add( BoneType.ArmLowerL, 2f );
+            mBoneLengthMapping.Add( BoneType.ArmLowerR, 2f );
+            mBoneLengthMapping.Add( BoneType.ArmUpperL, 2f );
+            mBoneLengthMapping.Add( BoneType.ArmUpperR, 2f );
+            mBoneLengthMapping.Add( BoneType.LegLowerL, 2.5f );
+            mBoneLengthMapping.Add( BoneType.LegLowerR, 2.5f );
+            mBoneLengthMapping.Add( BoneType.LegUpperL, 2.5f );
+            mBoneLengthMapping.Add( BoneType.LegUpperR, 2.5f );
+            mBoneLengthMapping.Add( BoneType.ShoulderL, 1.5f );
+            mBoneLengthMapping.Add( BoneType.ShoulderR, 1.5f );
+        }
+
+        /// <summary>
+        /// Creates a new skeletal system
+        /// </summary>
+        /// <param name="skelType">The skeletal system type to create</param>
         public Skeleton(SkeletonType skelType) : this()
         {
-            
             switch (skelType)
             {
                 case SkeletonType.UpperBody:
@@ -90,6 +132,9 @@ namespace Sensor_Aware_PT
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Creates the upper body skeletal system using the back as a fixed reference point
+        /// </summary>
         private void createUpperBody()
         {
             Bone Back, ArmUL, ArmUR, ArmLL, ArmLR, ShoulderL, ShoulderR;
@@ -141,16 +186,21 @@ namespace Sensor_Aware_PT
             
 
         }
+
+        /// <summary>
+        /// Draws the entire skeletal structure
+        /// </summary>
         public void draw()
         {
+            /** Each child bone will automatically be drawn by it's parent so we only need to call draw on the parent bone of the structure */
             mParentBone.drawBone();
         }
 
-
-        public void update( SensorDataEntry data )
-        {
-
-        }
+        /// <summary>
+        /// Creates a mapping between a sensor ID and a specific boneType
+        /// </summary>
+        /// <param name="sensorID">Sensor ID to map ("A","B",etc)</param>
+        /// <param name="mapping">BoneType to map to</param>
         public void createMapping( string sensorID, BoneType mapping )
         {
             Bone mappedBone;

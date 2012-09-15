@@ -14,8 +14,8 @@ namespace Sensor_Aware_PT
 {
     public partial class MainForm : Form, IObserver<DataFrame>
     {
-        private bool loaded = false;
-        private bool bRunning = true;
+        
+        
         ExperimentalForm EF = new ExperimentalForm();
 
         private Nexus mSensorManager;
@@ -92,7 +92,7 @@ namespace Sensor_Aware_PT
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            bRunning = false;
+            //bRunning = false;
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
