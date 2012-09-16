@@ -44,30 +44,16 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void mSensorManager_NexusInitializedEvent( object sender, EventArgs e )
         {
-            ///** If the nexus is now ready, query for the active sensors and attach a cuboid window to them */
-            //List<Sensor> activeSensors = mSensorManager.getActivatedSensors();
-            ////foreach( Sensor s in activeSensors )
-            ////attachCuboidWindow( s );
-            //{
-            //    Sensor s = activeSensors[ 0 ];
-            //    Sensor s2 = activeSensors[ 1 ];
-            //    Sensor s3 = activeSensors[ 2 ];
-            //    Sensor s4 = activeSensors[ 3 ];
-            //    ExperimentalForm cuboid = new ExperimentalForm( s, s2,s3, s4,mSensorManager );
-            //    /** Create background worker to show the form and run it asynchronously */
-            //    BackgroundWorker cuboidWorker = new BackgroundWorker();
-            //    cuboidWorker.DoWork += new DoWorkEventHandler( delegate
-            //    {
-            //        cuboid.ShowDialog();
+            List<Sensor> all = mSensorManager.getAllSensors();
+            foreach( Sensor s in all )
+            {
+                this.Invoke( ( MethodInvoker ) delegate
+                {
+                    ListViewItem lvi = sensorListView.Items.Add( String.Format( "Sensor {0}", s.Id ) );
 
-            //    } );
-            //    cuboidWorker.RunWorkerAsync();
-            //}
-            
-            //mSensorManager.Subscribe( this );
-
-            
-
+                    lvi.BackColor = s.IsActivated ? Color.Green : Color.Red;
+                } );
+            }
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -118,6 +104,11 @@ namespace Sensor_Aware_PT
         }
 
         private void button3_Click( object sender, EventArgs e )
+        {
+
+        }
+
+        private void listView1_SelectedIndexChanged( object sender, EventArgs e )
         {
 
         }

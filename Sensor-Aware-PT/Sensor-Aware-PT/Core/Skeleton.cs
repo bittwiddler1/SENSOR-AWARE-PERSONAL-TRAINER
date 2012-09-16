@@ -167,24 +167,24 @@ namespace Sensor_Aware_PT
             // Set the orientations accordingly~
             
             /** Back */
-            Back.updateOrientation( new Vector3( -90, 90f, 90 ) );
+            Back.updateOrientation( ORIENT_UP);
             Back.addChild(ShoulderL);
             Back.addChild(ShoulderR);
             /** Shoulders */
-            ShoulderR.updateOrientation(new Vector3(90f, 0f, -180f));
-            ShoulderL.updateOrientation(new Vector3(-90f, 0, 180f));
+            ShoulderR.updateOrientation(ORIENT_RIGHT);
+            ShoulderL.updateOrientation(ORIENT_LEFT);
             /** Left Arm upper */
             ShoulderL.addChild(ArmUL);
-            ArmUL.updateOrientation(new Vector3());
+            ArmUL.updateOrientation(ORIENT_DOWN);
             /** Right arm upper */
             ShoulderR.addChild(ArmUR);
-            ArmUR.updateOrientation(new Vector3());
+            ArmUR.updateOrientation( ORIENT_DOWN );
             /** Left arm lower */
             ArmUL.addChild(ArmLL);
-            ArmLL.updateOrientation(new Vector3());
+            ArmLL.updateOrientation( ORIENT_DOWN );
             /** Right arm lower */
             ArmUR.addChild(ArmLR);
-            ArmLR.updateOrientation(new Vector3());
+            ArmLR.updateOrientation( ORIENT_DOWN );
 
 
             mParentBone = Back;

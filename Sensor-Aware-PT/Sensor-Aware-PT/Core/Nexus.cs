@@ -358,6 +358,7 @@ namespace Sensor_Aware_PT
             {
                 Logger.Info( "Nexus has intialized all sensors and is preparing to begin reading" );
                 mReadySensorCount = 0;
+                int notPresentCount = 0;
                 /** Now take our initialized sensors, and start their respective read threads */
                 foreach( Sensor s in mAvailableSensors )
                 {
@@ -368,7 +369,14 @@ namespace Sensor_Aware_PT
                         Thread.Sleep( 2000 );
                         s.activate();
                     }
+                    else
+                    {
+                        notPresentCount++;
+                    }
                 }
+
+                if( notPresentCount == mAvailableSensors.Count())
+                    OnNexusInitializationComplete();
                 
             }
             else
@@ -493,6 +501,11 @@ namespace Sensor_Aware_PT
                 mActiveSensorCount = activeSensors.Count;
 
             return activeSensors;
+        }
+
+        public List<Sensor> getAllSensors()
+        {
+            return new List<Sensor>( mAvailableSensors );
         }
 
         /// <summary>
