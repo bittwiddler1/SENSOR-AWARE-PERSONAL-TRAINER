@@ -24,7 +24,7 @@ namespace Sensor_Aware_PT
             mRecorder = new SensorDataRecorder();
         }
 
-        private void button1_Click( object sender, EventArgs e )
+        private void btnRecord_Click( object sender, EventArgs e )
         {
             if( !init )
             {
@@ -36,20 +36,20 @@ namespace Sensor_Aware_PT
             {
                 mRecorder.beginRecording();
                 dataGridView1.DataSource = null;
-                button1.Text = "Stop Recording";
+                btnRecord.Text = "Stop Recording";
                 this.Text = "RECORDING!!";
             }
             else
             {
                 List<SensorDataEntry> datas = mRecorder.stopRecording();
-                button1.Text = "Start Recording";
+                btnRecord.Text = "Start Recording";
                 this.Text = "IDLE";
                 BindingList<SensorDataEntry> blist = new BindingList<SensorDataEntry>( datas );
                 dataGridView1.DataSource = blist;
             }
         }
 
-        private void button2_Click( object sender, EventArgs e )
+        private void btnSave_Click( object sender, EventArgs e )
         {
             if( mRecorder.HasData )
             {
@@ -71,7 +71,7 @@ namespace Sensor_Aware_PT
             }
         }
 
-        private void button3_Click( object sender, EventArgs e )
+        private void btnReplay_Click( object sender, EventArgs e )
         {
             OpenFileDialog openDialog = new OpenFileDialog();
             openDialog.Filter = "Sensor Data|*.imu";

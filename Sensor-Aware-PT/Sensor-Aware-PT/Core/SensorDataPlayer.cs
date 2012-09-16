@@ -9,18 +9,40 @@ using System.Diagnostics;
 using System.Threading;
 namespace Sensor_Aware_PT
 {
+    /// <summary>
+    /// Used to play back sensor data. Since this class is the same type of observable as Nexus,
+    /// anything that subscribes to nexus can subscribe to this as well.
+    /// </summary>
     public class SensorDataPlayer : IObservable<SensorDataEntry>
     {
-        private Stopwatch mTimeCounter = new Stopwatch();
-        private object mObserverLock = new object();
+        /// <summary>
+        /// Used to keep track of time
+        /// </summary>
+        MicroLibrary.MicroStopwatch mPreciseCounter = new MicroLibrary.MicroStopwatch();
+        
+        /// <summary>
+        /// Index counters to go through the data sequentially on playback
+        /// </summary>
         private int mCurrentIndex = 0;
         private int mMaxIndex = 0;
-        List<IObserver<SensorDataEntry>> mObservers = new List<IObserver<SensorDataEntry>>();
-        System.Timers.Timer mReplayTimer = new System.Timers.Timer();
-        private List<SensorDataEntry> mDataList;
         
+        /// <summary>
+        /// Holds the data to be played
+        /// </summary>
+        private List<SensorDataEntry> mDataList;
 
         #region ObserverPattern
+
+        /// <summary>
+        /// Lock for the IObservable stuff
+        /// </summary>
+        private object mObserverLock = new object();
+
+        /// <summary>
+        /// Holds the Observers observing this object
+        /// </summary>
+        List<IObserver<SensorDataEntry>> mObservers = new List<IObserver<SensorDataEntry>>();
+
         public IDisposable Subscribe( IObserver<SensorDataEntry> observer )
         {
             lock( mObserverLock )
@@ -66,11 +88,13 @@ namespace Sensor_Aware_PT
 
         public SensorDataPlayer()
         {
-            mReplayTimer.Interval = .1;
-            mReplayTimer.Elapsed += new ElapsedEventHandler( mReplayTimer_Elapsed );
-            mReplayTimer.Enabled = false;
         }
 
+        /// <summary>
+        /// Loads a file with recorded sensor data and replays it through the observerable interface
+        /// Note that this function blocks, so call it in a different thread
+        /// </summary>
+        /// <param name="filename">The file to play</param>
         public void replayFile( string filename )
         {
             Stream inputStream = File.OpenRead( filename );
@@ -78,49 +102,25 @@ namespace Sensor_Aware_PT
 
             mDataList = ( List<SensorDataEntry> ) inputFormatter.Deserialize( inputStream );
             mMaxIndex = mDataList.Count;
-            mTimeCounter.Start();
-            //mReplayTimer.Start();
+            
+            mPreciseCounter.Start();
             
             while( mCurrentIndex < mMaxIndex )
             {
                 SensorDataEntry data = mDataList[ mCurrentIndex ];
-                if( mTimeCounter.Elapsed.CompareTo( data.timeSpan ) >= 0 )
+                if( mPreciseCounter.Elapsed.CompareTo( data.timeSpan ) >= 0 )
                 {
                     NotifyObservers( data );
                     mCurrentIndex++;
                 }
-                Thread.Sleep( 0 );
+                Thread.SpinWait( 500 );
             };
-
+            mPreciseCounter.Reset();
+            mMaxIndex = 0;
+            mCurrentIndex = 0;
+            mDataList.Clear();
+             
             
-            
-                //mReplayTimer.Stop();
-                mTimeCounter.Reset();
-                mMaxIndex = 0;
-                mCurrentIndex = 0;
-                mDataList.Clear();
-            
-        }
-
-        void mReplayTimer_Elapsed( object sender, ElapsedEventArgs e )
-        {
-            if( mCurrentIndex < mMaxIndex )
-            {
-                SensorDataEntry data = mDataList[ mCurrentIndex ];
-                if( mTimeCounter.Elapsed.CompareTo(data.timeSpan) >= 0)
-                {
-                    NotifyObservers( data);
-                    mCurrentIndex++;
-                }
-            }
-            else
-            {
-                mReplayTimer.Stop();
-                mTimeCounter.Reset();
-                mMaxIndex = 0;
-                mCurrentIndex = 0;
-                mDataList.Clear();
-            }
         }
 
     }

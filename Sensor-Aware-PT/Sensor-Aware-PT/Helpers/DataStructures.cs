@@ -38,19 +38,20 @@ namespace Sensor_Aware_PT
          );
         }
 
-        public Vector3 Orientation
-        {
-            get
-            {
-                return orientation;
-            }
-        }
 
         public String Id
         {
             get
             {
                 return id;
+            }
+        }
+
+        public Vector3 Orientation
+        {
+            get
+            {
+                return orientation;
             }
         }
 

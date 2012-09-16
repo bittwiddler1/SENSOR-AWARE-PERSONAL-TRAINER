@@ -35,12 +35,22 @@ namespace Sensor_Aware_PT
 
         #endregion
 
-
+        /// <summary>
+        /// Holds the data that is recoreded
+        /// </summary>
         private List<SensorDataEntry> mDataList = new List<SensorDataEntry>();
+        
+        /// <summary>
+        /// Used to keep track of the start of record time, to calculate timespans/offsets
+        /// since the start of recording
+        /// </summary>
         private DateTime mStartTime;
 
         private bool mIsRecording = false;
 
+        /// <summary>
+        /// Determines if the recorder is recording right now
+        /// </summary>
         public bool IsRecording
         {
             get
@@ -49,6 +59,9 @@ namespace Sensor_Aware_PT
             }
         }
 
+        /// <summary>
+        /// Determines if the recorder has any data recorded yet
+        /// </summary>
         public bool HasData
         {
             get
@@ -99,6 +112,10 @@ namespace Sensor_Aware_PT
             return null;
         }
 
+        /// <summary>
+        /// Saves the recorded data to a file
+        /// </summary>
+        /// <param name="outputFile">File to record to</param>
         public void saveRecording( String outputFile )
         {
             Logger.Info( "Writing sensor recording to file {0}", outputFile );

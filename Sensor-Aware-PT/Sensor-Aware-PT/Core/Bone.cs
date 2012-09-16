@@ -130,7 +130,7 @@ namespace Sensor_Aware_PT
                 }
             }
 
-            Logger.Info( "Wrote sphere with {0} vertices", n );
+            
             return vertices.ToArray();
         }
 
