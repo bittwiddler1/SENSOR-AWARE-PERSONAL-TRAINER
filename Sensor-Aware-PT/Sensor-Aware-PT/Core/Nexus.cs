@@ -167,8 +167,11 @@ namespace Sensor_Aware_PT
                         if (response.ToLower() == "y")
                         {
                             Logger.Info("User chose to use existing config file. (User Input = {0})", response.ToLower()[0]);
-                            this.readConfigFile();
-                            this.bGenerateConfig = false;
+
+                            if (this.readConfigFile() == true)
+                            {
+                                this.bGenerateConfig = false;
+                            }
                         }
                         else if (response.ToLower() == "n")
                         {
@@ -257,8 +260,9 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Reads the config file at %APPDATA%/Sensor-Aware-PT/config.xml
         /// </summary>
-        private void readConfigFile()
+        private bool readConfigFile()
         {
+            bool retval = true;
             StreamReader fileStream = null;
             try
             {
@@ -275,6 +279,14 @@ namespace Sensor_Aware_PT
                     mSensorIDDict[ id.Id ] = id;
                 }
             }
+            catch( System.InvalidOperationException e)
+            {
+                if (e.Message.StartsWith("There is an error in XML document"))
+                {
+                    Logger.Warning(String.Format("{0}- {1}", e.GetType().ToString(), e.Message)); 
+                    retval = false;   
+                }
+            }
             catch( Exception )
             {
                 throw;
@@ -283,6 +295,7 @@ namespace Sensor_Aware_PT
             {
                 fileStream.Close();
             }
+            return retval;
         }
 
         #endregion
