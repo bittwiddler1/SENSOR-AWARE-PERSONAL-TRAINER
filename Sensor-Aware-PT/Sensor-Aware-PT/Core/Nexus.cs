@@ -283,6 +283,7 @@ namespace Sensor_Aware_PT
             {
                 if (e.Message.StartsWith("There is an error in XML document"))
                 {
+                    Logger.Warning(String.Format("{0}- {1}", e.GetType().ToString(), e.Message)); 
                     retval = false;   
                 }
             }
