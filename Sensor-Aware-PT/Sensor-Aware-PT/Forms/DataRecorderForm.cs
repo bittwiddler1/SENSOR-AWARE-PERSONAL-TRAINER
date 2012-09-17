@@ -87,10 +87,13 @@ namespace Sensor_Aware_PT
                 EF.Show();
 
                 BackgroundWorker bg = new BackgroundWorker();
+                List<SensorDataEntry> data = sdp.loadFile( openDialog.FileName );
+                BindingList<SensorDataEntry> blist = new BindingList<SensorDataEntry>( data );
+                dataGridView1.DataSource = blist;
 
                 bg.DoWork += new DoWorkEventHandler( delegate
                 {
-                    sdp.replayFile( openDialog.FileName );
+                    sdp.play();
 
                 } );
 

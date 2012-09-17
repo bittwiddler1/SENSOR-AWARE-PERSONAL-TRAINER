@@ -97,12 +97,7 @@ namespace Sensor_Aware_PT
         /// <param name="filename">The file to play</param>
         public void replayFile( string filename )
         {
-            Stream inputStream = File.OpenRead( filename );
-            BinaryFormatter inputFormatter = new BinaryFormatter();
-
-            mDataList = ( List<SensorDataEntry> ) inputFormatter.Deserialize( inputStream );
-            mMaxIndex = mDataList.Count;
-            
+            loadFile( filename );
             mPreciseCounter.Start();
             
             while( mCurrentIndex < mMaxIndex )
@@ -123,5 +118,33 @@ namespace Sensor_Aware_PT
             
         }
 
+        public List<SensorDataEntry> loadFile( string filename )
+        {
+            Stream inputStream = File.OpenRead( filename );
+            BinaryFormatter inputFormatter = new BinaryFormatter();
+
+            mDataList = ( List<SensorDataEntry> ) inputFormatter.Deserialize( inputStream );
+            mMaxIndex = mDataList.Count;
+
+            return mDataList;
+        }
+
+        public void play()
+        {
+            mPreciseCounter.Start();
+            while( mCurrentIndex < mMaxIndex )
+            {
+                SensorDataEntry data = mDataList[ mCurrentIndex ];
+                if( mPreciseCounter.Elapsed.CompareTo( data.timeSpan ) >= 0 )
+                {
+                    NotifyObservers( data );
+                    mCurrentIndex++;
+                }
+                Thread.SpinWait( 500 );
+            };
+            mPreciseCounter.Reset();
+            mMaxIndex = 0;
+            mCurrentIndex = 0;
+        }
     }
 }
