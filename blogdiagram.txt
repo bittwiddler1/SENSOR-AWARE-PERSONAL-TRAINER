@@ -1,0 +1,73 @@
+{
+  "Sensor A","Sensor B","Sensor C","Sensor D" <-> "Bluetooth Interface" [folded]
+  "Bluetooth Interface" <-> "Com Port A","Com Port B","Com Port C","Com Port D"
+"Com Port A","Com Port B","Com Port C","Com Port D" <-> "Sensor Class" <-> "Nexus" [folded]
+
+"Nexus" -> "Observer Pattern Interface"
+"Observer Pattern Interface" [width = 300]
+"Nexus" <-> "Nexus Interface"
+"Nexus Interface" [width = 300]
+
+"Data Ring Buffer" <-> "Sensor Class" [folded]
+"Bluetooth Interface" [width = 300]
+
+"Observer Pattern Interface" <-> "Application Component Interface" [folded]
+ "Nexus Interface" <-> "Application Component Interface"
+"Application Component Interface" [width = 250] [height = 75]
+"Application Component Interface" <-> "Sensor Data Recorder","Sensor Data Player","Skeletal Viewer"
+
+group apps
+{
+style = dotted
+shape = line
+"Sensor Data Recorder"
+"Sensor Data Player"
+"Skeletal Viewer"
+}
+
+group interfaces
+{style = dashed
+shape = line
+"Observer Pattern Interface"
+"Nexus Interface"
+}
+
+group
+{
+orientation = landscape
+"Com Port A";
+"Com Port B";
+"Com Port C";
+"Com Port D";
+label = "Serial Ports"
+style = dotted
+shape = line
+fontsize = 16;
+}
+
+group nexus_group
+{
+group{
+"Data Ring Buffer"
+"Sensor Class"
+}
+"Nexus"
+color = "#77FFF7";
+style = dashed
+shape = line
+fontsize = 20;
+}
+
+group{
+orientation = portrait
+"Sensor A";
+"Sensor B";
+"Sensor C";
+"Sensor D";
+label = "IMU Sensors"
+shape = line
+style = dotted
+fontsize = 16
+color = "#77FF77";
+}
+}
