@@ -281,7 +281,7 @@ namespace Sensor_Aware_PT
             }
             catch( System.InvalidOperationException e)
             {
-                if (e.Message.StartsWith("There is an error in XML document")
+                if (e.Message.StartsWith("There is an error in XML document"))
                 {
                     retval = false;   
                 }
