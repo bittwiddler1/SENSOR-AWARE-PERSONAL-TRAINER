@@ -128,6 +128,14 @@ namespace Sensor_Aware_PT
         */
         public delegate void ActivationCompleteHandler( object sender, EventArgs e );
         public event ActivationCompleteHandler ActivationComplete;
+        
+        /** Event delegate and handler for reactivation */
+        public delegate void ReActivationCompleteHandler( object sender, EventArgs e );
+        public event ReActivationCompleteHandler ReActivationComplete;
+        
+        /** Event delegate and handler for reinitialization */
+        public delegate void ReInitializationCompleteHandler( object sender, EventArgs e );
+        public event ReInitializationCompleteHandler ReInitializationComplete;
 
         #endregion
         
@@ -257,7 +265,18 @@ namespace Sensor_Aware_PT
         /// </summary>
         private void OnReInitializationComplete()
         {
-            throw new NotImplementedException();
+            ReInitializationCompleteHandler handler = ReInitializationComplete;
+            try
+            {
+                if( handler != null )
+                {
+                    handler( this, EventArgs.Empty );
+                }
+            }
+            catch( Exception e )
+            {
+                throw e;
+            }
         }
 
         /// <summary>
@@ -445,7 +464,18 @@ namespace Sensor_Aware_PT
         /// </summary>
         private void OnReactivationComplete()
         {
-            throw new NotImplementedException();
+            ReActivationCompleteHandler handler = ReActivationComplete;
+            try
+            {
+                if( handler != null )
+                {
+                    handler( this, EventArgs.Empty );
+                }
+            }
+            catch( Exception e )
+            {
+                throw e;
+            }
         }
 
         /// <summary>
