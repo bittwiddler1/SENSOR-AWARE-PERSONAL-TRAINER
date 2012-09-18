@@ -66,6 +66,7 @@ namespace Sensor_Aware_PT
             mUpperSkeleton.createMapping( "A", BoneType.ArmLowerL );
             mUpperSkeleton.createMapping( "B", BoneType.ArmLowerR );
             mUpperSkeleton.createMapping( "D", BoneType.ArmUpperR );
+            simpleOpenGlControl.Focus();
 
 
         }
