@@ -137,6 +137,10 @@ namespace Sensor_Aware_PT
         public delegate void ReInitializationCompleteHandler( object sender, EventArgs e );
         public event ReInitializationCompleteHandler ReInitializationComplete;
 
+        /** Event delegate and handler for sensor disconnected */
+        public delegate void DisconnectedHandler( object sender, EventArgs e );
+        public event DisconnectedHandler Disconnected;
+
         #endregion
         
 
@@ -280,6 +284,25 @@ namespace Sensor_Aware_PT
         }
 
         /// <summary>
+        /// Raises the disconnected event
+        /// </summary>
+        private void OnDisconnected()
+        {
+            DisconnectedHandler handler = Disconnected;
+            try
+            {
+                if( handler != null )
+                {
+                    handler( this, EventArgs.Empty );
+                }
+            }
+            catch( Exception e )
+            {
+                throw e;
+            }
+        }
+
+        /// <summary>
         /// Event to handle data coming in on the serial port. This is only important after opening the serial port while
         /// waiting for it to begin the activation process. Data comes in during the wait and must be purged or the buffer will overflow
         /// on some implementations and cause problems.
@@ -288,7 +311,7 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void mSerialPort_DataReceived( object sender, SerialDataReceivedEventArgs e )
         {
-            if( mSensorState == SensorState.Initialized )
+            if( mSensorState == SensorState.Initialized || mSensorState == SensorState.ReInitialized)
             {
                 if( mSerialPort.BytesToRead > 0 )
                     mSerialPort.ReadExisting();
@@ -388,12 +411,14 @@ namespace Sensor_Aware_PT
 
                     Logger.Info( "Sensor {0} synchronization complete", mID );
                     
+                    changeState( SensorState.Activated );
+
                     if( mSensorState == SensorState.ReInitialized )
                         OnReactivationComplete();
                     else
                         OnActivationComplete();
 
-                    changeState( SensorState.Activated );
+                    
                     
                     /** Send the sensor ready event */
 

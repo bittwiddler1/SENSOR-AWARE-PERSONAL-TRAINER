@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using OpenTK.Graphics;
+//using OpenTK.Graphics;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System.Drawing;
@@ -17,7 +17,57 @@ namespace Sensor_Aware_PT
         Vector3[] mBoxVerts;
         Vector3[] mSphereVerts;
         protected Matrix4 mTransform;
-        float mYawOffset = 0;
+        Vector3 mOffset;
+        private Color mColor = Color.Gold;
+        private IntPtr mConeQuadric;
+        private float mThickness = .2f;
+        private float mDrawRatio = .3f; // Upper = .3f, lower = 1-.3f
+        private static bool mDrawBox = false;
+        private static bool mDrawWireframe = false;
+
+        public bool DrawWireFrame
+        {
+            get
+            {
+                return mDrawWireframe;
+            }
+            set
+            {
+                mDrawWireframe = value;
+            }
+        }
+
+        public bool DrawBoundingBox
+        {
+            get{return mDrawBox;}
+            set
+            {
+                mDrawBox = value;
+            }
+        }
+        public float Thickness
+        {
+            get
+            {
+                return mThickness;
+            }
+            set
+            {
+                mThickness = value;
+            }
+        }
+
+        public Color Color
+        {
+            get
+            {
+                return mColor;
+            }
+            set
+            {
+                mColor = value;
+            }
+        }
         
         List<Bone> mChildren;
         protected Bone mParentBone;
@@ -38,6 +88,7 @@ namespace Sensor_Aware_PT
             mTransform = Matrix4.Identity;
             mChildren = new List<Bone>();
             mParentBone = null;
+            mOffset = new Vector3( 0, 0, 0 );
             generateGeometry( mLength, 1f, 1f, mOrigin.X, mOrigin.Y, mOrigin.Z );
 
         }
@@ -47,18 +98,22 @@ namespace Sensor_Aware_PT
         /// </summary>
         public void setYawOffset()
         {
-            mYawOffset = mOrientation.X;
+            mOffset = mOrientation;
         }
 
+        public void updateUsingLastOrientation()
+        {
+            updateOrientation( mOrientation );
+        }
         public void updateOrientation( Vector3 or )
         {
             
             mOrientation = or;
             //XYZ = YPR
             //roll, yaw, then pitch
-            Matrix4 rx = Matrix4.CreateRotationX( MathHelper.DegreesToRadians( or.Z +90f) );
-            Matrix4 ry = Matrix4.CreateRotationZ( MathHelper.DegreesToRadians( or.Y ) );
-            Matrix4 rz = Matrix4.CreateRotationY( MathHelper.DegreesToRadians( mYawOffset - or.X +90f ));
+            Matrix4 rx = Matrix4.CreateRotationX( MathHelper.DegreesToRadians( (or.Z + 90f) - mOffset.Z ) );
+            Matrix4 ry = Matrix4.CreateRotationZ( MathHelper.DegreesToRadians(  or.Y - mOffset.Y ) );
+            Matrix4 rz = Matrix4.CreateRotationY( MathHelper.DegreesToRadians( mOffset.X - (or.X +90f) ));
             mTransform = Matrix4.Identity;
             mTransform = rx * ry * rz;
 
@@ -90,6 +145,11 @@ namespace Sensor_Aware_PT
                 mEndPoint.Z = mStartPoint.Z;
                 mEndPoint.X += mLength;
                 mEndPoint = Vector3.Transform( mEndPoint, mTransform );
+            }
+
+            foreach( Bone child in mChildren )
+            {
+                child.updateUsingLastOrientation();
             }
            
             /*
@@ -126,7 +186,7 @@ namespace Sensor_Aware_PT
                     v2.Y= R * ( ( float ) Math.Cos( ( float ) ( a * PI ) / 180 ) ) - K;
                     vertices.Add( v2 );
                     n++;
-
+                    
                 }
             }
 
@@ -164,13 +224,13 @@ namespace Sensor_Aware_PT
         }
 
 
-
         public void drawBone()
         {
             /** Copy the camera transform for our own use */
             GL.PushMatrix();
-            /** Set to wireframe for now */
-            GL.PolygonMode( MaterialFace.FrontAndBack, PolygonMode.Line );
+            
+            /** Draw wireframe or not....HOPE YOU LIKE THE INLINE */
+            GL.PolygonMode( MaterialFace.FrontAndBack, mDrawWireframe ? PolygonMode.Line : PolygonMode.Fill );
             //GL.PolygonMode( MaterialFace.FrontAndBack, PolygonMode.Fill );
             /** Mult with our own self contained transform matrix */
             GL.MultMatrix( ref mTransform );
@@ -186,45 +246,81 @@ namespace Sensor_Aware_PT
                 GL.Vertex3( v );
             }
             GL.End();
-             * */
+             */
+            /*
 
-            /** Draw the box */
-            GL.Begin( BeginMode.Quads );
-            //    Gl.Color3( Color.Red);
-            GL.Color3( Color.Red);
-            GL.Vertex3( mBoxVerts[ 0 ] );
-            GL.Vertex3( mBoxVerts[ 4 ] );
-            GL.Vertex3( mBoxVerts[ 6 ] );
-            GL.Vertex3( mBoxVerts[ 2 ] );
-            GL.Color3( Color.Green );
-            //Gl.Color3( Color.Black );
-            GL.Vertex3( mBoxVerts[ 0 ] );
-            GL.Vertex3( mBoxVerts[ 1 ] );
-            GL.Vertex3( mBoxVerts[ 5 ] );
-            GL.Vertex3( mBoxVerts[ 4 ] );
-            GL.Color3( Color.Black);
-            //Gl.Color3( Color.Green );
-            GL.Vertex3( mBoxVerts[ 1 ] );
-            GL.Vertex3( mBoxVerts[ 5 ] );
-            GL.Vertex3( mBoxVerts[ 7 ] );
-            GL.Vertex3( mBoxVerts[ 3 ] );
-            GL.Color3( Color.Blue );
-            //Gl.Color3( Color.Blue );
-            GL.Vertex3( mBoxVerts[ 3 ] );
-            GL.Vertex3( mBoxVerts[ 7 ] );
-            GL.Vertex3( mBoxVerts[ 6 ] );
-            GL.Vertex3( mBoxVerts[ 2 ] );
-            GL.Color3( Color.Orange );
-            GL.Vertex3( mBoxVerts[ 0 ] );
-            GL.Vertex3( mBoxVerts[ 1 ] );
-            GL.Vertex3( mBoxVerts[ 3 ] );
-            GL.Vertex3( mBoxVerts[ 2 ] );
-            GL.Color3( Color.Brown );
-            GL.Vertex3( mBoxVerts[ 4 ] );
-            GL.Vertex3( mBoxVerts[ 5 ] );
-            GL.Vertex3( mBoxVerts[ 7 ] );
-            GL.Vertex3( mBoxVerts[ 6 ] );
-            GL.End();
+            GL.Translate( new Vector3( mLength * .2f, 0, 0 ) );
+            drawCone( new Vector3(1f,0,0), new Vector3(mLength*.8f, 0, 0), mLength*.8f, .2f, 24 );
+            GL.Translate( new Vector3( -mLength * .2f, 0, 0 ) );
+            drawCone( new Vector3( -1f, 0, 0 ), new Vector3( 0, 0, 0 ), mLength * .2f, .2f, 24 );
+            */
+            
+            GL.ColorMaterial( MaterialFace.FrontAndBack, ColorMaterialParameter.Specular );
+            GL.Material( MaterialFace.Front, MaterialParameter.Specular, .1f );
+            
+            GL.ColorMaterial( MaterialFace.FrontAndBack, ColorMaterialParameter.AmbientAndDiffuse );
+            GL.Enable( EnableCap.ColorMaterial );
+
+            GL.PushMatrix();
+            GL.Rotate( 90f, 0, 1.0, 0 );
+            mConeQuadric = OpenTK.Graphics.Glu.NewQuadric();
+
+            OpenTK.Graphics.Glu.QuadricDrawStyle( mConeQuadric, OpenTK.Graphics.QuadricDrawStyle.Fill );
+            OpenTK.Graphics.Glu.QuadricNormal( mConeQuadric, OpenTK.Graphics.QuadricNormal.Smooth );
+            GL.Color3( mColor);
+            OpenTK.Graphics.Glu.Cylinder( mConeQuadric, 0.0, mThickness, mLength* mDrawRatio, 12, 12 );
+            GL.PopMatrix();
+            
+            GL.PushMatrix();
+
+            GL.Translate( new Vector3( mLength , 0, 0 ) );
+            GL.Rotate( 90f, 0, -1.0, 0 );
+            OpenTK.Graphics.Glu.Cylinder( mConeQuadric, 0.0, mThickness, mLength * (1f-mDrawRatio), 12, 12 );
+            GL.PopMatrix();
+
+            OpenTK.Graphics.Glu.DeleteQuadric( mConeQuadric );
+
+            if( mDrawBox )
+            {
+                GL.PolygonMode( MaterialFace.FrontAndBack, PolygonMode.Line );
+                /** Draw the box */
+                GL.Begin( BeginMode.Quads );
+                //    Gl.Color3( Color.Red);
+                GL.Color3( Color.Red );
+                GL.Vertex3( mBoxVerts[ 0 ] );
+                GL.Vertex3( mBoxVerts[ 4 ] );
+                GL.Vertex3( mBoxVerts[ 6 ] );
+                GL.Vertex3( mBoxVerts[ 2 ] );
+                GL.Color3( Color.Green );
+                //Gl.Color3( Color.Black );
+                GL.Vertex3( mBoxVerts[ 0 ] );
+                GL.Vertex3( mBoxVerts[ 1 ] );
+                GL.Vertex3( mBoxVerts[ 5 ] );
+                GL.Vertex3( mBoxVerts[ 4 ] );
+                GL.Color3( Color.Black );
+                //Gl.Color3( Color.Green );
+                GL.Vertex3( mBoxVerts[ 1 ] );
+                GL.Vertex3( mBoxVerts[ 5 ] );
+                GL.Vertex3( mBoxVerts[ 7 ] );
+                GL.Vertex3( mBoxVerts[ 3 ] );
+                GL.Color3( Color.Blue );
+                //Gl.Color3( Color.Blue );
+                GL.Vertex3( mBoxVerts[ 3 ] );
+                GL.Vertex3( mBoxVerts[ 7 ] );
+                GL.Vertex3( mBoxVerts[ 6 ] );
+                GL.Vertex3( mBoxVerts[ 2 ] );
+                GL.Color3( Color.Orange );
+                GL.Vertex3( mBoxVerts[ 0 ] );
+                GL.Vertex3( mBoxVerts[ 1 ] );
+                GL.Vertex3( mBoxVerts[ 3 ] );
+                GL.Vertex3( mBoxVerts[ 2 ] );
+                GL.Color3( Color.Brown );
+                GL.Vertex3( mBoxVerts[ 4 ] );
+                GL.Vertex3( mBoxVerts[ 5 ] );
+                GL.Vertex3( mBoxVerts[ 7 ] );
+                GL.Vertex3( mBoxVerts[ 6 ] );
+                GL.End();
+            }
 
             /** By popping here, we remove our orientation+translation and reset the matrix to world space */
             GL.PopMatrix();
@@ -241,6 +337,11 @@ namespace Sensor_Aware_PT
             {
                 child.drawBone();
             }
+        }
+
+        ~Bone()
+        {
+            
         }
 
 

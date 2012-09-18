@@ -11,7 +11,8 @@ using System.Drawing.Imaging;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
-
+//DONT FORGET TO SET THE GLCONTROL CONSTRUCTOR
+//: base(new GraphicsMode(32, 24, 8, 4), 3, 0, GraphicsContextFlags.ForwardCompatible)
 namespace Sensor_Aware_PT
 {
     public partial class ExperimentalForm : Form, IObserver<SensorDataEntry>
@@ -19,6 +20,8 @@ namespace Sensor_Aware_PT
         private Bone[] mBones = new Bone[ 4 ];
         Dictionary<String, SensorDataEntry> mLastSensorData = new Dictionary<string, SensorDataEntry>();
         Skeleton mUpperSkeleton = new Skeleton( SkeletonType.UpperBody );
+        Vector3 mViewRotations = new Vector3();
+        Vector3 mViewTranslations = new Vector3();
         private bool mLoaded = false;
         public ExperimentalForm()
         {
@@ -45,8 +48,9 @@ namespace Sensor_Aware_PT
             GL.Enable( EnableCap.ColorMaterial );
             GL.Enable( EnableCap.DepthTest);						    // Enables Depth Testing
             GL.Enable( EnableCap.Blend );
-            //GL.Enable( EnableCap.Lighting );
-            //GL.Enable( EnableCap.Light0 );
+            GL.Enable( EnableCap.Lighting );
+            GL.Enable( EnableCap.Light0 );
+            
             GL.Hint( HintTarget.PolygonSmoothHint, HintMode.Nicest);     // Really Nice Point Smoothing
             
             //this.Text = "Sensor " + mSensor.Id;
@@ -57,28 +61,12 @@ namespace Sensor_Aware_PT
 
             GL.ClearColor( Color.CornflowerBlue );
 
-            mUpperSkeleton.createMapping( "B", BoneType.ArmUpperL );
-            mUpperSkeleton.createMapping( "C", BoneType.ArmLowerL );
-            mUpperSkeleton.createMapping( "A", BoneType.ArmLowerR );
+
+            mUpperSkeleton.createMapping( "C", BoneType.ArmUpperL );
+            mUpperSkeleton.createMapping( "A", BoneType.ArmLowerL );
+            mUpperSkeleton.createMapping( "B", BoneType.ArmLowerR );
             mUpperSkeleton.createMapping( "D", BoneType.ArmUpperR );
-            /*
 
-            mBones[ 0 ]= new Bone( 2f, new Vector3( 0, 0, 0 ) );
-            mBones[ 1 ] = new Bone(3f, new Vector3(0,0,0));
-            mBones[ 2 ]= new Bone( 4f, new Vector3( 0, 0, 0 ) );
-            mBones[ 3] = new Bone( 3f, new Vector3( 0, 0, 0 ) );
-
-            mBones[ 0 ].addChild( mBones[ 1 ] );
-            mBones[ 0 ].addChild( mBones[ 3 ] );
-            mBones[ 1 ].addChild( mBones[ 2 ] );
-            */
-
-
-            
-            //Nexus.Instance.Subscribe( this );
-            //Nexus.Instance.Subscribe( mUpperSkeleton );
-            //SensorDataPlayer sdp = new SensorDataPlayer();
-            //sdp.replayFile( "data.bin" );
 
         }
 
@@ -120,9 +108,11 @@ namespace Sensor_Aware_PT
             float fH =(float)Math.Tan( (fovy / 360.0f * 3.14159f) ) * zNear;
             float fW = fH * aspect;
             GL.Frustum(-fW, fW, -fH, fH, zNear, zFar);
+            
         }
 
-
+        
+        
         /// <summary>
         /// Redraw cuboid polygons.
         /// </summary>
@@ -133,21 +123,55 @@ namespace Sensor_Aware_PT
                 lock( this )
                 {
                     simpleOpenGlControl.MakeCurrent();
+                       
                     GL.Clear( ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit );    // Clear screen and DepthBuffer
 
                     GL.PolygonMode( MaterialFace.Front, PolygonMode.Fill );
 
                     // Set camera view and distance
-                    Matrix4 lookat = Matrix4.LookAt( 0, 0, 50, 0, 0, 0, 0, 1, 0 );
+                    Matrix4 lookat = Matrix4.LookAt( 40, 35, 40, 0, 0, 0, 0, 1, 0 );
 
                     GL.MatrixMode( MatrixMode.Modelview );
                     GL.LoadIdentity();
                     //Tao.OpenGL.u.gluLookAt( 0, 0, 15, 0, 0, 0, 0, 1, 0 );
                     GL.LoadMatrix( ref lookat );
 
+                    GL.Translate( 0, 0, 0 );
+                    GL.Rotate( mViewRotations.X, 1f, 0, 0 );
+                    GL.Rotate( mViewRotations.Y, 0, 1f, 0 );
+                    GL.Rotate( mViewRotations.Z, 0, 0, 1f );
+                    
+                    GL.LineWidth( 2f );
+                    GL.Enable( EnableCap.LineStipple );
+                    GL.LineStipple(1, Convert.ToInt16("1000110001100011", 2));
+                    GL.Begin( BeginMode.Lines );
+                    GL.Color3( Color.Red );
+                    GL.Vertex3( -100, 0, 0 );
+                    GL.Vertex3( 100, 0, 0 );
+                    GL.End();
+                    
+
+                    
+                    GL.Begin( BeginMode.Lines );
+                    GL.Color3( Color.Green );
+                    GL.Vertex3( 0, -100, 0 );
+                    GL.Vertex3( 0, 100, 0 );
+                    GL.End();
+                    
+                    GL.Begin( BeginMode.Lines );
+                    GL.Color3( Color.Blue );
+                    GL.Vertex3( 0, 0, -100 );
+                    GL.Vertex3( 0, 0, 100 );
+                    GL.End();
+
+                    GL.Disable( EnableCap.LineStipple );
+                    GL.LineWidth( 1f );
+
                     //GL.PushMatrix();
                     //mBones[ 0 ].drawBone();
                     mUpperSkeleton.draw();
+                    
+                    
                     simpleOpenGlControl.SwapBuffers();
                     //GL.PopMatrix();
                     //GL.Flush();
@@ -235,6 +259,45 @@ namespace Sensor_Aware_PT
                 mLoaded = false;
                 simpleOpenGlControl.Context.Dispose();
                 simpleOpenGlControl.Dispose();
+            }
+        }
+
+        private void simpleOpenGlControl_KeyPress( object sender, System.Windows.Forms.KeyPressEventArgs e )
+        {
+
+        }
+
+        private void simpleOpenGlControl_KeyDown( object sender, KeyEventArgs e )
+        {
+            switch( e.KeyCode)
+            {
+
+                case Keys.Q:
+                    mViewRotations.X += 1f;
+                    break;
+                case Keys.W:
+                    mViewRotations.X -= 1f;
+                    break;
+                case Keys.A:
+                    mViewRotations.Y += 1f;
+                    break;
+                case Keys.S:
+                    mViewRotations.Y -= 1f;
+                    break;
+                case Keys.Z:
+                    mViewRotations.Z += 1f;
+                    break;
+                case Keys.X:
+                    mViewRotations.Z -= 1f;
+                    break;
+                case Keys.E:
+                    mUpperSkeleton.toggleBox();
+                    break;
+                case Keys.R:
+                    mUpperSkeleton.toggleWireframe();
+                    break;
+                default:
+                    break;
             }
         }
     }
