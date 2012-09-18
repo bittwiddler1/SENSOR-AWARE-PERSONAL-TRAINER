@@ -171,12 +171,14 @@ namespace Sensor_Aware_PT
             GL.PushMatrix();
             /** Set to wireframe for now */
             GL.PolygonMode( MaterialFace.FrontAndBack, PolygonMode.Line );
+            //GL.PolygonMode( MaterialFace.FrontAndBack, PolygonMode.Fill );
             /** Mult with our own self contained transform matrix */
             GL.MultMatrix( ref mTransform );
 
             /** At this point, all following draw calls will begin with the origin translated and rotated where it needs to be
              * so we can draw in model-space
             /** Draw the sphere */
+            /*
             GL.Begin( BeginMode.TriangleStrip );
             GL.Color3( Color.LightBlue );
             foreach( Vector3 v in mSphereVerts )
@@ -184,39 +186,40 @@ namespace Sensor_Aware_PT
                 GL.Vertex3( v );
             }
             GL.End();
+             * */
 
             /** Draw the box */
             GL.Begin( BeginMode.Quads );
             //    Gl.Color3( Color.Red);
-            GL.Color3( 1f, 0f, 0f );
+            GL.Color3( Color.Red);
             GL.Vertex3( mBoxVerts[ 0 ] );
             GL.Vertex3( mBoxVerts[ 4 ] );
             GL.Vertex3( mBoxVerts[ 6 ] );
             GL.Vertex3( mBoxVerts[ 2 ] );
-            GL.Color3( 1f, 1f, 0f );
+            GL.Color3( Color.Green );
             //Gl.Color3( Color.Black );
             GL.Vertex3( mBoxVerts[ 0 ] );
             GL.Vertex3( mBoxVerts[ 1 ] );
             GL.Vertex3( mBoxVerts[ 5 ] );
             GL.Vertex3( mBoxVerts[ 4 ] );
-            GL.Color3( 1f, 0f, 1f );
+            GL.Color3( Color.Black);
             //Gl.Color3( Color.Green );
             GL.Vertex3( mBoxVerts[ 1 ] );
             GL.Vertex3( mBoxVerts[ 5 ] );
             GL.Vertex3( mBoxVerts[ 7 ] );
             GL.Vertex3( mBoxVerts[ 3 ] );
-            GL.Color3( 0f, 1f, 0f );
+            GL.Color3( Color.Blue );
             //Gl.Color3( Color.Blue );
             GL.Vertex3( mBoxVerts[ 3 ] );
             GL.Vertex3( mBoxVerts[ 7 ] );
             GL.Vertex3( mBoxVerts[ 6 ] );
             GL.Vertex3( mBoxVerts[ 2 ] );
-            //Gl.Color3( Color.Orange );
+            GL.Color3( Color.Orange );
             GL.Vertex3( mBoxVerts[ 0 ] );
             GL.Vertex3( mBoxVerts[ 1 ] );
             GL.Vertex3( mBoxVerts[ 3 ] );
             GL.Vertex3( mBoxVerts[ 2 ] );
-            //Gl.Color3( Color.Brown );
+            GL.Color3( Color.Brown );
             GL.Vertex3( mBoxVerts[ 4 ] );
             GL.Vertex3( mBoxVerts[ 5 ] );
             GL.Vertex3( mBoxVerts[ 7 ] );

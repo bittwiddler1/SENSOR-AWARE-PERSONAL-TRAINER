@@ -246,6 +246,14 @@ namespace Sensor_Aware_PT
             }
         }
 
+        public void setYawOffsets()
+        {
+            foreach( Bone b in mSensorBoneMapping.Values )
+            {
+                b.setYawOffset();
+            }
+        }
+
         #endregion
     }
 }

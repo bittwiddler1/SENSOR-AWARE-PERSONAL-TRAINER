@@ -18,7 +18,11 @@ namespace Sensor_Aware_PT
         static int SERIAL_IO_TIMEOUT = 1000;
         /** Max number of values to keep in history */
         static int HISTORY_BUFFER_SIZE = 500;
-
+        /** Max number of retries after disconnected */
+        static int MAX_RECONNECT_RETRIES = 3;
+        /** Amount of time to wait between reconnects, in ms */
+        static int RECONNECT_TIMEOUT = 10000;
+        /** Maximum # of disconnects before never reconnecting */
         private const int MAX_READ_ERRORS = 3;
 
         /** Friendly sensor ID A-D */
@@ -60,6 +64,11 @@ namespace Sensor_Aware_PT
 
         /** Lock on the read thread when resynchronizing */
         private readonly object mSynchronizationLock = new object();
+        /** Keeps track of the # of reconnects attempted */
+        private int mReconnectRetryCount = 0;
+
+        /** keeps track of the # of disconnects */
+        private int mDisconnectCount = 0;
 
         /// <summary>
         /// Holds the state of the sensor
@@ -71,7 +80,9 @@ namespace Sensor_Aware_PT
             Activated, /** Serial port is now reading data */
             NotPresent, /** Serial port did not open */
             Deactivated, /** Serial port was open but failed to resync */
-            PreActivated /** Serial port is open but has not started reading data */
+            PreActivated, /** Serial port is open but has not started reading data */
+            ReInitialized,
+            ReConnecting
         };
         private SensorState mSensorState = SensorState.Uninitialized; /** Default state for the sensor */
         
@@ -177,6 +188,79 @@ namespace Sensor_Aware_PT
         }
 
         /// <summary>
+        /// Reinitialize the sensors after a disconnect
+        /// </summary>
+        private void reinitialize()
+        {
+            Logger.Warning( "Sensor {0} waiting {1} seconds before attempting to reconnect", mID, RECONNECT_TIMEOUT / 1000 );
+            Thread.Sleep( RECONNECT_TIMEOUT );
+            mReconnectRetryCount++;
+
+            if( mReconnectRetryCount < MAX_RECONNECT_RETRIES )
+            {
+                try
+                {
+                    /** Setup the reading thread */
+                    mReadThread = new Thread( readThreadRun );
+                    /** Format for name of each read thread is
+                     * readThreadRunA, readThreadRunB...etc */
+                    mReadThread.Name = String.Format( "readThreadRun{0}", mID );
+                    mReadThread.IsBackground = true;
+                    /** Setup the serial port */
+                    mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
+                    mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
+                    mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
+                    mSerialPort.DataReceived += new SerialDataReceivedEventHandler( mSerialPort_DataReceived );
+                    try
+                    {
+                        mSerialPort.Open();
+                        /** This readByte is because some BT serial ports open even if not connected, but fail the read */
+                        mSerialPort.ReadByte();
+                        Logger.Info( "Sensor {0} re-initialized", mID );
+                        changeState( SensorState.ReInitialized );
+                        OnReInitializationComplete();
+                    }
+                    catch( Exception )
+                    {
+                        Logger.Error( "Sensor {0} unable to reconnect", mID );
+                    }
+                    finally
+                    {
+                        /** Reconnect unless init complete */
+                        switch( mSensorState )
+                        {
+                            case SensorState.ReInitialized:
+                                break;
+                            case SensorState.ReConnecting:
+                                reinitialize();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                }
+                catch( Exception e )
+                {
+                    Logger.Error( e.Message );
+                }
+            }
+            else
+            {
+                Logger.Error( "Sensor {0} exhausted all reconnect attempts", mID );
+                changeState( SensorState.NotPresent );
+            }
+        }
+
+        /// <summary>
+        /// Raises the reinitialization complete event
+        /// </summary>
+        private void OnReInitializationComplete()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Event to handle data coming in on the serial port. This is only important after opening the serial port while
         /// waiting for it to begin the activation process. Data comes in during the wait and must be purged or the buffer will overflow
         /// on some implementations and cause problems.
@@ -255,17 +339,17 @@ namespace Sensor_Aware_PT
         private void readThreadRun()
         {
             
-            if (mSensorState == SensorState.Initialized)
+            if ((mSensorState == SensorState.Initialized )||( mSensorState == SensorState.ReInitialized))
             {
                 changeState( SensorState.PreActivated );
-                
+
                 try
                 {
                     //Thread.Sleep( 3000 );
                     Logger.Info( "Sensor {0} synchronization started", mID );
 
                     mSerialPort.DiscardInBuffer();
-                    
+
                     /** Sets the output parameters */
                     mSerialPort.Write( "#ob" );  /** Turn on binary output */
                     mSerialPort.Write( "#o1" );  /** Turn on continuous streaming output */
@@ -273,22 +357,28 @@ namespace Sensor_Aware_PT
 
                     /** Clear the input buffer and then request the sync token */
                     mSerialPort.DiscardInBuffer();
-                    mSerialPort.Write( "#s00" );  
+                    mSerialPort.Write( "#s00" );
                     bool synchronized = false;
 
                     /** Wait until we are synchronized */
                     do
                     {
-                        synchronized = readToken( "#SYNCH00\r\n");
+                        synchronized = readToken( "#SYNCH00\r\n" );
                     }
-                    while(!synchronized);
+                    while( !synchronized );
 
-                    Logger.Info("Sensor {0} synchronization complete", mID);
+                    Logger.Info( "Sensor {0} synchronization complete", mID );
+                    
+                    if( mSensorState == SensorState.ReInitialized )
+                        OnReactivationComplete();
+                    else
+                        OnActivationComplete();
+
                     changeState( SensorState.Activated );
-                    OnActivationComplete();
+                    
                     /** Send the sensor ready event */
 
-                    while (mSensorState == SensorState.Activated)
+                    while( mSensorState == SensorState.Activated )
                     {
                         lock( mSynchronizationLock )
                         {
@@ -302,20 +392,60 @@ namespace Sensor_Aware_PT
                         //Logger.Info( "Sensor {0} data: {1}, {2}, {3}", mID, newData.orientation.X, newData.orientation.Y, newData.orientation.Z );
                     }
                 }
-                catch (Exception e)
+                catch( Exception e )
                 {
-                    //mReadErrors++;
-                    //if( MAX_READ_ERRORS <= mReadErrors )
+                    Logger.Error( "Sensor {0} read thread exception: {1}", mID, e.Message );
+                    //throw new Exception( String.Format( "Sensor {0} read thread exception: {1}", mID, e.Message ) );
+                }
+                finally
+                {
+                    switch( mSensorState )
                     {
-                        Logger.Error( "Sensor {0} read thread exception: {1}", mID, e.Message );
-                        throw new Exception( String.Format( "Sensor {0} read thread exception: {1}", mID, e.Message ) );
+                        case SensorState.Uninitialized:
+                            break;
+                        case SensorState.Initialized:
+                            break;
+                            /** Fallthrough cases */
+                        case SensorState.PreActivated:
+                        case SensorState.Activated:
+                            {
+                                mDisconnectCount++;
+                                if( mDisconnectCount < MAX_READ_ERRORS )
+                                {
+                                    Logger.Error( "Sensor {0} disconnected, attempting to reconnect", mID );
+                                    changeState( SensorState.ReConnecting );
+                                    reinitialize();
+                                }
+                                else
+                                {
+                                    Logger.Error( "Sensor {0} maximum read error limit reach, not going to reconnect", mID );
+                                    changeState( SensorState.NotPresent );
+                                }
+                            }
+                            break;
+                        case SensorState.NotPresent:
+                            break;
+                        case SensorState.Deactivated:
+                            break;
+                        default:
+                            break;
                     }
+
+                    mSerialPort.Close();
                 }
             }
             else
             {
                 Logger.Error("Tried to read data before initialized");
             }
+        }
+
+        /// <summary>
+        /// Raises the reactivation complete event
+        /// </summary>
+        private void OnReactivationComplete()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

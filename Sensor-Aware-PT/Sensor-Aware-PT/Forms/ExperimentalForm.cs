@@ -59,6 +59,8 @@ namespace Sensor_Aware_PT
 
             mUpperSkeleton.createMapping( "B", BoneType.ArmUpperL );
             mUpperSkeleton.createMapping( "C", BoneType.ArmLowerL );
+            mUpperSkeleton.createMapping( "A", BoneType.ArmLowerR );
+            mUpperSkeleton.createMapping( "D", BoneType.ArmUpperR );
             /*
 
             mBones[ 0 ]= new Bone( 2f, new Vector3( 0, 0, 0 ) );
@@ -159,6 +161,7 @@ namespace Sensor_Aware_PT
         {
             //foreach( Bone b in mBones )
               //  b.setYawOffset();
+            mUpperSkeleton.setYawOffsets();
         }
 
         private void button2_Click( object sender, EventArgs e )
