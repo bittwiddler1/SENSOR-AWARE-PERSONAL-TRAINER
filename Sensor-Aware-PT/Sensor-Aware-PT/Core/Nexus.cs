@@ -219,6 +219,7 @@ namespace Sensor_Aware_PT
                 {
                     /** Register the ready event */
                     s.InitializationComplete += new Sensor.InitializationCompleteHandler(Sensor_InitializationCompleteEvent);
+                    s.ReInitializationComplete += new Sensor.ReInitializationCompleteHandler( Sensor_ReInitializationComplete );
                 }
 
                 /** Initialize the first member */
@@ -230,6 +231,17 @@ namespace Sensor_Aware_PT
                 bGenerateConfig = true;
                 Logger.Info( "Manual input will be required to configure the sensor array" );
             }
+        }
+
+
+        /// <summary>
+        /// Event fired after a sensor reinitializes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Sensor_ReInitializationComplete( object sender, EventArgs e )
+        {
+            throw new NotImplementedException();
         }
 
         private void saveConfigFile()
@@ -379,6 +391,7 @@ namespace Sensor_Aware_PT
                     {
                         mReadySensorCount++;
                         s.ActivationComplete += new Sensor.ActivationCompleteHandler( Sensor_ActivationCompleteEvent );
+                        s.ReActivationComplete += new Sensor.ReActivationCompleteHandler( Sensor_ReActivationComplete );
                         Thread.Sleep( 2000 );
                         s.activate();
                     }
@@ -401,6 +414,16 @@ namespace Sensor_Aware_PT
             }
 
 
+        }
+
+        /// <summary>
+        /// Event fired after a sensor reactivates
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Sensor_ReActivationComplete( object sender, EventArgs e )
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
