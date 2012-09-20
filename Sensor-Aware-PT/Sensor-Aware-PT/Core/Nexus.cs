@@ -94,6 +94,18 @@ namespace Sensor_Aware_PT
         {
             this.mConfigurator = new ConfigurationDialog();
             this.mConfigurator.ShowDialog(); 
+
+            mAvailableSensors = mSensorDict.Values.ToArray();
+            foreach (Sensor s in mAvailableSensors)
+            {
+                /** Register the ready event */
+                s.InitializationComplete += new Sensor.InitializationCompleteHandler(Sensor_InitializationCompleteEvent);
+                s.ReInitializationComplete += new Sensor.ReInitializationCompleteHandler( Sensor_ReInitializationComplete );
+            }
+
+            /** Initialize the first member */
+            mAvailableSensors[0].initialize();
+            
         }
 
         #region ObserverPattern
@@ -216,17 +228,7 @@ namespace Sensor_Aware_PT
         //        }
 
                 
-        //        mAvailableSensors = mSensorDict.Values.ToArray();
-        //        foreach (Sensor s in mAvailableSensors)
-        //        {
-        //            /** Register the ready event */
-        //            s.InitializationComplete += new Sensor.InitializationCompleteHandler(Sensor_InitializationCompleteEvent);
-        //            s.ReInitializationComplete += new Sensor.ReInitializationCompleteHandler( Sensor_ReInitializationComplete );
-        //        }
-
-        //        /** Initialize the first member */
-        //        mAvailableSensors[0].initialize();
-        //    }
+       
         //    catch( Exception e )
         //    {
         //        Logger.Warning( "{0}", e.Message );

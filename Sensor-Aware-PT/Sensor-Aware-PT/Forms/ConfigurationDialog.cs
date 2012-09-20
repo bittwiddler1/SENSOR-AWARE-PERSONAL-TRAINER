@@ -28,41 +28,55 @@ namespace Sensor_Aware_PT
         BackgroundWorker mRescanWorker = null;
         Nexus mNexus = Nexus.Instance;
         Boolean mbScanForPort = false;
-
-        private List<Char> Labels;
+        Boolean mbHaveSaved = false;
+        private List<Char> mPossibleIds;
 
         private Dictionary<String, String> mPortToMac;
-        private Dictionary<String, ComboBox> mPortToComboBox;
-        private List<SplitContainer> mContainers;
+        private Dictionary<String, String> mPortToID;
+
         private ManagementObject[] mWmiCOMData = null;
 
-        private Dictionary<String, Sensor> mSensorDict;
-        private Dictionary<String, SensorIdentification> mSensorIDDict;
+        //private  Dictionary<String, Sensor> mSensorDict;
+        //private  Dictionary<String, SensorIdentification> mNexus.mSensorIDDict;
         #endregion
 
-   
+        #region WinFormShit
+        private SplitContainer mSplitter = null;
+        private TabControl mTabControl   = null;
+        private Button mSaveButton       = null;
+        #endregion
+
         public ConfigurationDialog()
         {
             InitializeComponent();
 
-            this.mSensorDict = mNexus.mSensorDict;
-            this.mSensorIDDict = mNexus.mSensorIDDict;
+            ///* Get refs to the SensorData in nexus */
+            //mNexus.SensorDict = mNexus.mSensorDict;
+            //this.mSensorIDDict = mNexus.mSensorIDDict;
             
-            this.mFakeProgressBar.MarqueeAnimationSpeed = 500;
-            this.mFakeProgressBar.Show();
-            this.mScanLabel.Show();
+            /* Setup WinForms */
+            this.mFakeProgressBar.MarqueeAnimationSpeed = 100;
 
-            
+            /* Threading stuff */
             this.mRescanWorker = new BackgroundWorker();
             this.mRescanWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Configure);
     
             this.mRescanWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.GenerateForm);
             this.mRescanWorker.RunWorkerAsync();
 
+            this.Focus();
         }
 
+        #region EventHandlers
+        /// <summary>
+        /// Worker thread that attempts to read the Config and optionally scans for new 
+        /// BT Serial Ports.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Configure(object sender, DoWorkEventArgs e)
         {
+            /* Check for config file */
             if (File.Exists(this.ConfigFilePath) == false)
             {
                 MessageBox.Show("Could not find the configuration file.\nRescan will be necessary");
@@ -70,75 +84,217 @@ namespace Sensor_Aware_PT
             }
             else
             {
+                /* If we sucessfully read the file, no need to rescan */
                 if (this.readConfigFile() == true)
                 {
                     this.mbScanForPort = false;
                 }
             }
 
+            /* if any of the above  checks failed, we gotta scan for ports */
             if (this.mbScanForPort)
             {
                 this.ScanForPorts();
             }
         }
 
+        /// <summary>
+        /// Called as soon as Configure(...) ends.  Gets rid of the "Scanning" page on
+        /// the form and replaces it with tabs and buttons and context menus, etc.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void GenerateForm(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
-            this.mScanLabel.Hide();
-            this.mFakeProgressBar.Hide();
+            /* Get rid of the "Scanning" page */
+            this.mPanel.Controls.Remove(this.mScanLabel);
+            this.mPanel.Controls.Remove(this.mFakeProgressBar);
+
+            /* Set up the Splitter */
+            this.mSplitter = new SplitContainer();
+            this.mSplitter.Name = "mSplitter";
+            this.mSplitter.Orientation = Orientation.Horizontal;
+            this.mSplitter.Dock = DockStyle.Fill;
+            this.mSplitter.SplitterDistance = 253;
+            this.mSplitter.IsSplitterFixed = false;
+
+            /* Setup the TabControl */
+            this.mTabControl = new TabControl();
+            this.mTabControl.Name = "mTabControl";
+
+            /* Setup the Button */
+            this.mSaveButton = new Button();
+            this.mSaveButton.Text = "Save";
+            this.mSaveButton.Name = "mSaveButton";
+            this.mSaveButton.Click += new EventHandler(mSaveButton_Click);
+
+            /* Add things to the splitter */
+            this.mSplitter.Panel1.Controls.Add(this.mTabControl);
+            this.mTabControl.Dock = DockStyle.Fill;
+
+            this.mSplitter.Panel2.Controls.Add(this.mSaveButton);
+            this.mSaveButton.Dock = DockStyle.Top | DockStyle.Left;
+            this.mSaveButton.Top  = (this.mSplitter.Panel2.Height / 2) - this.mSaveButton.Height;
+            this.mSaveButton.Left = (this.mSplitter.Panel2.Width  / 2) - this.mSaveButton.Width;
+
+            /* Add the splitter */
+            this.mPanel.Controls.Add(this.mSplitter);
+
+            this.mPanel.Show();
+            foreach (Control child in this.mPanel.Controls)
+            {
+                child.Show();
+            }
 
             this.mPortToMac = new Dictionary<String,String>();
 
             if (this.mbScanForPort)
             {
-                Labels = new List<Char>();
-                for (int i = 0; i < mWmiCOMData.Length; ++i)
+                mPossibleIds = new List<Char>();
+                int limit = mWmiCOMData.Length;
+                if (limit < 4) limit = 4;
+                for (int i = 0; i < limit; ++i)
                 {
-                    Labels.Add(Convert.ToChar(65 + i));
+                    mPossibleIds.Add(Convert.ToChar(65 + i));
                 }
 
                 foreach (ManagementObject obj in mWmiCOMData)
                 {
                     String pnpDeviceID = obj["PNPDeviceID"] as String;
-                    String deviceID = obj["DeviceID"] as String; ;
+                    String deviceID    = obj["DeviceID"]    as String; 
 
                     /** Parse the pnpDeviceID to get the MAC address */
                     int index = pnpDeviceID.LastIndexOf('_');
                     String MacAddress = pnpDeviceID.Substring(index - MAC_ADDRESS_LENGTH, MAC_ADDRESS_LENGTH);
 
-                    /** There seems to be a second port generated along with each Bluetooth serial port. 
-                        * we ignore this one **/
-                    if ("000000000000" != MacAddress)
-                    {
-                        TabPage newpage = new TabPage(deviceID);
+                    TabPage newpage   = new TabPage(deviceID);
+                    ComboBox newcombo = new ComboBox();
+                    Label maclabel = new Label();
+                    Label addrlabel = new Label();
+                    maclabel.Name = "maclabel";
+                    maclabel.Text = "MAC";
+                    addrlabel.Name = "addrlabel";
+                    addrlabel.Text = MacAddress;
+                    newcombo.Name = "newComboBox";
 
-                        SplitContainer horizontal = new SplitContainer();
+                    foreach (Char c in this.mPossibleIds) { newcombo.Items.Add(c.ToString()); };
                         
-                        ComboBox newcombo = new ComboBox();
-                        
-                        horizontal.Orientation = Orientation.Horizontal;
+                    newpage.Controls.Add(newcombo);
+                    newcombo.Dock = DockStyle.None;
+                    newcombo.Left = (mTabControl.Width  / 2) - newcombo.Width;
+                    newcombo.Top  = (mTabControl.Height / 2) - newcombo.Height;
 
-                        newcombo.Items.Add(Labels); 
-                        horizontal.Panel1.Controls.Add(newcombo);
-                        newpage.Controls.Add(horizontal);
-                        mTabControl.TabPages.Add(newpage);
-         
-                    }
+                    newpage.Controls.Add(maclabel);
+                    newpage.Dock = DockStyle.None;
+                    maclabel.Top = newcombo.Top - maclabel.Height;
+                    maclabel.Left = newcombo.Left;
+
+                    newpage.Controls.Add(addrlabel);
+                    newpage.Dock = DockStyle.None;
+                    addrlabel.Top = maclabel.Top;
+                    addrlabel.Left = maclabel.Left + maclabel.Width + 5;
+
+                    this.mTabControl.TabPages.Add(newpage);
+
                 }
+                    this.mTabControl.Show();
             }
             else
             {
-                //foreach (SensorIdentification id in mSensorIDDict.Values)
-                //{
-                //    mListBox.Items.Add(id.PortName);
-                //}
+                Logger.Info("Reading from Config file");
+                mPossibleIds = new List<Char>();
+
+                int limit = mNexus.mSensorIDDict.Count;
+                if (limit < 4) limit = 4;
+
+                for (int i = 0; i < limit; ++i)
+                {
+                    mPossibleIds.Add(Convert.ToChar(65 + i));
+                }
+
+                foreach (SensorIdentification id in mNexus.mSensorIDDict.Values)
+                {
+                    String deviceID = id.PortName;
+                    String MacAddress = id.Mac;
+
+                    TabPage newpage = new TabPage(deviceID);
+                    ComboBox newcombo = new ComboBox();
+                    Label maclabel = new Label();
+                    Label addrlabel = new Label();
+                    maclabel.Name = "maclabel";
+                    maclabel.Text = "MAC";
+                    addrlabel.Name = "addrlabel";
+                    addrlabel.Text = MacAddress;
+                    newcombo.Name = "newComboBox";
+
+                    foreach (Char c in this.mPossibleIds) { newcombo.Items.Add(c.ToString()); };
+
+                    newpage.Controls.Add(newcombo);
+                    newcombo.Dock = DockStyle.None;
+                    newcombo.Left = (mTabControl.Width / 2) - newcombo.Width;
+                    newcombo.Top = (mTabControl.Height / 2) - newcombo.Height;
+                    newcombo.Text = id.Id;
+
+                    newpage.Controls.Add(maclabel);
+                    newpage.Dock = DockStyle.None;
+                    maclabel.Top = newcombo.Top - maclabel.Height;
+                    maclabel.Left = newcombo.Left;
+
+                    newpage.Controls.Add(addrlabel);
+                    newpage.Dock = DockStyle.None;
+                    addrlabel.Top = maclabel.Top;
+                    addrlabel.Left = maclabel.Left + maclabel.Width + 5;
+
+                    this.mTabControl.TabPages.Add(newpage);
+                }
             }
           
-
-
-           
         }
 
+
+        void mSaveButton_Click(object sender, EventArgs e)
+        {
+            foreach (TabPage page in this.mTabControl.TabPages)
+            {
+                String COMPort = page.Text;
+                String MACAddr = null;
+                String Label   = null;
+                foreach (Control c in page.Controls)
+                {
+                    if (c.Name == "addrlabel")
+                    {
+                        MACAddr = (c as Label).Text;
+                    }
+                    if (c.Name == "newComboBox")
+                    {
+                        Label = ((c as ComboBox).SelectedItem) as String;
+                        if (Label == null)
+                        {
+                            Label = ((c as ComboBox).SelectedValue as String);
+                        }
+                    }
+                }
+                SensorIdentification tmpSensorID = new SensorIdentification(Label, MACAddr, COMPort);
+
+                if (mNexus.mSensorIDDict.ContainsKey(Label) == false)
+                {
+                    mNexus.mSensorIDDict.Add(Label, tmpSensorID);
+                }
+                if (mNexus.mSensorDict.ContainsKey(Label) == false)
+                {
+                    mNexus.mSensorDict.Add(Label, new Sensor(tmpSensorID));
+                }
+
+                this.saveConfigFile();
+                
+            }
+
+            this.Close();
+            
+        }
+        #endregion
+
+        #region ConfigFileFunctions
         /// <summary>
         /// Reads the config file at %APPDATA%/Sensor-Aware-PT/config.xml
         /// </summary>
@@ -158,7 +314,7 @@ namespace Sensor_Aware_PT
                 tmpArray = serializer.Deserialize(fileStream) as SensorIdentification[];
                 foreach (SensorIdentification id in tmpArray)
                 {
-                    mSensorIDDict[id.Id] = id;
+                mNexus.mSensorIDDict[id.Id] = id;
                 }
             }
             catch (System.InvalidOperationException e)
@@ -181,7 +337,7 @@ namespace Sensor_Aware_PT
         }
 
         /// <summary>
-        /// Dumps the contents of the mSensorIDDict into a .xml configuration file
+        /// Dumps the contents of the mNexus.mSensorIDDict into a .xml configuration file
         /// </summary>
         private void saveConfigFile()
         {
@@ -198,26 +354,25 @@ namespace Sensor_Aware_PT
                 fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
             }
 
-            SensorIdentification[] tmpArray = mSensorIDDict.Values.ToArray();
+            SensorIdentification[] tmpArray = mNexus.mSensorIDDict.Values.ToArray();
             XmlSerializer serializer = new XmlSerializer(tmpArray.GetType());
             serializer.Serialize(fileStream, tmpArray);
 
             fileStream.Flush();
             fileStream.Close();
         }
+        #endregion
 
-
+        #region Scans
         /// <summary>
         /// Scans WMI for new Bluetooth COM ports and then delays 60 seconds
         /// to give the sensors time to initialize.
         /// </summary>
         private void ScanForPorts()
         {
-
             System.DateTime mStartOfInit = System.DateTime.Now;
 
             Logger.Info("Wmi scan started");
-
             mWmiCOMData = getWmiCOMData();
 
             System.TimeSpan timeSpent = System.DateTime.Now - mStartOfInit;
@@ -225,53 +380,11 @@ namespace Sensor_Aware_PT
             if (timeLeft > 0)
             {
                 Logger.Info("Delaying for {0} seconds while sensors initialize...", (int)timeLeft);
-                Thread.Sleep((int)(timeLeft * 1000));
+                //Thread.Sleep((int)(timeLeft * 1000));
             }
             Logger.Info("Wmi scan ended");
         }
 
-        /// <summary>
-        /// Queries the system for bluetooth COM ports and enumerates the sensors using the provided data.
-        /// </summary>
-        //internal void probeWmiComPorts()
-        //{
-
-
-        //    foreach (ManagementObject obj in wmiCOMData)
-        //    {
-        //        String pnpDeviceID = obj["PNPDeviceID"] as String;
-        //        String deviceID = obj["DeviceID"] as String;
-        //        String sensorIDstring;
-
-        //        /** Parse the pnpDeviceID to get the MAC address */
-        //        int index = pnpDeviceID.LastIndexOf('_');
-        //        String MacAddress = pnpDeviceID.Substring(index - MAC_ADDRESS_LENGTH, MAC_ADDRESS_LENGTH);
-
-        //        /** There seems to be a second port generated along with each Bluetooth serial port. 
-        //         * we ignore this one **/
-        //        if ("000000000000" != MacAddress)
-        //        {
-        //            //if (mConfigFileDataDict == null)
-        //            //{
-        //            //    mConfigFileDataDict = new SerializableDictionary<string, string>();
-        //            //}
-
-        //            Console.WriteLine();
-        //            Console.WriteLine("Please enter the sensor id for MAC address {0} [ex: A,B,C,ARM,...etc]", MacAddress);
-        //            Console.Write(">");
-        //            sensorIDstring = Console.ReadLine();
-        //            //mConfigFileDataDict[deviceID] = sensorIDstring;
-
-        //            SensorIdentification sensorID = new SensorIdentification(sensorIDstring, MacAddress, deviceID);
-
-        //            /** Create the Sensor with its SensorID **/
-        //            mSensorDict[sensorIDstring] = new Sensor(sensorID);
-        //            mSensorIDDict[sensorIDstring] = sensorID;
-        //        }
-        //    }
-        //}
-
-        
         /// <summary>
         /// Queries WMI for Bluetooth COM Ports. Provides useful information on the Console as it does.
         /// </summary>
@@ -322,10 +435,62 @@ namespace Sensor_Aware_PT
                 throw e;
             }
 
+            /* Extremeley self-referencing code to get rid of WMI-detected COM ports that
+             * have a MAC address of 000000000000 */
+            wmiObjects = wmiObjects.Where(obj =>
+                (obj["PNPDeviceID"] as String).Substring(
+                (obj["PNPDeviceID"] as String).LastIndexOf('_') - MAC_ADDRESS_LENGTH, MAC_ADDRESS_LENGTH)
+                != "000000000000").ToArray();
+
             Logger.Info("Verified {0} Bluetooth COM Device(s)", wmiObjects.Length);
             return wmiObjects;
         }
+        #endregion
 
 
+        #region oldcode
+
+
+        /// <summary>
+        /// Queries the system for bluetooth COM ports and enumerates the sensors using the provided data.
+        /// </summary>
+        //internal void probeWmiComPorts()
+        //{
+
+
+        //    foreach (ManagementObject obj in wmiCOMData)
+        //    {
+        //        String pnpDeviceID = obj["PNPDeviceID"] as String;
+        //        String deviceID = obj["DeviceID"] as String;
+        //        String sensorIDstring;
+
+        //        /** Parse the pnpDeviceID to get the MAC address */
+        //        int index = pnpDeviceID.LastIndexOf('_');
+        //        String MacAddress = pnpDeviceID.Substring(index - MAC_ADDRESS_LENGTH, MAC_ADDRESS_LENGTH);
+
+        //        /** There seems to be a second port generated along with each Bluetooth serial port. 
+        //         * we ignore this one **/
+        //        if ("000000000000" != MacAddress)
+        //        {
+        //            //if (mConfigFileDataDict == null)
+        //            //{
+        //            //    mConfigFileDataDict = new SerializableDictionary<string, string>();
+        //            //}
+
+        //            Console.WriteLine();
+        //            Console.WriteLine("Please enter the sensor id for MAC address {0} [ex: A,B,C,ARM,...etc]", MacAddress);
+        //            Console.Write(">");
+        //            sensorIDstring = Console.ReadLine();
+        //            //mConfigFileDataDict[deviceID] = sensorIDstring;
+
+        //            SensorIdentification sensorID = new SensorIdentification(sensorIDstring, MacAddress, deviceID);
+
+        //            /** Create the Sensor with its SensorID **/
+        //            mSensorDict[sensorIDstring] = new Sensor(sensorID);
+        //        mNexus.mSensorIDDict[sensorIDstring] = sensorID;
+        //        }
+        //    }
+        //}
+        #endregion
     }
 }
