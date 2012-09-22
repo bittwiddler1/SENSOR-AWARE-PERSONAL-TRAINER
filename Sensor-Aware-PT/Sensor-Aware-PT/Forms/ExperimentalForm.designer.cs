@@ -29,29 +29,12 @@ namespace Sensor_Aware_PT
         /// </summary>
         private void InitializeComponent()
         {
-            this.simpleOpenGlControl = new OpenTK.GLControl(new GraphicsMode(32, 24, 8, 4), 2, 0, GraphicsContextFlags.ForwardCompatible);
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.simpleOpenGlControl = new Sensor_Aware_PT.Forms.AntiAliasedGLControl();
             this.SuspendLayout();
-            // 
-            // simpleOpenGlControl
-            // 
-            this.simpleOpenGlControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.simpleOpenGlControl.BackColor = System.Drawing.Color.Black;
-            this.simpleOpenGlControl.Location = new System.Drawing.Point(195, 67);
-            this.simpleOpenGlControl.Name = "simpleOpenGlControl";
-            this.simpleOpenGlControl.Size = new System.Drawing.Size(700, 497);
-            this.simpleOpenGlControl.TabIndex = 2;
-            this.simpleOpenGlControl.VSync = true;
-            this.simpleOpenGlControl.Load += new System.EventHandler(this.simpleOpenGlControl_Load);
-            this.simpleOpenGlControl.SizeChanged += new System.EventHandler(this.simpleOpenGlControl_SizeChanged);
-            this.simpleOpenGlControl.Paint += new System.Windows.Forms.PaintEventHandler(this.simpleOpenGlControl_Paint);
-            this.simpleOpenGlControl.KeyDown += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyDown);
-            this.simpleOpenGlControl.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.simpleOpenGlControl_KeyPress);
             // 
             // button1
             // 
@@ -94,16 +77,31 @@ namespace Sensor_Aware_PT
             this.label1.Text = "Controls\r\n\r\nRotate X - Q, W\r\nRotate Y - A, S\r\nRotate Z - Z, X\r\n\r\nToggle BoundingB" +
     "ox - E\r\nToggle Wireframe - R";
             // 
+            // simpleOpenGlControl
+            // 
+            this.simpleOpenGlControl.BackColor = System.Drawing.Color.Black;
+            this.simpleOpenGlControl.Location = new System.Drawing.Point(195, 67);
+            this.simpleOpenGlControl.Name = "simpleOpenGlControl";
+            this.simpleOpenGlControl.Size = new System.Drawing.Size(703, 490);
+            this.simpleOpenGlControl.TabIndex = 7;
+            this.simpleOpenGlControl.VSync = true;
+            this.simpleOpenGlControl.Load += new System.EventHandler(this.simpleOpenGlControl_Load);
+            this.simpleOpenGlControl.SizeChanged += new System.EventHandler(this.simpleOpenGlControl_SizeChanged);
+            this.simpleOpenGlControl.Paint += new System.Windows.Forms.PaintEventHandler(this.simpleOpenGlControl_Paint);
+            this.simpleOpenGlControl.KeyDown += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyDown);
+            this.simpleOpenGlControl.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.simpleOpenGlControl_KeyPress);
+            this.simpleOpenGlControl.KeyUp += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyUp);
+            // 
             // ExperimentalForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(895, 558);
+            this.Controls.Add(this.simpleOpenGlControl);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
-            this.Controls.Add(this.simpleOpenGlControl);
             this.Name = "ExperimentalForm";
             this.Text = "Sensor Aware PT Skeletal Viewer of Doom";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExperimentalForm_FormClosing);
@@ -115,11 +113,11 @@ namespace Sensor_Aware_PT
 
         #endregion
 
-        private OpenTK.GLControl simpleOpenGlControl;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Label label1;
+        private Forms.AntiAliasedGLControl simpleOpenGlControl;
 
     }
 }

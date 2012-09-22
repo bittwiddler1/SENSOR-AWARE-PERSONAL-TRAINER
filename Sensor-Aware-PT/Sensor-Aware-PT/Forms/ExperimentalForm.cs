@@ -10,6 +10,7 @@ using System.IO;
 using System.Drawing.Imaging;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Input;
 
 //DONT FORGET TO SET THE GLCONTROL CONSTRUCTOR
 //: base(new GraphicsMode(32, 24, 8, 4), 3, 0, GraphicsContextFlags.ForwardCompatible)
@@ -22,6 +23,9 @@ namespace Sensor_Aware_PT
         Skeleton mUpperSkeleton = new Skeleton( SkeletonType.UpperBody );
         Vector3 mViewRotations = new Vector3();
         Vector3 mViewTranslations = new Vector3();
+
+        bool[] mKeyState = new bool[ 256 ];
+        bool[] mKeyStatePrev = new bool[ 256 ];
         private bool mLoaded = false;
         public ExperimentalForm()
         {
@@ -68,6 +72,12 @@ namespace Sensor_Aware_PT
             mUpperSkeleton.createMapping( "D", BoneType.ArmUpperR );
             simpleOpenGlControl.Focus();
 
+            for( int i = 0; i < 256; i++ )
+            {
+                mKeyState[ i ] = false;
+                mKeyStatePrev[ i ] = false;
+            }
+
 
         }
 
@@ -82,7 +92,33 @@ namespace Sensor_Aware_PT
             lock( this )
             {
                 simpleOpenGlControl.Refresh();
+                handleInput();
             }
+        }
+
+        void handleInput()
+        {
+
+
+            if(mKeyState[ (int)Keys.Q]){
+            mViewRotations.X += 1f;
+            }
+        if(mKeyState[ (int)Keys.W]){
+            mViewRotations.X -= 1f;
+            }
+        if(mKeyState[ (int)Keys.A]){
+            mViewRotations.Y += 1f;
+            }
+        if(mKeyState[ (int)Keys.S]){
+            mViewRotations.Y -= 1f;
+            }
+        if(mKeyState[ (int)Keys.Z]){
+            mViewRotations.Z += 1f;
+            }
+        if(mKeyState[ (int)Keys.X]){
+            mViewRotations.Z -= 1f;
+                    }
+
         }
 
         /// <summary>
@@ -270,27 +306,10 @@ namespace Sensor_Aware_PT
 
         private void simpleOpenGlControl_KeyDown( object sender, KeyEventArgs e )
         {
+            mKeyState[ (int)e.KeyCode ] = true;
+            
             switch( e.KeyCode)
             {
-
-                case Keys.Q:
-                    mViewRotations.X += 1f;
-                    break;
-                case Keys.W:
-                    mViewRotations.X -= 1f;
-                    break;
-                case Keys.A:
-                    mViewRotations.Y += 1f;
-                    break;
-                case Keys.S:
-                    mViewRotations.Y -= 1f;
-                    break;
-                case Keys.Z:
-                    mViewRotations.Z += 1f;
-                    break;
-                case Keys.X:
-                    mViewRotations.Z -= 1f;
-                    break;
                 case Keys.E:
                     mUpperSkeleton.toggleBox();
                     break;
@@ -300,6 +319,11 @@ namespace Sensor_Aware_PT
                 default:
                     break;
             }
+        }
+
+        private void simpleOpenGlControl_KeyUp( object sender, KeyEventArgs e )
+        {
+            mKeyState[ ( int ) e.KeyCode ] = false;
         }
     }
 }

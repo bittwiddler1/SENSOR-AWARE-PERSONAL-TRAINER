@@ -57,6 +57,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Bone.cs" />
+    <Compile Include="Forms\AntiAliasedGLControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Helpers\DataStructures.cs" />
     <Compile Include="Forms\ExperimentalForm.cs">
       <SubType>Form</SubType>
