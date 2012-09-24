@@ -76,6 +76,7 @@
     <Compile Include="Helpers\Logger.cs" />
     <Compile Include="Core\Program.cs" />
     <Compile Include="Helpers\MicroLibrary.cs" />
+    <Compile Include="Core\INexus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\RingBuffer.cs" />
     <Compile Include="Core\Sensor.cs" />
