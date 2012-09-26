@@ -570,8 +570,16 @@ namespace Sensor_Aware_PT
         {
 
             /** Read the 4 vectors of data */
-            Matrix4 matData = new Matrix4();
+            Matrix4 matData = Matrix4.Identity;
+            Matrix4 transform = Matrix4.CreateRotationZ( MathHelper.DegreesToRadians( 90 ) );
+            //Matrix4 transform = Matrix4.Identity;
 
+            /* 1 2 3
+             * 3 2 1
+             * 2 3 1
+             * 
+             * 
+             */ 
             matData.M11 = readFloat();
             matData.M12 = readFloat();
             matData.M13 = readFloat();
@@ -583,6 +591,10 @@ namespace Sensor_Aware_PT
             matData.M31 = readFloat();
             matData.M32 = readFloat();
             matData.M33 = readFloat();
+
+            matData = matData * transform;
+            matData = Matrix4.Transpose( matData );
+            matData.Row1 *= -1;
             /*
             Vector3 accData = new Vector3( readFloat(), readFloat(), readFloat() );
             Vector3 magData = new Vector3( readFloat(), readFloat(), readFloat() );

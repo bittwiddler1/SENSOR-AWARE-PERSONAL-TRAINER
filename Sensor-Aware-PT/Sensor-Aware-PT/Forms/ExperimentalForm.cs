@@ -178,9 +178,12 @@ namespace Sensor_Aware_PT
                     GL.Rotate( mViewRotations.Y, 0, 1f, 0 );
                     GL.Rotate( mViewRotations.Z, 0, 0, 1f );
                     
+                    
                     GL.LineWidth( 2f );
                     GL.Enable( EnableCap.LineStipple );
                     GL.LineStipple(1, Convert.ToInt16("1000110001100011", 2));
+                    
+                    
                     GL.Begin( BeginMode.Lines );
                     GL.Color3( Color.Red );
                     GL.Vertex3( -100, 0, 0 );
@@ -222,7 +225,7 @@ namespace Sensor_Aware_PT
         {
             //foreach( Bone b in mBones )
               //  b.setYawOffset();
-            mUpperSkeleton.setYawOffsets();
+            mUpperSkeleton.calibrateZero();
         }
 
         private void button2_Click( object sender, EventArgs e )
