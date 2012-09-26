@@ -16,7 +16,12 @@ namespace Sensor_Aware_PT
         Vector3 mOrigin;
         Vector3[] mBoxVerts;
         Vector3[] mSphereVerts;
-        protected Matrix4 mTransform;
+        Vector3[] mInitialBoxVerts;
+        private Matrix4 mRotationTransform;
+        private Matrix4 mRotationTranslationTransform;
+        private Matrix4 mInitialOrientation;
+        private Matrix4 mCurrentOrientation;
+        private Matrix4 mCalibratedOrientation;
         Vector3 mOffset;
         private Color mColor = Color.Gold;
         private IntPtr mConeQuadric;
@@ -24,6 +29,25 @@ namespace Sensor_Aware_PT
         private float mDrawRatio = .3f; // Upper = .3f, lower = 1-.3f
         private static bool mDrawBox = false;
         private static bool mDrawWireframe = false;
+
+        List<Bone> mChildren;
+        protected Bone mParentBone;
+        float mLength;
+
+        #region Properties
+        public Matrix4 InitialOrientation
+        {
+            get
+            {
+                return mInitialOrientation;
+            }
+            set
+            {
+                mInitialOrientation = value;
+                
+                //updateUsingLastOrientation();
+            }
+        }
 
         public bool DrawWireFrame
         {
@@ -68,10 +92,8 @@ namespace Sensor_Aware_PT
                 mColor = value;
             }
         }
-        
-        List<Bone> mChildren;
-        protected Bone mParentBone;
-        float mLength;
+
+        #endregion
 
         public Bone( float length, Vector3 startPt )
         {
@@ -84,11 +106,14 @@ namespace Sensor_Aware_PT
 
             mOrientation = new Vector3(0,0,0);
             mOrigin = new Vector3();
-
-            mTransform = Matrix4.Identity;
             mChildren = new List<Bone>();
             mParentBone = null;
             mOffset = new Vector3( 0, 0, 0 );
+            mInitialOrientation = Matrix4.Identity;
+            mCurrentOrientation = Matrix4.Identity;
+            mCalibratedOrientation = Matrix4.Identity;
+            mRotationTranslationTransform = Matrix4.Identity;
+            mRotationTransform = Matrix4.Identity;
             generateGeometry( mLength, 1f, 1f, mOrigin.X, mOrigin.Y, mOrigin.Z );
 
         }
@@ -103,19 +128,13 @@ namespace Sensor_Aware_PT
 
         public void updateUsingLastOrientation()
         {
-            updateOrientation( mOrientation );
+            updateOrientation( mCurrentOrientation );
         }
-        public void updateOrientation( Vector3 or )
+        
+        public void updateOrientation( Matrix4 newOrientation )
         {
-            
-            mOrientation = or;
-            //XYZ = YPR
-            //roll, yaw, then pitch
-            Matrix4 rx = Matrix4.CreateRotationX( MathHelper.DegreesToRadians( (or.Z + 90f) - mOffset.Z ) );
-            Matrix4 ry = Matrix4.CreateRotationZ( MathHelper.DegreesToRadians(  or.Y - mOffset.Y ) );
-            Matrix4 rz = Matrix4.CreateRotationY( MathHelper.DegreesToRadians( mOffset.X - (or.X +90f) ));
-            mTransform = Matrix4.Identity;
-            mTransform = rx * ry * rz;
+            mCurrentOrientation = newOrientation;
+            mRotationTransform = mInitialOrientation * mCalibratedOrientation * newOrientation;
 
             if( mParentBone != null )
             {
@@ -124,17 +143,22 @@ namespace Sensor_Aware_PT
                 mStartPoint.Y = 0;
                 mStartPoint.Z = 0;
 
-                mEndPoint.X = mStartPoint.X + mLength;
+                mEndPoint.X = mStartPoint.X;
                 mEndPoint.Y = mStartPoint.Y;
-                mEndPoint.Z = mStartPoint.Z;
+                mEndPoint.Z = mStartPoint.Z + mLength;
 
 
                 /** Then apply the rotation followed by the translation to the endpt of the parent
                  * to both my start pt and endpt
                  */
-                mTransform *= Matrix4.CreateTranslation( mParentBone.mEndPoint );
-                mEndPoint = Vector3.Transform( mEndPoint, mTransform );
-                mStartPoint = Vector3.Transform( mStartPoint, mTransform );
+                mRotationTranslationTransform = mRotationTransform * Matrix4.CreateTranslation( mParentBone.mEndPoint );
+                mEndPoint = Vector3.Transform( mEndPoint, mRotationTranslationTransform );
+                mStartPoint = Vector3.Transform( mStartPoint, mRotationTranslationTransform );
+                
+                for( int i = 0; i < mBoxVerts.Count(); i++ )
+                {
+                    mBoxVerts[ i ] = Vector3.Transform( mInitialBoxVerts[ i ], mRotationTranslationTransform );
+                }
 
             }
             else
@@ -143,8 +167,12 @@ namespace Sensor_Aware_PT
                 mEndPoint.X = mStartPoint.X;
                 mEndPoint.Y = mStartPoint.Y;
                 mEndPoint.Z = mStartPoint.Z;
-                mEndPoint.X += mLength;
-                mEndPoint = Vector3.Transform( mEndPoint, mTransform );
+                mEndPoint.Z += mLength;
+                mEndPoint = Vector3.Transform( mEndPoint, mRotationTransform );
+                for( int i = 0; i < mBoxVerts.Count(); i++ )
+                {
+                    mBoxVerts[ i ] = Vector3.Transform( mInitialBoxVerts[ i ], mRotationTransform );
+                }
             }
 
             foreach( Bone child in mChildren )
@@ -202,6 +230,7 @@ namespace Sensor_Aware_PT
             {
                 mChildren.Add( child );
                 child.mParentBone = this;
+                //child.updateUsingLastOrientation();
             }
         }
 
@@ -211,15 +240,16 @@ namespace Sensor_Aware_PT
             float k = .5f;
             Vector3[] verts = new Vector3[ 8 ];
 
-            verts[ 0 ] = new Vector3( 0, height, -width ) * k;
-            verts[ 1 ] = new Vector3( 0, height, width ) * k;
-            verts[ 2 ] = new Vector3( 0, -height, -width ) * k;
-            verts[ 3 ] = new Vector3( 0, -height, width )* k ;
-            verts[ 4 ] = new Vector3( 2f*length, height, -width ) * k ;
-            verts[ 5 ] = new Vector3( 2f*length, height, width ) * k ;
-            verts[ 6 ] = new Vector3( 2f*length, -height, -width ) * k;
-            verts[ 7 ] = new Vector3( 2f*length, -height, width ) * k;
+            verts[ 0 ] = new Vector3( -width, height, 0 ) * k;
+            verts[ 1 ] = new Vector3( width, height, 0 ) * k;
+            verts[ 2 ] = new Vector3( -width, -height, 0 ) * k;
+            verts[ 3 ] = new Vector3( width, -height, 0 ) * k;
+            verts[ 4 ] = new Vector3( -width, height, 2f * length ) * k;
+            verts[ 5 ] = new Vector3( width, height, 2f * length ) * k;
+            verts[ 6 ] = new Vector3( -width, -height, 2f * length ) * k;
+            verts[ 7 ] = new Vector3( width, -height, 2f * length ) * k;
             mBoxVerts = verts;
+            mInitialBoxVerts = verts;
             mSphereVerts = createsphere( .5f, 0, 0, 0 );
         }
 
@@ -232,50 +262,31 @@ namespace Sensor_Aware_PT
             /** Draw wireframe or not....HOPE YOU LIKE THE INLINE */
             GL.PolygonMode( MaterialFace.FrontAndBack, mDrawWireframe ? PolygonMode.Line : PolygonMode.Fill );
             //GL.PolygonMode( MaterialFace.FrontAndBack, PolygonMode.Fill );
-            /** Mult with our own self contained transform matrix */
-            GL.MultMatrix( ref mTransform );
+            /** Mult with our own self contained Rot+Translate transform matrix */
+            if( mParentBone != null )
+                GL.MultMatrix( ref mRotationTranslationTransform );
+            else
+                GL.MultMatrix( ref mRotationTransform );
 
-            /** At this point, all following draw calls will begin with the origin translated and rotated where it needs to be
-             * so we can draw in model-space
-            /** Draw the sphere */
-            /*
-            GL.Begin( BeginMode.TriangleStrip );
-            GL.Color3( Color.LightBlue );
-            foreach( Vector3 v in mSphereVerts )
-            {
-                GL.Vertex3( v );
-            }
-            GL.End();
-             */
-            /*
 
-            GL.Translate( new Vector3( mLength * .2f, 0, 0 ) );
-            drawCone( new Vector3(1f,0,0), new Vector3(mLength*.8f, 0, 0), mLength*.8f, .2f, 24 );
-            GL.Translate( new Vector3( -mLength * .2f, 0, 0 ) );
-            drawCone( new Vector3( -1f, 0, 0 ), new Vector3( 0, 0, 0 ), mLength * .2f, .2f, 24 );
-            */
-            
             GL.ColorMaterial( MaterialFace.FrontAndBack, ColorMaterialParameter.Specular );
             GL.Material( MaterialFace.Front, MaterialParameter.Specular, .1f );
-            
+
             GL.ColorMaterial( MaterialFace.FrontAndBack, ColorMaterialParameter.AmbientAndDiffuse );
             GL.Enable( EnableCap.ColorMaterial );
 
             GL.PushMatrix();
-            GL.Rotate( 90f, 0, 1.0, 0 );
+
             mConeQuadric = OpenTK.Graphics.Glu.NewQuadric();
 
             OpenTK.Graphics.Glu.QuadricDrawStyle( mConeQuadric, OpenTK.Graphics.QuadricDrawStyle.Fill );
             OpenTK.Graphics.Glu.QuadricNormal( mConeQuadric, OpenTK.Graphics.QuadricNormal.Smooth );
-            GL.Color3( mColor);
-            OpenTK.Graphics.Glu.Cylinder( mConeQuadric, 0.0, mThickness, mLength* mDrawRatio, 12, 12 );
-            GL.PopMatrix();
-            
-            GL.PushMatrix();
+            GL.Color3( mColor );
+            OpenTK.Graphics.Glu.Cylinder( mConeQuadric, 0.0, mThickness, mLength * mDrawRatio, 12, 12 );
+            GL.Rotate( 180f, 0, -1.0, 0 );
+            GL.Translate( new Vector3( 0, 0, -mLength ) );
 
-            GL.Translate( new Vector3( mLength , 0, 0 ) );
-            GL.Rotate( 90f, 0, -1.0, 0 );
-            OpenTK.Graphics.Glu.Cylinder( mConeQuadric, 0.0, mThickness, mLength * (1f-mDrawRatio), 12, 12 );
+            OpenTK.Graphics.Glu.Cylinder( mConeQuadric, 0.0, mThickness, mLength * ( 1f - mDrawRatio ), 12, 12 );
             GL.PopMatrix();
 
             OpenTK.Graphics.Glu.DeleteQuadric( mConeQuadric );

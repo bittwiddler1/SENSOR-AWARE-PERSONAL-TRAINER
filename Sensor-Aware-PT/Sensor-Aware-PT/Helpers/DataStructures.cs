@@ -10,7 +10,7 @@ namespace Sensor_Aware_PT
     [Serializable()]
     public class SensorDataEntry
     {
-        public Vector3 orientation = new Vector3();
+        public Matrix4 orientation = new Matrix4();
         public Vector3 accelerometer = new Vector3();
         public Vector3 gyroscope = new Vector3();
         public Vector3 magnetometer = new Vector3();
@@ -22,9 +22,9 @@ namespace Sensor_Aware_PT
         public override string ToString()
         {
             return String.Format( "Sensor {12}:\nAngle{{{0},{1},{2}}}\n Accel{{{3},{4},{5}}}\n Mag{{{6},{7},{8}}}\n Gyro{{{9},{10},{11}}}",
-         orientation.X,
-         orientation.Y,
-         orientation.Z,
+         orientation.ToString(),
+         "Blank-FIXME",
+         "Blank-FIXME",
          accelerometer.X,
          accelerometer.Y,
          accelerometer.Z,
@@ -47,7 +47,7 @@ namespace Sensor_Aware_PT
             }
         }
 
-        public Vector3 Orientation
+        public Matrix4 Orientation
         {
             get
             {
