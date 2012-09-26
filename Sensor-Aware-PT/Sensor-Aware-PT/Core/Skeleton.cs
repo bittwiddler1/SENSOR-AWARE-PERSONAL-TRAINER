@@ -70,10 +70,19 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// These are default orientation values for bones
         /// </summary>
-        protected static Vector3 ORIENT_LEFT = new Vector3( -90, 0, 180 );
-        protected static Vector3 ORIENT_RIGHT = new Vector3( 90, 0, -180 );
-        protected static Vector3 ORIENT_DOWN = new Vector3( -180, -90, -180 );
-        protected static Vector3 ORIENT_UP = new Vector3( -90, 90f, 90 );
+        /// 
+        protected static Matrix4 ORIENT_LEFT;
+        protected static Matrix4 ORIENT_RIGHT;
+        protected static Matrix4 ORIENT_UP;
+        protected static Matrix4 ORIENT_DOWN;
+        protected static Matrix4 ORIENT_FRONT;
+        protected static Matrix4 ORIENT_DEFAULT = Matrix4.Identity;
+        protected static Vector3 VECTOR_ORIENT_LEFT = new Vector3( 0, 90, 0 );
+        protected static Vector3 VECTOR_ORIENT_RIGHT = new Vector3(0,-90, 0 );
+        protected static Vector3 VECTOR_ORIENT_DOWN = new Vector3( 90, 0, 0 );
+        protected static Vector3 VECTOR_ORIENT_UP = new Vector3( -90, 0, 0);
+        protected static Vector3 VECTOR_ORIENT_FRONT = new Vector3( 0, 0, 0 );
+
         //straight down -180, -90, -180
         //straight up -90, 90, 90
         //LEFT -90, 0, 180
@@ -86,10 +95,61 @@ namespace Sensor_Aware_PT
             if( !mInitialized )
             {
                 initializeBoneLengths();
+                initializeOrientations();
                 mInitialized = true;
             }
         }
 
+        /// <summary>
+        /// Sets up the orientations we use by default for bones
+        /// </summary>
+        private static void initializeOrientations()
+        {
+            /** First convert the degrees to radians */
+            VECTOR_ORIENT_LEFT.X = MathHelper.DegreesToRadians( VECTOR_ORIENT_LEFT.X );
+            VECTOR_ORIENT_LEFT.Y = MathHelper.DegreesToRadians( VECTOR_ORIENT_LEFT.Y );
+            VECTOR_ORIENT_LEFT.Z = MathHelper.DegreesToRadians( VECTOR_ORIENT_LEFT.Z );
+
+            VECTOR_ORIENT_RIGHT.X = MathHelper.DegreesToRadians( VECTOR_ORIENT_RIGHT.X );
+            VECTOR_ORIENT_RIGHT.Y = MathHelper.DegreesToRadians( VECTOR_ORIENT_RIGHT.Y );
+            VECTOR_ORIENT_RIGHT.Z = MathHelper.DegreesToRadians( VECTOR_ORIENT_RIGHT.Z );
+
+            VECTOR_ORIENT_UP.X = MathHelper.DegreesToRadians( VECTOR_ORIENT_UP.X );
+            VECTOR_ORIENT_UP.Y = MathHelper.DegreesToRadians( VECTOR_ORIENT_UP.Y );
+            VECTOR_ORIENT_UP.Z = MathHelper.DegreesToRadians( VECTOR_ORIENT_UP.Z );
+
+            VECTOR_ORIENT_DOWN.X = MathHelper.DegreesToRadians( VECTOR_ORIENT_DOWN.X );
+            VECTOR_ORIENT_DOWN.Y = MathHelper.DegreesToRadians( VECTOR_ORIENT_DOWN.Y );
+            VECTOR_ORIENT_DOWN.Z = MathHelper.DegreesToRadians( VECTOR_ORIENT_DOWN.Z );
+
+            /** Build the orientation matrixes */
+
+            ORIENT_LEFT = Matrix4.Identity;
+            ORIENT_LEFT =   ORIENT_LEFT * 
+                            Matrix4.CreateRotationX( VECTOR_ORIENT_LEFT.X ) * 
+                            Matrix4.CreateRotationY( VECTOR_ORIENT_LEFT.Y ) *
+                            Matrix4.CreateRotationZ( VECTOR_ORIENT_LEFT.Z );
+
+            ORIENT_RIGHT = Matrix4.Identity;
+            ORIENT_RIGHT = ORIENT_RIGHT *
+                            Matrix4.CreateRotationX( VECTOR_ORIENT_RIGHT.X ) *
+                            Matrix4.CreateRotationY( VECTOR_ORIENT_RIGHT.Y ) *
+                            Matrix4.CreateRotationZ( VECTOR_ORIENT_RIGHT.Z );
+
+            ORIENT_UP = Matrix4.Identity;
+            ORIENT_UP = ORIENT_UP *
+                            Matrix4.CreateRotationX( VECTOR_ORIENT_UP.X ) *
+                            Matrix4.CreateRotationY( VECTOR_ORIENT_UP.Y ) *
+                            Matrix4.CreateRotationZ( VECTOR_ORIENT_UP.Z );
+
+            ORIENT_DOWN = Matrix4.Identity;
+            ORIENT_DOWN = ORIENT_DOWN *
+                            Matrix4.CreateRotationX( VECTOR_ORIENT_DOWN.X ) *
+                            Matrix4.CreateRotationY( VECTOR_ORIENT_DOWN.Y ) *
+                            Matrix4.CreateRotationZ( VECTOR_ORIENT_DOWN.Z );
+            ORIENT_FRONT = Matrix4.Identity;
+
+        }
         /// <summary>
         /// Sets up the default bonetype to bone length mappings
         /// </summary>
@@ -154,7 +214,7 @@ namespace Sensor_Aware_PT
         private void createUpperBody()
         {
             Bone BackU, BackL, ArmUL, ArmUR, ArmLL, ArmLR, ShoulderL, ShoulderR, HipL, HipR, Head,
-                LegLL, LegLR, LegUL, LegUR;
+                LegLL, LegLR, LegUL, LegUR, FakeHip;
             BackU = new Bone( mBoneLengthMapping[ BoneType.BackUpper ], new Vector3() );
             BackL = new Bone( mBoneLengthMapping[ BoneType.BackLower ], new Vector3() );
             ArmUL = new Bone(mBoneLengthMapping[BoneType.ArmUpperL], new Vector3());
@@ -170,7 +230,8 @@ namespace Sensor_Aware_PT
             LegLR = new Bone( mBoneLengthMapping[ BoneType.LegLowerR ], new Vector3() );
             LegUR = new Bone( mBoneLengthMapping[ BoneType.LegUpperR ], new Vector3() );
             LegUL = new Bone( mBoneLengthMapping[ BoneType.LegUpperL ], new Vector3() );
-
+            FakeHip = new Bone( 1f, new Vector3() );
+            
             mBoneTypeMapping.Add( BoneType.BackUpper, BackU );
             mBoneTypeMapping.Add( BoneType.ArmUpperL, ArmUL);
             mBoneTypeMapping.Add( BoneType.ArmLowerL, ArmLL);
@@ -186,61 +247,69 @@ namespace Sensor_Aware_PT
             // Set the orientations accordingly~
             
             /** Back */
-            BackU.updateOrientation( ORIENT_UP);
-            BackU.addChild(ShoulderL);
+            BackU.InitialOrientation = ORIENT_UP;
+
+
+            BackU.addChild( ShoulderL );
             BackU.addChild(ShoulderR);
             BackU.Color = Color.Green;
             BackU.Thickness = .5f;
             /** Shoulders */
-            ShoulderR.updateOrientation(ORIENT_RIGHT);
-            ShoulderL.updateOrientation(ORIENT_LEFT);
+            ShoulderR.InitialOrientation = ORIENT_RIGHT;
+            ShoulderL.InitialOrientation = ORIENT_LEFT;
             ShoulderL.Color = Color.Gold;
             ShoulderR.Color = Color.Gold;
             /** Left Arm upper */
-            ShoulderL.addChild(ArmUL);
-            ArmUL.updateOrientation(ORIENT_DOWN);
+            ShoulderL.addChild( ArmUL );
+            ArmUL.InitialOrientation = ORIENT_DOWN;
             ArmUL.Color = Color.OrangeRed;
-            
+
             /** Right arm upper */
-            ShoulderR.addChild(ArmUR);
-            ArmUR.updateOrientation( ORIENT_DOWN );
+            ShoulderR.addChild( ArmUR );
+            ArmUR.InitialOrientation = ORIENT_DOWN;
             ArmUR.Color = Color.OrangeRed;
             /** Left arm lower */
-            ArmUL.addChild(ArmLL);
-            ArmLL.updateOrientation( ORIENT_DOWN );
+            ArmUL.addChild( ArmLL );
+            ArmLL.InitialOrientation = ORIENT_DOWN;
             ArmLL.Color = Color.OrangeRed;
             /** Right arm lower */
-            ArmUR.addChild(ArmLR);
-            ArmLR.updateOrientation( ORIENT_DOWN );
+            ArmUR.addChild( ArmLR );
+            ArmLR.InitialOrientation = ORIENT_DOWN;
             ArmLR.Color = Color.OrangeRed;
 
             /** Hip and lower legs */
-            HipR.updateOrientation( ORIENT_RIGHT );
-            HipL.updateOrientation( ORIENT_LEFT );
-            HipL.addChild( HipR );
-            HipL.addChild( BackU );
+            HipR.InitialOrientation = ORIENT_RIGHT;
+            HipL.InitialOrientation = ORIENT_LEFT;
+
 
             HipL.Color = Color.Blue;
-            HipR.Color = Color.Blue;
-
+            HipR.Color = Color.Gray;
+            LegUL.InitialOrientation = ORIENT_DOWN;
             HipL.addChild( LegUL );
-            LegUL.updateOrientation( ORIENT_DOWN );
 
-            HipR.addChild( LegUR );
-            LegUR.updateOrientation( ORIENT_DOWN );
+            LegUR.InitialOrientation = ORIENT_DOWN;
             LegUR.Color = LegLR.Color = LegLL.Color = LegUL.Color = Color.DarkRed;
 
+            HipR.addChild( LegUR );
+
+            LegLL.InitialOrientation = ORIENT_DOWN;
             LegUL.addChild( LegLL );
-            LegLL.updateOrientation( ORIENT_DOWN );
 
+            LegLR.InitialOrientation = ORIENT_DOWN;
             LegUR.addChild( LegLR );
-            LegLR.updateOrientation( ORIENT_DOWN );
 
-            mParentBone = HipL;
-            
+            FakeHip.InitialOrientation = ORIENT_UP;
+
+            FakeHip.addChild( HipL );
+            FakeHip.addChild( HipR );
+            FakeHip.addChild( BackU );
+
+            mParentBone = FakeHip;
+            mParentBone.DrawingEnabled = false;
+            mParentBone.updateUsingLastOrientation();
 
         }
-
+        Bone mparentbone2;
         /// <summary>
         /// Draws the entire skeletal structure
         /// </summary>
@@ -248,6 +317,8 @@ namespace Sensor_Aware_PT
         {
             /** Each child bone will automatically be drawn by it's parent so we only need to call draw on the parent bone of the structure */
             mParentBone.drawBone();
+            //mparentbone2.drawBone();
+            
         }
 
         /// <summary>
@@ -295,11 +366,11 @@ namespace Sensor_Aware_PT
             }
         }
 
-        public void setYawOffsets()
+        public void calibrateZero()
         {
             foreach( Bone b in mSensorBoneMapping.Values )
             {
-                b.setYawOffset();
+                b.calibrateZero();
             }
         }
 

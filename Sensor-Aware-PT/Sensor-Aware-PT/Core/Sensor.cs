@@ -570,12 +570,38 @@ namespace Sensor_Aware_PT
         {
 
             /** Read the 4 vectors of data */
-            Vector3 vecData = new Vector3( readFloat(), readFloat(), readFloat() );
+            Matrix4 matData = Matrix4.Identity;
+            Matrix4 transform = Matrix4.CreateRotationZ( MathHelper.DegreesToRadians( 90 ) );
+            //Matrix4 transform = Matrix4.Identity;
+
+            /* 1 2 3
+             * 3 2 1
+             * 2 3 1
+             * 
+             * 
+             */ 
+            matData.M11 = readFloat();
+            matData.M12 = readFloat();
+            matData.M13 = readFloat();
+
+            matData.M21 = readFloat();
+            matData.M22 = readFloat();
+            matData.M23 = readFloat();
+
+            matData.M31 = readFloat();
+            matData.M32 = readFloat();
+            matData.M33 = readFloat();
+
+            matData = matData * transform;
+            matData = Matrix4.Transpose( matData );
+            matData.Row1 *= -1;
+            /*
             Vector3 accData = new Vector3( readFloat(), readFloat(), readFloat() );
             Vector3 magData = new Vector3( readFloat(), readFloat(), readFloat() );
             Vector3 gyroData = new Vector3( readFloat(), readFloat(), readFloat() );
+             */
             /** Returned the packed entry */
-            return prepareEntry( vecData, accData, magData, gyroData );
+            return prepareEntry( matData, Vector3.Zero, Vector3.Zero, Vector3.Zero );
         }
 
         /// <summary>
@@ -614,7 +640,7 @@ namespace Sensor_Aware_PT
         /// <param name="mag">magnetometer vector</param>
         /// <param name="gyro">gyroscope vector</param>
         /// <returns></returns>
-        private SensorDataEntry prepareEntry( Vector3 orientation, Vector3 accel, Vector3 mag, Vector3 gyro )
+        private SensorDataEntry prepareEntry( Matrix4 orientation, Vector3 accel, Vector3 mag, Vector3 gyro )
         {
             SensorDataEntry newEntry = new SensorDataEntry();
             newEntry.orientation = orientation;
@@ -625,59 +651,6 @@ namespace Sensor_Aware_PT
             newEntry.timeStamp = DateTime.Now;
             newEntry.id = String.Copy( mID );
             return newEntry;
-        }
-
-        /// <summary>
-        /// Dumps the contents of the history buffer to a text file
-        /// </summary>
-        public void dumpBuffer()
-        {
-            DateTime datet = DateTime.Now;
-            String filePath = "CircularBufferDump " + mID + " "  + datet.ToString( "MM_dd" ) + ".log";
-            
-            
-                FileStream files = File.Create( filePath );
-                files.Close();
-            
-            try
-            {
-                StreamWriter sw = File.AppendText( filePath );
-
-                foreach( SensorDataEntry dataEntry in mData )
-                {
-
-                    try
-                    {
-                        string output = String.Format( "Angle{{{0},{1},{2}}}, Accel{{{3},{4},{5}}}, Mag{{{6},{7},{8}}}, Gyro{{{9},{10},{11}}}",
-                        dataEntry.orientation.X,
-                        dataEntry.orientation.Y,
-                        dataEntry.orientation.Z,
-                        dataEntry.accelerometer.X,
-                        dataEntry.accelerometer.Y,
-                        dataEntry.accelerometer.Z,
-                        dataEntry.magnetometer.X,
-                        dataEntry.magnetometer.Y,
-                        dataEntry.magnetometer.Z,
-                        dataEntry.gyroscope.X,
-                        dataEntry.gyroscope.Y,
-                        dataEntry.gyroscope.Z );
-                        sw.WriteLine( output );
-                        
-                    }
-                    catch( Exception e )
-                    {
-                        throw e;
-                    }
-                }
-
-
-                sw.Flush();
-                sw.Close();
-            }
-            catch( Exception e )
-            {
-                Console.WriteLine( e.Message.ToString() );
-            }
         }
 
         public void reset()
