@@ -71,17 +71,17 @@ namespace Sensor_Aware_PT
         /// These are default orientation values for bones
         /// </summary>
         /// 
-        protected static Matrix4 ORIENT_LEFT;
-        protected static Matrix4 ORIENT_RIGHT;
-        protected static Matrix4 ORIENT_UP;
-        protected static Matrix4 ORIENT_DOWN;
-        protected static Matrix4 ORIENT_FRONT;
-        protected static Matrix4 ORIENT_DEFAULT = Matrix4.Identity;
-        protected static Vector3 VECTOR_ORIENT_LEFT = new Vector3( 0, 90, 0 );
-        protected static Vector3 VECTOR_ORIENT_RIGHT = new Vector3(0,-90, 0 );
-        protected static Vector3 VECTOR_ORIENT_DOWN = new Vector3( 90, 0, 0 );
-        protected static Vector3 VECTOR_ORIENT_UP = new Vector3( -90, 0, 0);
-        protected static Vector3 VECTOR_ORIENT_FRONT = new Vector3( 0, 0, 0 );
+        internal  static Matrix4 ORIENT_LEFT;
+        internal static Matrix4 ORIENT_RIGHT;
+        internal static Matrix4 ORIENT_UP;
+        internal static Matrix4 ORIENT_DOWN;
+        internal static Matrix4 ORIENT_FRONT;
+        internal static Matrix4 ORIENT_DEFAULT = Matrix4.Identity;
+        internal static Vector3 VECTOR_ORIENT_LEFT = new Vector3( 90, 0, 0 );
+        internal static Vector3 VECTOR_ORIENT_RIGHT = new Vector3(-90,0, 0 );
+        internal static Vector3 VECTOR_ORIENT_DOWN = new Vector3( 0, 180, 0 );
+        internal static Vector3 VECTOR_ORIENT_UP = new Vector3( 0, 0, 0);
+        internal static Vector3 VECTOR_ORIENT_FRONT = new Vector3( 0, 90, 0 );
 
         //straight down -180, -90, -180
         //straight up -90, 90, 90
@@ -215,22 +215,22 @@ namespace Sensor_Aware_PT
         {
             Bone BackU, BackL, ArmUL, ArmUR, ArmLL, ArmLR, ShoulderL, ShoulderR, HipL, HipR, Head,
                 LegLL, LegLR, LegUL, LegUR, FakeHip;
-            BackU = new Bone( mBoneLengthMapping[ BoneType.BackUpper ], new Vector3() );
-            BackL = new Bone( mBoneLengthMapping[ BoneType.BackLower ], new Vector3() );
-            ArmUL = new Bone(mBoneLengthMapping[BoneType.ArmUpperL], new Vector3());
-            ArmUR = new Bone(mBoneLengthMapping[BoneType.ArmUpperR], new Vector3());
-            ArmLL = new Bone(mBoneLengthMapping[BoneType.ArmLowerL], new Vector3());
-            ArmLR = new Bone(mBoneLengthMapping[BoneType.ArmLowerR], new Vector3());
-            ShoulderL = new Bone(mBoneLengthMapping[BoneType.ShoulderL], new Vector3());
-            ShoulderR = new Bone(mBoneLengthMapping[BoneType.ShoulderR], new Vector3());
-            HipR = new Bone( mBoneLengthMapping[ BoneType.HipR], new Vector3() );
-            HipL= new Bone( mBoneLengthMapping[ BoneType.HipL], new Vector3() );
-            Head = new Bone( mBoneLengthMapping[ BoneType.Head], new Vector3() );
-            LegLL = new Bone( mBoneLengthMapping[ BoneType.LegLowerL], new Vector3() );
-            LegLR = new Bone( mBoneLengthMapping[ BoneType.LegLowerR ], new Vector3() );
-            LegUR = new Bone( mBoneLengthMapping[ BoneType.LegUpperR ], new Vector3() );
-            LegUL = new Bone( mBoneLengthMapping[ BoneType.LegUpperL ], new Vector3() );
-            FakeHip = new Bone( 1f, new Vector3() );
+            BackU = new Bone( mBoneLengthMapping[ BoneType.BackUpper ] );
+            BackL = new Bone( mBoneLengthMapping[ BoneType.BackLower ] );
+            ArmUL = new Bone(mBoneLengthMapping[BoneType.ArmUpperL]);
+            ArmUR = new Bone(mBoneLengthMapping[BoneType.ArmUpperR]);
+            ArmLL = new Bone(mBoneLengthMapping[BoneType.ArmLowerL]);
+            ArmLR = new Bone(mBoneLengthMapping[BoneType.ArmLowerR]);
+            ShoulderL = new Bone(mBoneLengthMapping[BoneType.ShoulderL]);
+            ShoulderR = new Bone(mBoneLengthMapping[BoneType.ShoulderR]);
+            HipR = new Bone( mBoneLengthMapping[ BoneType.HipR] );
+            HipL= new Bone( mBoneLengthMapping[ BoneType.HipL] );
+            Head = new Bone( mBoneLengthMapping[ BoneType.Head] );
+            LegLL = new Bone( mBoneLengthMapping[ BoneType.LegLowerL] );
+            LegLR = new Bone( mBoneLengthMapping[ BoneType.LegLowerR ] );
+            LegUR = new Bone( mBoneLengthMapping[ BoneType.LegUpperR ] );
+            LegUL = new Bone( mBoneLengthMapping[ BoneType.LegUpperL ] );
+            FakeHip = new Bone( 1f );
             
             mBoneTypeMapping.Add( BoneType.BackUpper, BackU );
             mBoneTypeMapping.Add( BoneType.ArmUpperL, ArmUL);
@@ -247,7 +247,8 @@ namespace Sensor_Aware_PT
             // Set the orientations accordingly~
             
             /** Back */
-            BackU.InitialOrientation = ORIENT_UP;
+            //BackU.InitialOrientation = ORIENT_UP;
+            BackU.setOrientation( BoneOrientation.Up );
 
 
             BackU.addChild( ShoulderL );
@@ -255,50 +256,63 @@ namespace Sensor_Aware_PT
             BackU.Color = Color.Green;
             BackU.Thickness = .5f;
             /** Shoulders */
-            ShoulderR.InitialOrientation = ORIENT_RIGHT;
-            ShoulderL.InitialOrientation = ORIENT_LEFT;
+            //ShoulderR.InitialOrientation = ORIENT_RIGHT;
+            ShoulderL.setOrientation( BoneOrientation.Left );
+            //ShoulderL.InitialOrientation = ORIENT_LEFT;
+            ShoulderR.setOrientation( BoneOrientation.Right );
             ShoulderL.Color = Color.Gold;
             ShoulderR.Color = Color.Gold;
             /** Left Arm upper */
             ShoulderL.addChild( ArmUL );
-            ArmUL.InitialOrientation = ORIENT_DOWN;
+            //ArmUL.InitialOrientation = ORIENT_DOWN;
+            ArmUL.setOrientation( BoneOrientation.Down );
             ArmUL.Color = Color.OrangeRed;
 
             /** Right arm upper */
             ShoulderR.addChild( ArmUR );
-            ArmUR.InitialOrientation = ORIENT_DOWN;
+            //ArmUR.InitialOrientation = ORIENT_DOWN;
+            ArmUR.setOrientation( BoneOrientation.Down );
             ArmUR.Color = Color.OrangeRed;
             /** Left arm lower */
             ArmUL.addChild( ArmLL );
-            ArmLL.InitialOrientation = ORIENT_DOWN;
+            //ArmLL.InitialOrientation = ORIENT_DOWN;
+            ArmLL.setOrientation( BoneOrientation.Down );
             ArmLL.Color = Color.OrangeRed;
             /** Right arm lower */
             ArmUR.addChild( ArmLR );
-            ArmLR.InitialOrientation = ORIENT_DOWN;
+            //ArmLR.InitialOrientation = ORIENT_DOWN;
+            ArmLR.setOrientation( BoneOrientation.Down );
             ArmLR.Color = Color.OrangeRed;
 
             /** Hip and lower legs */
-            HipR.InitialOrientation = ORIENT_RIGHT;
-            HipL.InitialOrientation = ORIENT_LEFT;
+            //HipR.InitialOrientation = ORIENT_RIGHT;
+            //HipL.InitialOrientation = ORIENT_LEFT;
+            HipR.setOrientation( BoneOrientation.Right );
+            HipL.setOrientation( BoneOrientation.Left );
 
 
             HipL.Color = Color.Blue;
             HipR.Color = Color.Gray;
-            LegUL.InitialOrientation = ORIENT_DOWN;
+            //LegUL.InitialOrientation = ORIENT_DOWN;
+            LegUL.setOrientation( BoneOrientation.Down );
             HipL.addChild( LegUL );
 
-            LegUR.InitialOrientation = ORIENT_DOWN;
+            //LegUR.InitialOrientation = ORIENT_DOWN;
+            LegUR.setOrientation( BoneOrientation.Down );
             LegUR.Color = LegLR.Color = LegLL.Color = LegUL.Color = Color.DarkRed;
 
             HipR.addChild( LegUR );
 
-            LegLL.InitialOrientation = ORIENT_DOWN;
+            //LegLL.InitialOrientation = ORIENT_DOWN;
+            LegLL.setOrientation( BoneOrientation.Down );
             LegUL.addChild( LegLL );
 
-            LegLR.InitialOrientation = ORIENT_DOWN;
+            //LegLR.InitialOrientation = ORIENT_DOWN;
+            LegLR.setOrientation( BoneOrientation.Down );
             LegUR.addChild( LegLR );
 
-            FakeHip.InitialOrientation = ORIENT_UP;
+            //FakeHip.InitialOrientation = ORIENT_UP;
+            FakeHip.setOrientation( BoneOrientation.Up );
 
             FakeHip.addChild( HipL );
             FakeHip.addChild( HipR );
@@ -306,10 +320,9 @@ namespace Sensor_Aware_PT
 
             mParentBone = FakeHip;
             mParentBone.DrawingEnabled = false;
-            mParentBone.updateUsingLastOrientation();
+            mParentBone.updateOrientation();
 
         }
-        Bone mparentbone2;
         /// <summary>
         /// Draws the entire skeletal structure
         /// </summary>
@@ -317,7 +330,6 @@ namespace Sensor_Aware_PT
         {
             /** Each child bone will automatically be drawn by it's parent so we only need to call draw on the parent bone of the structure */
             mParentBone.drawBone();
-            //mparentbone2.drawBone();
             
         }
 

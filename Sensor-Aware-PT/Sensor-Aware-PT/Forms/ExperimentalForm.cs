@@ -56,7 +56,7 @@ namespace Sensor_Aware_PT
             GL.Enable( EnableCap.ColorMaterial );
             GL.Enable( EnableCap.DepthTest);						    // Enables Depth Testing
             GL.Enable( EnableCap.Blend );
-            //GL.Enable( EnableCap.Lighting );
+            GL.Enable( EnableCap.Lighting );
             GL.Enable( EnableCap.Light0 );
             
             GL.Hint( HintTarget.PolygonSmoothHint, HintMode.Nicest);     // Really Nice Point Smoothing
@@ -298,7 +298,7 @@ namespace Sensor_Aware_PT
                     GL.Disable(EnableCap.LineStipple);
                     GL.PopMatrix();
 
-                    GL.PushMatrix();
+                    //GL.PushMatrix();
                     //mBones[ 0 ].drawBone();
                     mUpperSkeleton.draw();
                     
@@ -348,6 +348,7 @@ namespace Sensor_Aware_PT
         void IObserver<SensorDataEntry>.OnNext( SensorDataEntry value )
         {
             mLastTransform = value.orientation;
+            mLastTransform.Transpose();
             mTransform = mCalibTrans * mLastTransform;
             /*
             switch(value.id)
