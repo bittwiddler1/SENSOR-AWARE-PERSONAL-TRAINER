@@ -147,7 +147,6 @@ namespace Sensor_Aware_PT
             foreach( IObserver<SensorDataEntry> observer in mObservers )
             {
                 observer.OnNext(dataFrame);
-
             }
         }
 

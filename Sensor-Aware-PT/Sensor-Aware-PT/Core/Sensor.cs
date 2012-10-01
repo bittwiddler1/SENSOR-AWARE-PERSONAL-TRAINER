@@ -592,16 +592,22 @@ namespace Sensor_Aware_PT
             matData.M32 = readFloat();
             matData.M33 = readFloat();
 
-            matData = matData * transform;
-            matData = Matrix4.Transpose( matData );
-            matData.Row1 *= -1;
+            float yaw, pitch, roll;
+            pitch = -1f*(float)Math.Asin(matData.M31);
+            roll = (float)Math.Atan2(matData.M32, matData.M33);
+            yaw = (float)Math.Atan2(matData.M21, matData.M11);
+            Vector3 ypr = new Vector3(yaw, pitch, roll);
+
+            //matData = matData * transform;
+            //matData = Matrix4.Transpose( matData );
+            //matData.Row1 *= -1;
             /*
             Vector3 accData = new Vector3( readFloat(), readFloat(), readFloat() );
             Vector3 magData = new Vector3( readFloat(), readFloat(), readFloat() );
             Vector3 gyroData = new Vector3( readFloat(), readFloat(), readFloat() );
              */
             /** Returned the packed entry */
-            return prepareEntry( matData, Vector3.Zero, Vector3.Zero, Vector3.Zero );
+            return prepareEntry( matData, ypr, Vector3.Zero, Vector3.Zero );
         }
 
         /// <summary>

@@ -21,8 +21,12 @@ namespace Sensor_Aware_PT
         private Bone[] mBones = new Bone[ 4 ];
         Dictionary<String, SensorDataEntry> mLastSensorData = new Dictionary<string, SensorDataEntry>();
         Skeleton mUpperSkeleton = new Skeleton( SkeletonType.UpperBody );
-        Vector3 mViewRotations = new Vector3();
+        Vector3 mViewRotations = new Vector3(-90,0,90);
         Vector3 mViewTranslations = new Vector3();
+        Matrix4 mCamRotation = new Matrix4();
+        Matrix4 mTransform = Matrix4.Identity;
+        Matrix4 mCalibTrans = Matrix4.Identity;
+        Matrix4 mLastTransform = Matrix4.Identity;
 
         bool[] mKeyState = new bool[ 256 ];
         bool[] mKeyStatePrev = new bool[ 256 ];
@@ -79,6 +83,14 @@ namespace Sensor_Aware_PT
             }
 
 
+            Matrix4 rx, ry, rz;
+            rx = Matrix4.CreateRotationX(-MathHelper.PiOver2);
+            ry = Matrix4.Identity;
+            rz = Matrix4.CreateRotationZ(MathHelper.PiOver2);
+            mCamRotation = rx * ry * rz;
+            
+            mCamRotation.Transpose();
+            mCamRotation.Row2 *= -1f;
         }
 
         public void subscribeToSource( IObservable<SensorDataEntry> source )
@@ -174,44 +186,121 @@ namespace Sensor_Aware_PT
                     GL.LoadMatrix( ref lookat );
 
                     GL.Translate( 0, 0, 0 );
+                    /*
                     GL.Rotate( mViewRotations.X, 1f, 0, 0 );
                     GL.Rotate( mViewRotations.Y, 0, 1f, 0 );
                     GL.Rotate( mViewRotations.Z, 0, 0, 1f );
-                    
+                    */
+                    GL.MultMatrix(ref mCamRotation);
                     
                     GL.LineWidth( 2f );
-                    GL.Enable( EnableCap.LineStipple );
+                    //GL.Enable( EnableCap.LineStipple );
                     GL.LineStipple(1, Convert.ToInt16("1000110001100011", 2));
                     
-                    
+                    //x+
                     GL.Begin( BeginMode.Lines );
                     GL.Color3( Color.Red );
-                    GL.Vertex3( -100, 0, 0 );
+                    GL.Vertex3( 0, 0, 0 );
                     GL.Vertex3( 100, 0, 0 );
                     GL.End();
-                    
+
+                    GL.Enable(EnableCap.LineStipple);
+                    //x-
+                    GL.Begin(BeginMode.Lines);
+                    GL.Color3(Color.Red);
+                    GL.Vertex3(0, 0, 0);
+                    GL.Vertex3(-100, 0, 0);
+                    GL.End();
+                    GL.Disable(EnableCap.LineStipple);
 
                     
                     GL.Begin( BeginMode.Lines );
                     GL.Color3( Color.Green );
-                    GL.Vertex3( 0, -100, 0 );
+                    GL.Vertex3( 0, 0, 0 );
                     GL.Vertex3( 0, 100, 0 );
                     GL.End();
-                    
+
+                    GL.Enable(EnableCap.LineStipple);
+                    GL.Begin(BeginMode.Lines);
+                    GL.Color3(Color.Green);
+                    GL.Vertex3(0, 0, 0);
+                    GL.Vertex3(0, -100, 0);
+                    GL.End();
+
+                    GL.Disable(EnableCap.LineStipple);
                     GL.Begin( BeginMode.Lines );
                     GL.Color3( Color.Blue );
-                    GL.Vertex3( 0, 0, -100 );
+                    GL.Vertex3( 0, 0, 0 );
                     GL.Vertex3( 0, 0, 100 );
+                    GL.End();
+                    GL.Enable(EnableCap.LineStipple);
+                    GL.Begin(BeginMode.Lines);
+                    GL.Color3(Color.Blue);
+                    GL.Vertex3(0, 0, 0);
+                    GL.Vertex3(0, 0, -100);
                     GL.End();
 
                     GL.Disable( EnableCap.LineStipple );
                     GL.LineWidth( 1f );
+                    /*
+                    GL.PushMatrix();
+                    //////////////////////////////
+                    //mTransform.Transpose();
+                    GL.MultMatrix(ref mTransform);
+                    //GL.MultTransposeMatrix(ref mTransform);
+                    GL.LineWidth(4f);
+                    //GL.Enable( EnableCap.LineStipple );
+                    GL.LineStipple(1, Convert.ToInt16("1000110001100011", 2));
 
+                    //x+
+                    GL.Begin(BeginMode.Lines);
+                    GL.Color3(Color.Red);
+                    GL.Vertex3(0, 0, 0);
+                    GL.Vertex3(100, 0, 0);
+                    GL.End();
+
+                    GL.Enable(EnableCap.LineStipple);
+                    //x-
+                    GL.Begin(BeginMode.Lines);
+                    GL.Color3(Color.Red);
+                    GL.Vertex3(0, 0, 0);
+                    GL.Vertex3(-100, 0, 0);
+                    GL.End();
+                    GL.Disable(EnableCap.LineStipple);
+
+
+                    GL.Begin(BeginMode.Lines);
+                    GL.Color3(Color.Green);
+                    GL.Vertex3(0, 0, 0);
+                    GL.Vertex3(0, 100, 0);
+                    GL.End();
+
+                    GL.Enable(EnableCap.LineStipple);
+                    GL.Begin(BeginMode.Lines);
+                    GL.Color3(Color.Green);
+                    GL.Vertex3(0, 0, 0);
+                    GL.Vertex3(0, -100, 0);
+                    GL.End();
+
+                    GL.Disable(EnableCap.LineStipple);
+                    GL.Begin(BeginMode.Lines);
+                    GL.Color3(Color.Blue);
+                    GL.Vertex3(0, 0, 0);
+                    GL.Vertex3(0, 0, 100);
+                    GL.End();
+                    GL.Enable(EnableCap.LineStipple);
+                    GL.Begin(BeginMode.Lines);
+                    GL.Color3(Color.Blue);
+                    GL.Vertex3(0, 0, 0);
+                    GL.Vertex3(0, 0, -100);
+                    GL.End();
+
+                    GL.Disable(EnableCap.LineStipple);
+                    GL.PopMatrix();
+                    */
                     //GL.PushMatrix();
                     //mBones[ 0 ].drawBone();
                     mUpperSkeleton.draw();
-                    
-                    
                     simpleOpenGlControl.SwapBuffers();
                     //GL.PopMatrix();
                     //GL.Flush();
@@ -226,11 +315,15 @@ namespace Sensor_Aware_PT
             //foreach( Bone b in mBones )
               //  b.setYawOffset();
             mUpperSkeleton.calibrateZero();
+            mCalibTrans = mLastTransform;
+            mCalibTrans.Invert();
         }
 
         private void button2_Click( object sender, EventArgs e )
         {
             Nexus.Instance.resynchronize();
+            mCalibTrans = Matrix4.Identity;
+            
         }
 
         private void ExperimentalForm_Load( object sender, EventArgs e )
@@ -252,6 +345,9 @@ namespace Sensor_Aware_PT
 
         void IObserver<SensorDataEntry>.OnNext( SensorDataEntry value )
         {
+            mLastTransform = value.orientation;
+            mLastTransform.Transpose();
+            mTransform = mCalibTrans * mLastTransform;
             /*
             switch(value.id)
             {
@@ -289,6 +385,8 @@ namespace Sensor_Aware_PT
                     Logger.Info( "{0}", s.ToString() );
                 }
             }
+
+            Logger.Info("{0},{1},{2}", mViewRotations.X, mViewRotations.Y, mViewRotations.Z);
         }
 
         private void ExperimentalForm_FormClosing( object sender, FormClosingEventArgs e )
