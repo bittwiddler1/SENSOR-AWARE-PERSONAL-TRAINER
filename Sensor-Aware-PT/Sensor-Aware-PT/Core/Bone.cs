@@ -130,9 +130,7 @@ namespace Sensor_Aware_PT
         public void calibrateZero()
         {
             mCalibratedOrientation =  mCurrentOrientation ;
-            
-            
-            mCalibratedOrientation.Invert();
+            //mCalibratedOrientation.Invert();
             
         }
         
@@ -150,10 +148,10 @@ namespace Sensor_Aware_PT
         /// <param name="newOrientation">Rotation matrix (DCM) of new orientation values</param>
         public void updateOrientation( Matrix4 newOrientation )
         {
-            /** This transpose supposedly resets us back to a world frame axis */
-            newOrientation.Transpose();
             /** Save the new orientation as the current, then calculate final transform using our calibrated and new */
             mCurrentOrientation = newOrientation;
+            /** This transpose supposedly resets us back to a world frame axis */   
+            newOrientation.Transpose();
             mFinalTransform = mCalibratedOrientation * newOrientation;
 
             if( mParentBone != null )
@@ -458,6 +456,7 @@ namespace Sensor_Aware_PT
             {
                 child.drawBone();
             }
+
         }
 
         ~Bone()

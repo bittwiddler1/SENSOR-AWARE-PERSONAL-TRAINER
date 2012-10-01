@@ -242,7 +242,7 @@ namespace Sensor_Aware_PT
 
                     GL.Disable( EnableCap.LineStipple );
                     GL.LineWidth( 1f );
-
+                    /*
                     GL.PushMatrix();
                     //////////////////////////////
                     //mTransform.Transpose();
@@ -297,12 +297,10 @@ namespace Sensor_Aware_PT
 
                     GL.Disable(EnableCap.LineStipple);
                     GL.PopMatrix();
-
+                    */
                     //GL.PushMatrix();
                     //mBones[ 0 ].drawBone();
                     mUpperSkeleton.draw();
-                    
-                    
                     simpleOpenGlControl.SwapBuffers();
                     //GL.PopMatrix();
                     //GL.Flush();
