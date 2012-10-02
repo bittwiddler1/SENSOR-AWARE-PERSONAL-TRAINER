@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="Sensor-Aware-Personal-Trainer" company="JB FitTech" webLink="http://" view-date="2012-08-01" view-index="0" gantt-divider-location="533" resource-divider-location="300" version="2.0">
+<?xml version="1.0" encoding="UTF-8"?><project name="Sensor-Aware-Personal-Trainer" company="JB FitTech" webLink="http://" view-date="2012-05-01" view-index="0" gantt-divider-location="383" resource-divider-location="300" version="2.0">
     <description><![CDATA[A sensor-based utility to assist gym trainees in learning basic exercise form.]]></description>
     <view zooming-state="default:8" id="gantt-chart"/>
     <view id="resource-table">
@@ -49,6 +48,7 @@
         </task>
         <task id="17" name="Figure out why We can't use more than 3 IMUs" color="#8cb6ce" meeting="false" start="2012-08-26" duration="6" complete="100" priority="4" expand="true">
             <depend id="30" type="2" difference="0" hardness="Strong"/>
+            <depend id="92" type="2" difference="0" hardness="Strong"/>
         </task>
         <task id="23" name="Fix the wmi com port reinitialization bug" color="#8cb6ce" meeting="false" start="2012-08-28" duration="1" complete="100" expand="true">
             <depend id="28" type="2" difference="0" hardness="Strong"/>
@@ -73,23 +73,32 @@
             <depend id="59" type="2" difference="0" hardness="Strong"/>
             <depend id="84" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="84" name="Figure out Skeletal Alignment Issues" color="#8cb6ce" meeting="false" start="2012-09-14" duration="4" complete="100" expand="true"/>
-        <task id="89" name="Replace the Rescan &amp; Configuration Prompts with a Form" color="#8cb6ce" meeting="false" start="2012-09-24" duration="3" complete="100" expand="true"/>
-        <task id="44" name="Collect and Analyze Data" color="#8cb6ce" meeting="false" start="2012-09-30" duration="13" complete="0" expand="true">
+        <task id="84" name="Figure out Skeletal Alignment Issues" color="#8cb6ce" meeting="false" start="2012-09-14" duration="4" complete="100" expand="true">
+            <depend id="44" type="2" difference="0" hardness="Strong"/>
+            <depend id="92" type="2" difference="0" hardness="Rubber"/>
+        </task>
+        <task id="89" name="Replace the Rescan &amp; Configuration Prompts with a Form" color="#8cb6ce" meeting="false" start="2012-09-24" duration="3" complete="100" expand="true">
+            <depend id="90" type="2" difference="0" hardness="Rubber"/>
+        </task>
+        <task id="90" name="Begin Work on Skeletal Configuration Dialog" color="#8cb6ce" meeting="false" start="2012-10-01" duration="4" complete="0" expand="true">
+            <depend id="44" type="2" difference="0" hardness="Rubber"/>
+        </task>
+        <task id="92" name="Figure out Skeletal Alignment Again" color="#8cb6ce" meeting="false" start="2012-10-01" duration="12" complete="0" expand="true"/>
+        <task id="44" name="Collect and Analyze Data" color="#8cb6ce" meeting="false" start="2012-10-13" duration="13" complete="0" expand="true">
             <depend id="46" type="2" difference="0" hardness="Rubber"/>
             <depend id="59" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="46" name="Camera Integration" color="#8cb6ce" meeting="false" start="2012-10-13" duration="28" complete="0" expand="true">
+        <task id="46" name="Camera Integration" color="#8cb6ce" meeting="false" start="2012-10-26" duration="28" complete="0" expand="true">
             <depend id="57" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="57" name="Create modular exercise database" color="#8cb6ce" meeting="false" start="2012-11-10" duration="15" complete="0" expand="true">
+        <task id="57" name="Create modular exercise database" color="#8cb6ce" meeting="false" start="2012-11-23" duration="15" complete="0" expand="true">
             <depend id="58" type="2" difference="0" hardness="Strong"/>
             <depend id="59" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="58" name="Create user interface" color="#8cb6ce" meeting="false" start="2012-11-25" duration="13" complete="0" expand="true">
+        <task id="58" name="Create user interface" color="#8cb6ce" meeting="false" start="2012-12-08" duration="13" complete="0" expand="true">
             <depend id="59" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="59" name="Integration testing" color="#8cb6ce" meeting="false" start="2012-12-08" duration="9" complete="0" expand="true"/>
+        <task id="59" name="Integration testing" color="#8cb6ce" meeting="false" start="2012-12-21" duration="9" complete="0" expand="true"/>
     </tasks>
     <resources/>
     <allocations/>
@@ -103,9 +112,9 @@
         <displaycolumn property-id="tpd9" order="-1" width="75" visible="false"/>
         <displaycolumn property-id="tpd1" order="-1" width="75" visible="false"/>
         <displaycolumn property-id="tpd0" order="-1" width="75" visible="false"/>
-        <displaycolumn property-id="tpd3" order="0" width="242" visible="true"/>
-        <displaycolumn property-id="tpd4" order="1" width="127" visible="true"/>
-        <displaycolumn property-id="tpd5" order="2" width="160" visible="true"/>
+        <displaycolumn property-id="tpd3" order="0" width="245" visible="true"/>
+        <displaycolumn property-id="tpd4" order="1" width="58" visible="true"/>
+        <displaycolumn property-id="tpd5" order="2" width="61" visible="true"/>
     </taskdisplaycolumns>
     <previous/>
     <roles roleset-name="Default"/>
