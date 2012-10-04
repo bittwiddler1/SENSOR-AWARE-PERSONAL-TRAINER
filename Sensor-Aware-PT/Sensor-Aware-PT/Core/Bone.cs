@@ -131,9 +131,7 @@ namespace Sensor_Aware_PT
         {
             mCalibratedOrientation =  mCurrentOrientation;
             mCalibratedOrientation.Invert();
-            //
-            
-            
+
             //mCalibratedOrientation.Transpose();
             //mCalibratedOrientation.Transpose();
             //mCalibratedOrientation.Invert();
@@ -156,15 +154,17 @@ namespace Sensor_Aware_PT
         {
             /** Save the new orientation as the current, then calculate final transform using our calibrated and new */
             mCurrentOrientation = newOrientation;
-            Matrix4 d = Matrix4.CreateRotationY( MathHelper.PiOver2 );
+            //Matrix4 d = Matrix4.CreateRotationY( MathHelper.PiOver2 );
             //mCurrentOrientation *=d;
             //newOrientation.Transpose();
             /** This transpose supposedly resets us back to a world frame axis */   
             //newOrientation.Transpose();
             //mCurrentOrientation.Transpose();
-            mFinalTransform = newOrientation * mCalibratedOrientation ;
+            mFinalTransform = newOrientation * mCalibratedOrientation;//* mCalibratedOrientation ;
             
-
+            
+            
+            
             if( mParentBone != null )
             {
                 /** This is a child bone so it's position depends on the parent
@@ -174,9 +174,12 @@ namespace Sensor_Aware_PT
                  * to both my start pt and endpt
                  */
                 //mFinalTransform *= d;
+                //Matrix4 m = Matrix4.Identity;
+                //m.M22 = -1f;
                 mFinalTransform = mFinalTransform * Matrix4.CreateTranslation( mParentBone.mEndPoint );
-                
+                //mFinalTransform *= m;
                 mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform );
+                
                 mStartPoint = Vector3.Transform( mStartPoint, mFinalTransform );
             }
             else
@@ -185,6 +188,7 @@ namespace Sensor_Aware_PT
                  * Reset the end points back to the initial positions */
                 resetEndPoints();
                 /** Then apply the rotation, as this has no parent so no translate is required */
+                
                 mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform );
             }
 
@@ -227,6 +231,7 @@ namespace Sensor_Aware_PT
                 default:
                     break;
             }
+            
         }
 
         public void setOrientationTest()

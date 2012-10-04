@@ -571,9 +571,10 @@ namespace Sensor_Aware_PT
 
             /** Read the 4 vectors of data */
             Matrix4 matData = Matrix4.Identity;
-            Matrix4 transform2 = Matrix4.Identity;
-            Matrix4 transform = Matrix4.CreateRotationY( -MathHelper.PiOver2);
-            transform = transform * Matrix4.CreateRotationZ( MathHelper.Pi );
+            Matrix4 transform = Matrix4.Identity;
+            //Matrix4 transform = Matrix4.CreateRotationY( -MathHelper.PiOver2);
+           //transform = transform * Matrix4.CreateRotationZ( MathHelper.Pi );
+            Matrix4 rot = Matrix4.CreateRotationY( MathHelper.PiOver2 );
 
             /* 1 2 3
              * 4 5 6
@@ -592,13 +593,14 @@ namespace Sensor_Aware_PT
             matData.M13 = readFloat();
             matData.M23 = readFloat();
             matData.M33 = readFloat();
-            
-            matData.Transpose();
+            rot *= matData;
+            matData = rot;
+            //matData.Transpose();
 
-            transform2.M22 = -1f;
+            //transform2.M22 = -1f;
             //transform.Row0 *= -1f;
             //matData = matData * transform2;
-            matData = matData * transform;
+            //matData = matData * transform;
             
             
             

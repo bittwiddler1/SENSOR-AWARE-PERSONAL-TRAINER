@@ -70,10 +70,11 @@ namespace Sensor_Aware_PT
             GL.ClearColor( Color.CornflowerBlue );
 
 
+            mUpperSkeleton.createMapping( "A", BoneType.ArmLowerR );
+            mUpperSkeleton.createMapping( "B", BoneType.ArmUpperR );
             mUpperSkeleton.createMapping( "C", BoneType.ArmLowerL );
-            mUpperSkeleton.createMapping( "A", BoneType.ArmUpperL );
-            mUpperSkeleton.createMapping( "B", BoneType.ArmLowerR );
-            mUpperSkeleton.createMapping( "D", BoneType.ArmUpperR );
+            mUpperSkeleton.createMapping( "D", BoneType.ArmUpperL );
+            mUpperSkeleton.createMapping( "E", BoneType.BackUpper);
             simpleOpenGlControl.Focus();
 
             for( int i = 0; i < 256; i++ )
@@ -382,12 +383,33 @@ namespace Sensor_Aware_PT
             {
                 foreach( SensorDataEntry s in mLastSensorData.Values )
                 {
-                    Logger.Info( "{0}", s.ToString() );
+                    //Logger.Info( "{0}", s.ToString() );
                 }
             }
 
-            Logger.Info("{0},{1},{2}", mViewRotations.X, mViewRotations.Y, mViewRotations.Z);
+            
+            //Logger.Info("{0},{1},{2}", mViewRotations.X, mViewRotations.Y, mViewRotations.Z);
+            Logger.Info( "Matrix det {0}", mLastTransform.Determinant );
+            Logger.Info( "\n" + mLastTransform.ToString() );
+            Matrix4 a = mLastTransform;
+            a.Invert();
+            Logger.Info( "Inverse" );
+            Logger.Info( "\n" + a.ToString() );
+            a = mLastTransform;
+            a.Transpose();
+            Logger.Info( "Transpose" );
+            Logger.Info( "\n" + a.ToString() );
+            Matrix4 b = mLastTransform;
+            
+            a = a * b;
+            Logger.Info( "Input * Inverse" );
+            Logger.Info( "\n" + a.ToString() );
+            Logger.Info( "Input * Transpose" );
+            b.Transpose();
+            a = mLastTransform * b;
+            Logger.Info( "\n" + a.ToString() );
 
+            
             Nexus.Instance.fakeData();
         }
 
@@ -427,6 +449,11 @@ namespace Sensor_Aware_PT
         private void simpleOpenGlControl_KeyUp( object sender, KeyEventArgs e )
         {
             mKeyState[ ( int ) e.KeyCode ] = false;
+        }
+
+        private void button4_Click( object sender, EventArgs e )
+        {
+            Nexus.Instance.Invert();
         }
     }
 }

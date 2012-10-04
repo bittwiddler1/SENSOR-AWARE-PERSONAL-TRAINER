@@ -146,6 +146,12 @@ namespace Sensor_Aware_PT
         {
             foreach( IObserver<SensorDataEntry> observer in mObservers )
             {
+                if( mInvert )
+                {
+                    OpenTK.Matrix4 m = dataFrame.orientation;
+                    m.Invert();
+                    dataFrame.orientation = m;
+                }
                 observer.OnNext(dataFrame);
             }
         }
@@ -450,6 +456,11 @@ namespace Sensor_Aware_PT
             sd.orientation = OpenTK.Matrix4.Identity;
             sd.id = "A";
             NotifyObservers( sd );
+        }
+        bool mInvert = false;
+        internal void Invert()
+        {
+            mInvert = !mInvert;
         }
     }
 
