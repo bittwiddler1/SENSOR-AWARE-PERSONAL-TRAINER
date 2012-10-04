@@ -70,8 +70,8 @@ namespace Sensor_Aware_PT
             GL.ClearColor( Color.CornflowerBlue );
 
 
-            mUpperSkeleton.createMapping( "C", BoneType.ArmUpperL );
-            mUpperSkeleton.createMapping( "A", BoneType.ArmLowerL );
+            mUpperSkeleton.createMapping( "C", BoneType.ArmLowerL );
+            mUpperSkeleton.createMapping( "A", BoneType.ArmUpperL );
             mUpperSkeleton.createMapping( "B", BoneType.ArmLowerR );
             mUpperSkeleton.createMapping( "D", BoneType.ArmUpperR );
             simpleOpenGlControl.Focus();
@@ -186,12 +186,12 @@ namespace Sensor_Aware_PT
                     GL.LoadMatrix( ref lookat );
 
                     GL.Translate( 0, 0, 0 );
-                    /*
+                    
                     GL.Rotate( mViewRotations.X, 1f, 0, 0 );
                     GL.Rotate( mViewRotations.Y, 0, 1f, 0 );
                     GL.Rotate( mViewRotations.Z, 0, 0, 1f );
-                    */
-                    GL.MultMatrix(ref mCamRotation);
+                    
+                    //GL.MultMatrix(ref mCamRotation);
                     
                     GL.LineWidth( 2f );
                     //GL.Enable( EnableCap.LineStipple );
@@ -242,7 +242,7 @@ namespace Sensor_Aware_PT
 
                     GL.Disable( EnableCap.LineStipple );
                     GL.LineWidth( 1f );
-                    /*
+                    
                     GL.PushMatrix();
                     //////////////////////////////
                     //mTransform.Transpose();
@@ -297,7 +297,7 @@ namespace Sensor_Aware_PT
 
                     GL.Disable(EnableCap.LineStipple);
                     GL.PopMatrix();
-                    */
+                    
                     //GL.PushMatrix();
                     //mBones[ 0 ].drawBone();
                     mUpperSkeleton.draw();
@@ -316,7 +316,7 @@ namespace Sensor_Aware_PT
               //  b.setYawOffset();
             mUpperSkeleton.calibrateZero();
             mCalibTrans = mLastTransform;
-            mCalibTrans.Invert();
+            mCalibTrans.Transpose();
         }
 
         private void button2_Click( object sender, EventArgs e )
@@ -346,7 +346,7 @@ namespace Sensor_Aware_PT
         void IObserver<SensorDataEntry>.OnNext( SensorDataEntry value )
         {
             mLastTransform = value.orientation;
-            mLastTransform.Transpose();
+            //mLastTransform.Transpose();
             mTransform = mCalibTrans * mLastTransform;
             /*
             switch(value.id)
@@ -387,6 +387,8 @@ namespace Sensor_Aware_PT
             }
 
             Logger.Info("{0},{1},{2}", mViewRotations.X, mViewRotations.Y, mViewRotations.Z);
+
+            Nexus.Instance.fakeData();
         }
 
         private void ExperimentalForm_FormClosing( object sender, FormClosingEventArgs e )

@@ -571,34 +571,46 @@ namespace Sensor_Aware_PT
 
             /** Read the 4 vectors of data */
             Matrix4 matData = Matrix4.Identity;
-            Matrix4 transform = Matrix4.CreateRotationZ( MathHelper.DegreesToRadians( 90 ) );
-            //Matrix4 transform = Matrix4.Identity;
+            Matrix4 transform2 = Matrix4.Identity;
+            Matrix4 transform = Matrix4.CreateRotationY( -MathHelper.PiOver2);
+            transform = transform * Matrix4.CreateRotationZ( MathHelper.Pi );
 
             /* 1 2 3
-             * 3 2 1
-             * 2 3 1
+             * 4 5 6
+             * 7 8 9
              * 
              * 
              */ 
             matData.M11 = readFloat();
-            matData.M12 = readFloat();
-            matData.M13 = readFloat();
-
             matData.M21 = readFloat();
-            matData.M22 = readFloat();
-            matData.M23 = readFloat();
-
             matData.M31 = readFloat();
+            
+            matData.M12 = readFloat();
+            matData.M22 = readFloat();
             matData.M32 = readFloat();
-            matData.M33 = readFloat();
 
+            matData.M13 = readFloat();
+            matData.M23 = readFloat();
+            matData.M33 = readFloat();
+            
+            matData.Transpose();
+
+            transform2.M22 = -1f;
+            //transform.Row0 *= -1f;
+            //matData = matData * transform2;
+            matData = matData * transform;
+            
+            
+            
+            //matData.Transpose();
             float yaw, pitch, roll;
             pitch = -1f*(float)Math.Asin(matData.M31);
             roll = (float)Math.Atan2(matData.M32, matData.M33);
             yaw = (float)Math.Atan2(matData.M21, matData.M11);
             Vector3 ypr = new Vector3(yaw, pitch, roll);
 
-            //matData = matData * transform;
+            //transform.Row0 *= -1f;
+           //matData = matData * transform;
             //matData = Matrix4.Transpose( matData );
             //matData.Row1 *= -1;
             /*

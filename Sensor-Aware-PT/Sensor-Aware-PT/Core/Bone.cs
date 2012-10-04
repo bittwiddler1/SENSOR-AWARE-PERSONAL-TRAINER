@@ -34,7 +34,7 @@ namespace Sensor_Aware_PT
         private float mDrawRatio = .3f; // Upper = .3f, lower = 1-.3f
         private static bool mDrawBox = false;
         private static bool mDrawWireframe = false;
-        private static bool mDrawLineSegments = false;
+        private static bool mDrawLineSegments = true;
         private List<Bone> mChildren;
         protected Bone mParentBone;
         private float mLength;
@@ -129,7 +129,13 @@ namespace Sensor_Aware_PT
         /// </summary>
         public void calibrateZero()
         {
-            mCalibratedOrientation =  mCurrentOrientation ;
+            mCalibratedOrientation =  mCurrentOrientation;
+            mCalibratedOrientation.Invert();
+            //
+            
+            
+            //mCalibratedOrientation.Transpose();
+            //mCalibratedOrientation.Transpose();
             //mCalibratedOrientation.Invert();
             
         }
@@ -150,9 +156,14 @@ namespace Sensor_Aware_PT
         {
             /** Save the new orientation as the current, then calculate final transform using our calibrated and new */
             mCurrentOrientation = newOrientation;
+            Matrix4 d = Matrix4.CreateRotationY( MathHelper.PiOver2 );
+            //mCurrentOrientation *=d;
+            //newOrientation.Transpose();
             /** This transpose supposedly resets us back to a world frame axis */   
-            newOrientation.Transpose();
-            mFinalTransform = mCalibratedOrientation * newOrientation;
+            //newOrientation.Transpose();
+            //mCurrentOrientation.Transpose();
+            mFinalTransform = newOrientation * mCalibratedOrientation ;
+            
 
             if( mParentBone != null )
             {
@@ -162,7 +173,9 @@ namespace Sensor_Aware_PT
                 /** Then apply the rotation followed by the translation to the endpt of the parent
                  * to both my start pt and endpt
                  */
+                //mFinalTransform *= d;
                 mFinalTransform = mFinalTransform * Matrix4.CreateTranslation( mParentBone.mEndPoint );
+                
                 mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform );
                 mStartPoint = Vector3.Transform( mStartPoint, mFinalTransform );
             }
@@ -214,6 +227,12 @@ namespace Sensor_Aware_PT
                 default:
                     break;
             }
+        }
+
+        public void setOrientationTest()
+        {
+            mStartPoint = Vector3.Zero;
+            mDrawTransform = Matrix4.Identity;
         }
 
         /// <summary>
@@ -357,6 +376,7 @@ namespace Sensor_Aware_PT
                 /** Draws the bone cone pieces using the draw transform that was calculated */
                 GL.PushMatrix();
                 GL.MultMatrix( ref mDrawTransform );
+                //GL.MultMatrix( ref mFinalTransform );
                 /** Sets the colors and stuff */
                 GL.Color3( Color.Black );
                 GL.ColorMaterial( MaterialFace.FrontAndBack, ColorMaterialParameter.Specular );
@@ -376,6 +396,7 @@ namespace Sensor_Aware_PT
                 GL.Translate( new Vector3( 0, 0, -mLength ) );
                 OpenTK.Graphics.Glu.Cylinder( mConeQuadric, 0.0, mThickness, mLength * ( 1f - mDrawRatio ), 12, 12 );
                 GL.PopMatrix();
+                GL.MultMatrix( ref mFinalTransform );
                 OpenTK.Graphics.Glu.DeleteQuadric( mConeQuadric );
                 #endregion
                 #region draw bounding box

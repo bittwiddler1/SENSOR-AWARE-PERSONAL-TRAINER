@@ -315,7 +315,7 @@ namespace Sensor_Aware_PT
                         mReadySensorCount++;
                         s.ActivationComplete += new Sensor.ActivationCompleteHandler( Sensor_ActivationCompleteEvent );
                         s.ReActivationComplete += new Sensor.ReActivationCompleteHandler( Sensor_ReActivationComplete );
-                        Thread.Sleep( 2000 );
+                        //Thread.Sleep( 2000 );
                         s.activate();
                     }
                     else
@@ -443,6 +443,14 @@ namespace Sensor_Aware_PT
         }
 
         #endregion
+
+        internal void fakeData()
+        {
+            SensorDataEntry sd = new SensorDataEntry();
+            sd.orientation = OpenTK.Matrix4.Identity;
+            sd.id = "A";
+            NotifyObservers( sd );
+        }
     }
 
 }
