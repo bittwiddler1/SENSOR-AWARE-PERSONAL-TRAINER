@@ -15,6 +15,7 @@ namespace Sensor_Aware_PT
 {
     public partial class MainForm : Form
     {
+
         private Nexus mSensorManager;
         
         public MainForm()
@@ -105,7 +106,8 @@ namespace Sensor_Aware_PT
 
         private void button3_Click( object sender, EventArgs e )
         {
-
+            MappingDialog MD = new MappingDialog();
+            MD.ShowDialog();
         }
 
         private void listView1_SelectedIndexChanged( object sender, EventArgs e )

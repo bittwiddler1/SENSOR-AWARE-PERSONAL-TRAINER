@@ -15,7 +15,7 @@ namespace Sensor_Aware_PT
 {
 
 
-    public partial class ConfigurationDialog : Form
+    public partial class MappingDialog : Form
     {
         #region Constants
         private const String CFG_DIR = "Sensor-Aware-PT";
@@ -25,33 +25,28 @@ namespace Sensor_Aware_PT
         #endregion
 
         #region InstanceVariables
-        private BackgroundWorker mRescanWorker = null;
-        private Nexus mNexus = Nexus.Instance;
-
-        private Boolean mbScanForPort = false;
-        private Boolean bClickHasOccured = false;
-        private Boolean bSaved = false;
+        BackgroundWorker mRescanWorker = null;
+        Nexus mNexus = Nexus.Instance;
+        Boolean mbScanForPort = false;
 
         private List<Char> mPossibleIds;
+        private Dictionary<String, String> mPortToID;
         private ManagementObject[] mWmiCOMData = null;
-        
+
         #region GenerateWinformShit
-        private SplitContainer mSplitter = null;
-        private TabControl mTabControl = null;
         private Button mSaveButton = null;
         private Button mRescanButton = null;
-
-
         #endregion
+
         #endregion
 
         #region ConstructorDeconstructor
-        public ConfigurationDialog()
+        public MappingDialog()
         {
             InitializeComponent();
 
             /* Setup WinForms */
-            this.mFakeProgressBar.MarqueeAnimationSpeed = 100;
+            //this.mFakeProgressBar.MarqueeAnimationSpeed = 100;
 
             this.LaunchWorkerThread();
 
@@ -92,7 +87,7 @@ namespace Sensor_Aware_PT
             else
             {
                 /* If we sucessfully read the file, no need to rescan */
-                if (this.ReadConfigFile() == true)
+                if (this.readConfigFile() == true)
                 {
                     this.mbScanForPort = false;
                 }
@@ -114,11 +109,11 @@ namespace Sensor_Aware_PT
         void GenerateForm(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
             /* Get rid of the "Scanning" page */
-            this.mPanel.Controls.Remove(this.mScanLabel);
-            this.mPanel.Controls.Remove(this.mFakeProgressBar);
+            //this.mPanel.Controls.Remove(this.mScanLabel);
+            //this.mPanel.Controls.Remove(this.mFakeProgressBar);
 
-            this.mScanLabel.Hide();
-            this.mFakeProgressBar.Hide();
+            //this.mScanLabel.Hide();
+            //this.mFakeProgressBar.Hide();
 
             /* Set up the Splitter */
             this.mSplitter = new SplitContainer();
@@ -135,7 +130,7 @@ namespace Sensor_Aware_PT
 
             /* Setup the Button */
             this.mSaveButton = new Button();
-            this.mSaveButton.Text = "Save && Quit";
+            this.mSaveButton.Text = "Save";
             this.mSaveButton.Name = "mSaveButton";
             this.mSaveButton.Click += new EventHandler(mSaveButton_Click);
 
@@ -274,10 +269,41 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void mSaveButton_Click(object sender, EventArgs e)
         {
-            this.PopulateDictionaries();
+            foreach (TabPage page in this.mTabControl.TabPages)
+            {
+                String COMPort = page.Text;
+                String MACAddr = null;
+                String Label   = null;
+                foreach (Control c in page.Controls)
+                {
+                    if (c.Name == "addrlabel")
+                    {
+                        MACAddr = (c as Label).Text;
+                    }
+                    if (c.Name == "newComboBox")
+                    {
+                        Label = ((c as ComboBox).SelectedItem) as String;
+                        if (Label == null)
+                        {
+                            Label = ((c as ComboBox).SelectedValue as String);
+                        }
+                    }
+                }
+                SensorIdentification tmpSensorID = new SensorIdentification(Label, MACAddr, COMPort);
 
-            this.SaveConfigFile();
+                if (mNexus.mSensorIDDict.ContainsKey(Label) == false)
+                {
+                    mNexus.mSensorIDDict.Add(Label, tmpSensorID);
+                }
+                if (mNexus.mSensorDict.ContainsKey(Label) == false)
+                {
+                    mNexus.mSensorDict.Add(Label, new Sensor(tmpSensorID));
+                }
 
+
+                
+            }
+            this.saveConfigFile();
             this.Close();
             
         }
@@ -296,47 +322,22 @@ namespace Sensor_Aware_PT
 
             this.mSplitter.Hide();
 
-            this.mPanel.Controls.Add(this.mFakeProgressBar);
-            this.mPanel.Controls.Add(this.mScanLabel);
+            //this.mPanel.Controls.Add(this.mFakeProgressBar);
+            //this.mPanel.Controls.Add(this.mScanLabel);
 
-            this.mFakeProgressBar.Show();
-            this.mScanLabel.Show();
+            //this.mFakeProgressBar.Show();
+            //this.mScanLabel.Show();
 
             this.LaunchWorkerThread(false);
             
         }
-
-
-        private void ConfigurationDialog_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (false == bSaved)
-            {
-                DialogResult res = MessageBox.Show("Would you like to save the configuration?", "Save Dialog", MessageBoxButtons.YesNoCancel);
-
-                if (System.Windows.Forms.DialogResult.Cancel == res)
-                {
-                    e.Cancel = true;
-                }
-                else if (System.Windows.Forms.DialogResult.Yes == res)
-                {
-                    this.mSaveButton_Click(sender, e);
-                }
-                else
-                {
-                    this.PopulateDictionaries();
-                }
-            }
-        }
-
- 
-
         #endregion
 
-        #region ConfigFunctions
+        #region ConfigFileFunctions
         /// <summary>
         /// Reads the config file at %APPDATA%/Sensor-Aware-PT/config.xml
         /// </summary>
-        private bool ReadConfigFile()
+        private bool readConfigFile()
         {
             bool retval = true;
             StreamReader fileStream = null;
@@ -381,7 +382,7 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Dumps the contents of the mNexus.mSensorIDDict into a .xml configuration file
         /// </summary>
-        private void SaveConfigFile()
+        private void saveConfigFile()
         {
             StreamWriter fileStream;
 
@@ -402,47 +403,9 @@ namespace Sensor_Aware_PT
 
             fileStream.Flush();
             fileStream.Close();
-
-            this.bSaved = true;
         }
-
-
-        private void PopulateDictionaries()
-        {
-            foreach (TabPage page in this.mTabControl.TabPages)
-            {
-                String COMPort = page.Text;
-                String MACAddr = null;
-                String Label = null;
-                foreach (Control c in page.Controls)
-                {
-                    if (c.Name == "addrlabel")
-                    {
-                        MACAddr = (c as Label).Text;
-                    }
-                    if (c.Name == "newComboBox")
-                    {
-                        Label = ((c as ComboBox).SelectedItem) as String;
-                        if (Label == null)
-                        {
-                            Label = ((c as ComboBox).SelectedValue as String);
-                        }
-                    }
-                }
-                SensorIdentification tmpSensorID = new SensorIdentification(Label, MACAddr, COMPort);
-
-                if (mNexus.mSensorIDDict.ContainsKey(Label) == false)
-                {
-                    mNexus.mSensorIDDict.Add(Label, tmpSensorID);
-                }
-                if (mNexus.mSensorDict.ContainsKey(Label) == false)
-                {
-                    mNexus.mSensorDict.Add(Label, new Sensor(tmpSensorID));
-                }
-            }
-        }
-
         #endregion
+
         #region Scans
 
         /// <summary>
@@ -537,7 +500,6 @@ namespace Sensor_Aware_PT
             return wmiObjects;
         }
         #endregion
-
 
         #region oldcode
 
