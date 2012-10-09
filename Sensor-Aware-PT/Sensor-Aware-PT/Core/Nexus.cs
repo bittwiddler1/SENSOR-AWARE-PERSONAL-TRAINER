@@ -250,7 +250,7 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void Sensor_ReInitializationComplete( object sender, EventArgs e )
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         //private void saveConfigFile()
@@ -352,7 +352,7 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void Sensor_ReActivationComplete( object sender, EventArgs e )
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary>

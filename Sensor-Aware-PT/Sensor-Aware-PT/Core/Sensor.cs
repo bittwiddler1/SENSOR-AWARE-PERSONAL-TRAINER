@@ -21,7 +21,7 @@ namespace Sensor_Aware_PT
         /** Max number of retries after disconnected */
         static int MAX_RECONNECT_RETRIES = 3;
         /** Amount of time to wait between reconnects, in ms */
-        static int RECONNECT_TIMEOUT = 10000;
+        static int RECONNECT_TIMEOUT = 65000;
         /** Maximum # of disconnects before never reconnecting */
         private const int MAX_READ_ERRORS = 3;
 
@@ -205,9 +205,10 @@ namespace Sensor_Aware_PT
         private void reinitialize()
         {
             Logger.Warning( "Sensor {0} waiting {1} seconds before attempting to reconnect", mID, RECONNECT_TIMEOUT / 1000 );
+            //mReadThread.Abort();
             Thread.Sleep( RECONNECT_TIMEOUT );
             mReconnectRetryCount++;
-
+            mSerialPort.Close();
             if( mReconnectRetryCount < MAX_RECONNECT_RETRIES )
             {
                 try
@@ -232,9 +233,10 @@ namespace Sensor_Aware_PT
                         changeState( SensorState.ReInitialized );
                         OnReInitializationComplete();
                     }
-                    catch( Exception )
+                    catch( Exception Ex)
                     {
-                        Logger.Error( "Sensor {0} unable to reconnect", mID );
+                        
+                        Logger.Error( "Sensor {0} unable to reconnect - {1}", mID, Ex.Message );
                     }
                     finally
                     {
@@ -242,6 +244,7 @@ namespace Sensor_Aware_PT
                         switch( mSensorState )
                         {
                             case SensorState.ReInitialized:
+                                mReadThread.Start();
                                 break;
                             case SensorState.ReConnecting:
                                 reinitialize();
@@ -458,7 +461,9 @@ namespace Sensor_Aware_PT
                                 {
                                     Logger.Error( "Sensor {0} disconnected, attempting to reconnect", mID );
                                     changeState( SensorState.ReConnecting );
-                                    reinitialize();
+                                    Thread reconnectThread = new Thread( reinitialize );
+                                    reconnectThread.IsBackground = true;
+                                    reconnectThread.Start();
                                 }
                                 else
                                 {
