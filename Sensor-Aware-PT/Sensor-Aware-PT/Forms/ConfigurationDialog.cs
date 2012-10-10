@@ -29,7 +29,7 @@ namespace Sensor_Aware_PT
         private Nexus mNexus = Nexus.Instance;
 
         private Boolean mbScanForPort = false;
-        private Boolean bClickHasOccured = false;
+
         private Boolean bSaved = false;
 
         private List<Char> mPossibleIds;
@@ -125,8 +125,8 @@ namespace Sensor_Aware_PT
             this.mSplitter.Name = "mSplitter";
             this.mSplitter.Orientation = Orientation.Horizontal;
             this.mSplitter.Dock = DockStyle.Fill;
-            this.mSplitter.SplitterDistance = 253;
-            this.mSplitter.IsSplitterFixed = false;
+            this.mSplitter.SplitterDistance = 200;
+            this.mSplitter.IsSplitterFixed = true;
             this.mSplitter.Show();
 
             /* Setup the TabControl */
@@ -147,30 +147,24 @@ namespace Sensor_Aware_PT
 
             /* Add things to the splitter */
             this.mSplitter.Panel1.Controls.Add(this.mTabControl);
+            this.mSplitter.Panel2.Padding = new Padding(2,2,2,2);
             this.mTabControl.Dock = DockStyle.Fill;
 
             this.mSplitter.Panel2.Controls.Add(this.mSaveButton);
-            this.mSaveButton.Dock = DockStyle.None; //DockStyle.Top | DockStyle.Left;
-
+            this.mSaveButton.Dock = DockStyle.Left; // None; //DockStyle.Top | DockStyle.Left;
+  
             this.mSplitter.Panel2.Controls.Add(this.mRescanButton);
-            this.mRescanButton.Dock = DockStyle.None; //DockStyle.Top | DockStyle.Left;
+            this.mRescanButton.Dock = DockStyle.Right; // None; //DockStyle.Top | DockStyle.Left;
 
 
             /* Add the splitter */
             this.mPanel.Controls.Add(this.mSplitter);
 
-            this.mSaveButton.Height = this.mSplitter.Panel2.Height / 2;
-            this.mSaveButton.Width = this.mSplitter.Panel2.Width / 2;
+            this.mSaveButton.Height = this.mSplitter.Panel2.Height / 2 - this.mSplitter.Panel2.Padding.Vertical;
+            this.mSaveButton.Width = this.mSplitter.Panel2.Width / 2   - this.mSplitter.Panel2.Padding.Horizontal;
 
-            this.mSaveButton.Top = (this.mSplitter.Panel2.Height / 2) - this.mSaveButton.Height;
-            this.mSaveButton.Left = (this.mSplitter.Panel2.Width / 2) - this.mSaveButton.Width;
-
-            this.mRescanButton.Height = this.mSplitter.Panel2.Height / 2;
-            this.mRescanButton.Width = this.mSplitter.Panel2.Width / 2;
-
-            this.mRescanButton.Top = (this.mSplitter.Panel2.Height / 2) - this.mRescanButton.Height;
-            this.mRescanButton.Left = (this.mSplitter.Panel2.Width / 2) - this.mRescanButton.Width + this.mSaveButton.Width + 2;
-
+            this.mRescanButton.Height = this.mSplitter.Panel2.Height / 2 - this.mSplitter.Panel2.Padding.Vertical;
+            this.mRescanButton.Width = this.mSplitter.Panel2.Width / 2   - this.mSplitter.Panel2.Padding.Horizontal;
 
             this.mPanel.Show();
             foreach (Control child in this.mPanel.Controls)
@@ -306,7 +300,6 @@ namespace Sensor_Aware_PT
             
         }
 
-
         private void ConfigurationDialog_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (false == bSaved)
@@ -327,9 +320,6 @@ namespace Sensor_Aware_PT
                 }
             }
         }
-
- 
-
         #endregion
 
         #region ConfigFunctions
@@ -355,7 +345,7 @@ namespace Sensor_Aware_PT
                     if (mNexus.mSensorIDDict.Keys.Contains(id.Id))
                     {
                         throw new ArgumentOutOfRangeException(String.Format("There is already a sensor with ID \"{0}\"", id.Id));
-                    } 
+                    }
                     mNexus.mSensorIDDict[id.Id] = id;
                 }
             }
@@ -366,6 +356,15 @@ namespace Sensor_Aware_PT
                     Logger.Warning(String.Format("{0}- {1}", e.GetType().ToString(), e.Message));
                     retval = false;
                 }
+            }
+            catch (FileNotFoundException exc)
+            {
+                Logger.Warning("FileNotFoundException- {0}", exc.FileName);
+                if (fileStream.BaseStream.CanRead)
+                {
+                    fileStream.Close();
+                }
+                return false;
             }
             catch (Exception)
             {

@@ -84,6 +84,7 @@ namespace Sensor_Aware_PT
              * */
             ExperimentalForm EF = new ExperimentalForm();
             EF.subscribeToSource( Nexus.Instance );
+
             EF.Show();
         }
 
@@ -104,7 +105,7 @@ namespace Sensor_Aware_PT
             SDV.Show();
         }
 
-        private void button3_Click( object sender, EventArgs e )
+        private void MappingsButton_Click( object sender, EventArgs e )
         {
             MappingDialog MD = new MappingDialog();
             MD.ShowDialog();

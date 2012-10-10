@@ -33,7 +33,7 @@
             this.mTabControl = new System.Windows.Forms.TabControl();
             this.mPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.mSplitter)).BeginInit();
-            this.mSplitter.Panel2.SuspendLayout();
+            this.mSplitter.Panel1.SuspendLayout();
             this.mSplitter.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -48,17 +48,16 @@
             // 
             // mSplitter
             // 
-            this.mSplitter.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mSplitter.IsSplitterFixed = true;
             this.mSplitter.Location = new System.Drawing.Point(0, 0);
             this.mSplitter.Name = "mSplitter";
             this.mSplitter.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
-            // mSplitter.Panel2
+            // mSplitter.Panel1
             // 
-            this.mSplitter.Panel2.Controls.Add(this.mTabControl);
+            this.mSplitter.Panel1.Controls.Add(this.mTabControl);
             this.mSplitter.Size = new System.Drawing.Size(292, 273);
-            this.mSplitter.SplitterDistance = 97;
+            this.mSplitter.SplitterDistance = 200;
             this.mSplitter.TabIndex = 0;
             // 
             // mTabControl
@@ -67,7 +66,7 @@
             this.mTabControl.Location = new System.Drawing.Point(0, 0);
             this.mTabControl.Name = "mTabControl";
             this.mTabControl.SelectedIndex = 0;
-            this.mTabControl.Size = new System.Drawing.Size(292, 172);
+            this.mTabControl.Size = new System.Drawing.Size(292, 200);
             this.mTabControl.TabIndex = 0;
             // 
             // MappingDialog
@@ -83,7 +82,7 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "MappingDialog";
             this.mPanel.ResumeLayout(false);
-            this.mSplitter.Panel2.ResumeLayout(false);
+            this.mSplitter.Panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.mSplitter)).EndInit();
             this.mSplitter.ResumeLayout(false);
             this.ResumeLayout(false);

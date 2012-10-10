@@ -22,7 +22,7 @@ namespace Sensor_Aware_PT
         Dictionary<String, SensorDataEntry> mLastSensorData = new Dictionary<string, SensorDataEntry>();
         Skeleton mUpperSkeleton = new Skeleton( SkeletonType.UpperBody );
         Vector3 mViewRotations = new Vector3(-90,0,90);
-        Vector3 mViewTranslations = new Vector3();
+        //Vector3 mViewTranslations = new Vector3();
         Matrix4 mCamRotation = new Matrix4();
         Matrix4 mTransform = Matrix4.Identity;
         Matrix4 mCalibTrans = Matrix4.Identity;

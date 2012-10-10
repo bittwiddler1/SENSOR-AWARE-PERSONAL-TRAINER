@@ -32,9 +32,10 @@ namespace Sensor_Aware_PT
         /** List to hold the Sensor objects */
         internal Dictionary<String, Sensor> mSensorDict;
         internal Dictionary<String, SensorIdentification> mSensorIDDict;
-        
+
+        internal Dictionary<BoneType, Sensor> mBoneSensorDict;
         private Sensor[] mAvailableSensors;
-        private Boolean bGenerateConfig = true;
+
 
         /** This keeps track of the # of ready events we hve received */
         private static int mReadySensorCount = 0;
@@ -43,9 +44,6 @@ namespace Sensor_Aware_PT
         /** Observable pattern & lock */
         private List<IObserver<SensorDataEntry>> mObservers = new List<IObserver<SensorDataEntry>>();
         private readonly object mObserverLock = new object();
-
-        /** Counter for data frames */
-        private int mCurrentFrameNumber = 0;
 
         /** Keeps the # of active sensors */
 
@@ -87,6 +85,14 @@ namespace Sensor_Aware_PT
                     }
                 }
                 return mInstance;
+            }
+        }
+
+        public Dictionary<BoneType, Sensor> BoneMapping
+        {
+            get
+            {
+                return mBoneSensorDict;
             }
         }
 
@@ -291,11 +297,8 @@ namespace Sensor_Aware_PT
     
             mSensorDict   = new Dictionary<String,Sensor>();                   // The actual sensor objects
             mSensorIDDict = new Dictionary<String, SensorIdentification>();
-            //mConfigFileDataDict = new SerializableDictionary<String, String>();
+            mBoneSensorDict = new Dictionary<BoneType, Sensor>();
         }
-        
-      
-
 
         /// <summary>
         /// This event gets raised after each sensor completes its initialize routine. Even if a sensor fails to initialize,
@@ -420,6 +423,11 @@ namespace Sensor_Aware_PT
             return new List<Sensor>( mAvailableSensors );
         }
 
+        internal Sensor GetSensor(string label)
+        {
+            return mSensorDict[label];
+        }
+
         /// <summary>
         /// Resynchronizes all activated sensors.
         /// </summary>
@@ -432,7 +440,7 @@ namespace Sensor_Aware_PT
                 s.resynchronize();
             }
 
-            mCurrentFrameNumber = 0;
+          
         }
 
         /// <summary>
@@ -444,8 +452,6 @@ namespace Sensor_Aware_PT
             {
                 s.resetSequence();
             }
-
-            mCurrentFrameNumber = 0;
         }
 
         #endregion
@@ -462,6 +468,8 @@ namespace Sensor_Aware_PT
         {
             mInvert = !mInvert;
         }
+
+
     }
 
 }
