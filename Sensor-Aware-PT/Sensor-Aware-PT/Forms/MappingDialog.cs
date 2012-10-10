@@ -28,16 +28,12 @@ namespace Sensor_Aware_PT
         private BackgroundWorker mRescanWorker = null;
         private Nexus mNexus = Nexus.Instance;
         private Dictionary<BoneType, Sensor> mSensorMappings;
-        private List<BoneType> mPossibleBones;
 
         private int mPageCount = 0;
 
-        #region GenerateWinformShit
-        private Button mSaveButton = null;
-        private Button mQuitButton = null;
+        private bool bSaved = false;
         #endregion
 
-        #endregion
 
         #region ConstructorDeconstructor
         public MappingDialog()
@@ -68,9 +64,17 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         private void Configure(object sender, DoWorkEventArgs e)
         {
+
+            foreach (BoneType t in Enum.GetValues(typeof(BoneType)))
+            {
+                if (t != BoneType.None)
+                {
+                    mSensorMappings.Add(t, null);
+                }
+            }
             try
             {
-                if (this.readConfigFile() == false) 
+                if (this.ReadConfigFile() == false) 
                     HandleConfigNotFound();
             }
             catch (FileNotFoundException)
@@ -117,31 +121,20 @@ namespace Sensor_Aware_PT
             this.mSplitter.Name = "mSplitter";
             this.mSplitter.Orientation = Orientation.Horizontal;
             this.mSplitter.Dock = DockStyle.Fill;
-            this.mSplitter.SplitterDistance = 300;
+            this.mSplitter.SplitterDistance = 200;
             this.mSplitter.IsSplitterFixed = true;
             this.mSplitter.Show();
             
-            this.mSplitter.Panel1.Controls.Add(this.mTabControl);
-            //this.mTabControl
-            /* Setup the Button */
-            this.mSaveButton = new Button();
-            this.mSaveButton.Text = "Save";
-            this.mSaveButton.Name = "mSaveButton";
-            this.mSaveButton.Click += new EventHandler(mSaveButton_Click);
+            //this.mSplitter.Panel1.Controls.Add(this.mTabControl);
 
-            /* Setup the rescan button */
-            this.mQuitButton = new Button();
-            this.mQuitButton.Text = "Quit";
-            this.mQuitButton.Name = "mQuitButton";
-            this.mQuitButton.Click += new EventHandler(mQuitButton_Click);
 
             /* Add things to the splitter */
             this.mSplitter.Panel1.Controls.Add(this.mTabControl);
             this.mSplitter.Panel2.Padding = new Padding(2, 2, 2, 2);
             this.mTabControl.Dock = DockStyle.Fill;
 
-            this.mSplitter.Panel2.Controls.Add(this.mSaveButton);
-            this.mSaveButton.Dock = DockStyle.Left; 
+            this.mSplitter.Panel2.Controls.Add(this.mQuitButton);
+            this.mQuitButton.Dock = DockStyle.Left; 
 
             this.mSplitter.Panel2.Controls.Add(this.mQuitButton);
             this.mQuitButton.Dock = DockStyle.Right;
@@ -150,8 +143,8 @@ namespace Sensor_Aware_PT
             /* Add the splitter */
             this.mPanel.Controls.Add(this.mSplitter);
 
-            this.mSaveButton.Height = this.mSplitter.Panel2.Height / 2 - this.mSplitter.Panel2.Padding.Vertical;
-            this.mSaveButton.Width = this.mSplitter.Panel2.Width / 2 - this.mSplitter.Panel2.Padding.Horizontal;
+            this.mQuitButton.Height = this.mSplitter.Panel2.Height / 2 - this.mSplitter.Panel2.Padding.Vertical;
+            this.mQuitButton.Width = this.mSplitter.Panel2.Width / 2 - this.mSplitter.Panel2.Padding.Horizontal;
 
             this.mQuitButton.Height = this.mSplitter.Panel2.Height / 2 - this.mSplitter.Panel2.Padding.Vertical;
             this.mQuitButton.Width = this.mSplitter.Panel2.Width / 2 - this.mSplitter.Panel2.Padding.Horizontal;
@@ -165,11 +158,12 @@ namespace Sensor_Aware_PT
 
             foreach (Sensor sensor in mSensorMappings.Values)
             {
-                GenerateControls(sensor.Id);
+                if (sensor != null)
+                    GenerateControls(sensor.Id);
             }
             this.mTabControl.Show();
  
-            this.mTabControl.Show();
+           // this.mTabControl.Show();
         }
 
         /// <summary>
@@ -185,7 +179,7 @@ namespace Sensor_Aware_PT
 
             newcombo.Name = "newComboBox";
 
-            foreach (BoneType t in Enum.GetValues(typeof(BoneType)))
+            foreach (BoneType t in mSensorMappings.Keys)
                 newcombo.Items.Add(t.ToString());
             
             
@@ -194,12 +188,11 @@ namespace Sensor_Aware_PT
             newcombo.Left = (mTabControl.Width / 2) - newcombo.Width;
             newcombo.Top = (mTabControl.Height / 2) - newcombo.Height;
 
-            if (sensorLabel == null) newcombo.SelectedIndex = mPageCount;
+            if (sensorLabel == null) newcombo.SelectedIndex = 0;
            
 
             this.mTabControl.TabPages.Add(newpage);
             newpage.Show();
-            ++mPageCount;
         }
 
         /// <summary>
@@ -209,41 +202,10 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void mSaveButton_Click(object sender, EventArgs e)
         {
-            foreach (TabPage page in this.mTabControl.TabPages)
-            {
-                String COMPort = page.Text;
-                String MACAddr = null;
-                String Label   = null;
-                foreach (Control c in page.Controls)
-                {
-                    if (c.Name == "addrlabel")
-                    {
-                        MACAddr = (c as Label).Text;
-                    }
-                    if (c.Name == "newComboBox")
-                    {
-                        Label = ((c as ComboBox).SelectedItem) as String;
-                        if (Label == null)
-                        {
-                            Label = ((c as ComboBox).SelectedValue as String);
-                        }
-                    }
-                }
-                SensorIdentification tmpSensorID = new SensorIdentification(Label, MACAddr, COMPort);
+            this.PopulateDictionaries();
 
-                if (mNexus.mSensorIDDict.ContainsKey(Label) == false)
-                {
-                    mNexus.mSensorIDDict.Add(Label, tmpSensorID);
-                }
-                if (mNexus.mSensorDict.ContainsKey(Label) == false)
-                {
-                    mNexus.mSensorDict.Add(Label, new Sensor(tmpSensorID));
-                }
+            this.SaveConfigFile();
 
-
-                
-            }
-            this.saveConfigFile();
             this.Close();
             
         }
@@ -264,7 +226,7 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Reads the config file at %APPDATA%/Sensor-Aware-PT/config.xml
         /// </summary>
-        private bool readConfigFile()
+        private bool ReadConfigFile()
         {
             bool retval = true;
             StreamReader fileStream = null;
@@ -317,10 +279,83 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Dumps the contents of the mNexus.mSensorIDDict into a .xml configuration file
         /// </summary>
-        private void saveConfigFile()
+        private void SaveConfigFile()
         {
-            throw new NotImplementedException();   
+            StreamWriter fileStream;
+
+            /** Generate the config file **/
+            try
+            {
+                fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                Directory.CreateDirectory(Path.Combine(AppDataDirPath, CFG_DIR));
+                fileStream = new StreamWriter(ConfigFilePath, false, Encoding.ASCII);
+            }
+
+            BoneLabelPair[] tmpArray = new BoneLabelPair[mSensorMappings.Count];
+            int count = 0;
+            foreach (BoneType t in mSensorMappings.Keys)
+            {
+                tmpArray[count] = new BoneLabelPair(t, null);
+
+                if (mSensorMappings.Keys.Contains(t) && mSensorMappings[t] != null)
+                {
+                    tmpArray[count].SensorLabel = mSensorMappings[t].Id;
+                }
+                else
+                {
+                    tmpArray[count].SensorLabel = null;
+                }
+                ++count;
+            }
+            XmlSerializer serializer = new XmlSerializer(tmpArray.GetType());
+            serializer.Serialize(fileStream, tmpArray);
+
+            fileStream.Flush();
+            fileStream.Close();
+
+            this.bSaved = true;
         }
+
+        private void PopulateDictionaries()
+        {
+            foreach (TabPage page in this.mTabControl.TabPages)
+            {
+                String label = page.Text;
+                BoneType bone = BoneType.None;
+                Sensor sensor;
+
+                foreach (Control c in page.Controls)
+                {
+                    if (c.Name == "newComboBox")
+                    {
+                        try
+                        {
+                            bone = (BoneType)Enum.Parse(typeof(BoneType),
+                                                       ((c as ComboBox).SelectedItem as String));
+                        }
+                        catch (ArgumentException)
+                        {
+                            bone = (BoneType)Enum.Parse(typeof(BoneType),
+                                                   ((c as ComboBox).SelectedValue as String));
+                        }
+                    }
+                }
+                sensor = mNexus.GetSensor(label);
+
+                if (mSensorMappings.ContainsKey(bone) == false)
+                {
+                    mSensorMappings.Add(bone, sensor);
+                }
+                else
+                {
+                   mSensorMappings[bone] = sensor;
+                }
+            }
+        }
+
         #endregion
 
         #region oldcode

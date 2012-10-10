@@ -31,9 +31,12 @@
             this.mPanel = new System.Windows.Forms.Panel();
             this.mSplitter = new System.Windows.Forms.SplitContainer();
             this.mTabControl = new System.Windows.Forms.TabControl();
+            this.mQuitButton = new System.Windows.Forms.Button();
+            this.mSaveButton = new System.Windows.Forms.Button();
             this.mPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.mSplitter)).BeginInit();
             this.mSplitter.Panel1.SuspendLayout();
+            this.mSplitter.Panel2.SuspendLayout();
             this.mSplitter.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -56,6 +59,11 @@
             // mSplitter.Panel1
             // 
             this.mSplitter.Panel1.Controls.Add(this.mTabControl);
+            // 
+            // mSplitter.Panel2
+            // 
+            this.mSplitter.Panel2.Controls.Add(this.mQuitButton);
+            this.mSplitter.Panel2.Controls.Add(this.mSaveButton);
             this.mSplitter.Size = new System.Drawing.Size(292, 273);
             this.mSplitter.SplitterDistance = 200;
             this.mSplitter.TabIndex = 0;
@@ -68,6 +76,28 @@
             this.mTabControl.SelectedIndex = 0;
             this.mTabControl.Size = new System.Drawing.Size(292, 200);
             this.mTabControl.TabIndex = 0;
+            // 
+            // mQuitButton
+            // 
+            this.mQuitButton.Dock = System.Windows.Forms.DockStyle.Right;
+            this.mQuitButton.Location = new System.Drawing.Point(142, 0);
+            this.mQuitButton.Name = "mQuitButton";
+            this.mQuitButton.Size = new System.Drawing.Size(150, 69);
+            this.mQuitButton.TabIndex = 1;
+            this.mQuitButton.Text = "Quit";
+            this.mQuitButton.UseVisualStyleBackColor = true;
+            this.mQuitButton.Click += new System.EventHandler(this.mQuitButton_Click);
+            // 
+            // mSaveButton
+            // 
+            this.mSaveButton.Dock = System.Windows.Forms.DockStyle.Left;
+            this.mSaveButton.Location = new System.Drawing.Point(0, 0);
+            this.mSaveButton.Name = "mSaveButton";
+            this.mSaveButton.Size = new System.Drawing.Size(136, 69);
+            this.mSaveButton.TabIndex = 0;
+            this.mSaveButton.Text = "Save";
+            this.mSaveButton.UseVisualStyleBackColor = true;
+            this.mSaveButton.Click += new System.EventHandler(this.mSaveButton_Click);
             // 
             // MappingDialog
             // 
@@ -83,6 +113,7 @@
             this.Text = "MappingDialog";
             this.mPanel.ResumeLayout(false);
             this.mSplitter.Panel1.ResumeLayout(false);
+            this.mSplitter.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.mSplitter)).EndInit();
             this.mSplitter.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -94,6 +125,8 @@
         private System.Windows.Forms.Panel mPanel;
         private System.Windows.Forms.SplitContainer mSplitter;
         private System.Windows.Forms.TabControl mTabControl;
+        private System.Windows.Forms.Button mQuitButton;
+        private System.Windows.Forms.Button mSaveButton;
 
     }
 }
