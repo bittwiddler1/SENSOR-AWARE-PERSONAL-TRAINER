@@ -425,7 +425,17 @@ namespace Sensor_Aware_PT
 
         internal Sensor GetSensor(string label)
         {
-            return mSensorDict[label];
+            try
+            {
+
+                return mSensorDict[label];
+            }
+            catch (KeyNotFoundException exc)
+            {
+                Logger.Warning("Exception- {0}", exc);
+                Logger.Warning("One or more sensors is missing from the configuration Dictionary!");
+                return null;
+            }
         }
 
         /// <summary>

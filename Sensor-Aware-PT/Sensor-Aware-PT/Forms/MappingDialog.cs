@@ -39,7 +39,8 @@ namespace Sensor_Aware_PT
         {
             InitializeComponent();
             mSensorMappings = mNexus.BoneMapping;
-            if (mSensorMappings.Count > 0) mSensorMappings.Clear();
+            if (mSensorMappings.Count > 0)
+                mSensorMappings.Clear();
 
             this.LaunchWorkerThread();
             this.Focus();
@@ -99,20 +100,11 @@ namespace Sensor_Aware_PT
             Logger.Warning("Could not read mapping configuration file!");
             Logger.Warning("A new one will have to be generated!");
 
-            try
-            {
-                mSensorMappings[BoneType.ArmUpperL] = mNexus.GetSensor("A");
-                mSensorMappings[BoneType.ArmLowerL] = mNexus.GetSensor("C");
-                mSensorMappings[BoneType.ArmUpperR] = mNexus.GetSensor("B");
-                mSensorMappings[BoneType.ArmLowerR] = mNexus.GetSensor("D");
-            }
-            catch (KeyNotFoundException exc)
-            {
-                Logger.Warning("One or more sensors is missing from the configuration Dictionary!");
-                Logger.Warning("Exception- {0}", exc);
-                
-            }
-
+            mSensorMappings[BoneType.ArmUpperL] = mNexus.GetSensor("A");
+            mSensorMappings[BoneType.ArmLowerL] = mNexus.GetSensor("C");
+            mSensorMappings[BoneType.ArmUpperR] = mNexus.GetSensor("B");
+            mSensorMappings[BoneType.ArmLowerR] = mNexus.GetSensor("D");
+            
         }
 
         /// <summary>
@@ -196,11 +188,11 @@ namespace Sensor_Aware_PT
                 newcombo.Top = (mTabControl.Height / 2) - newcombo.Height;
 
                 /** WARNING: UGLY LINQ CODE UP AHEAD **/
-                if (mNexus.mSensorDict.Keys.Contains(sensorLabel))
+                if (mNexus.GetSensor(sensorLabel) != null)
                 {
                     // Use the sensorMappingDict backwards (select key by value)
                     IEnumerable<KeyValuePair<BoneType, Sensor>> result = mSensorMappings.Where(pair => pair.Value != null && pair.Value.Id == sensorLabel);
-                    newcombo.SelectedItem = newcombo.Items[(int)result.ElementAt(0).Key];
+                    newcombo.SelectedIndex = ((int)result.ElementAt(0).Key) - 1;
                 }
 
                 this.mTabControl.TabPages.Add(newpage);
@@ -230,8 +222,7 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void mQuitButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
-            
+            this.Close();
         }
         #endregion
 
@@ -259,8 +250,8 @@ namespace Sensor_Aware_PT
                     Sensor currentSensor = null;
                     if (pair.SensorLabel != null)
                     {
-                        currentSensor = mNexus.mSensorDict[pair.SensorLabel];
-                        if (mSensorMappings.Values.Contains(currentSensor))
+                        currentSensor = mNexus.GetSensor(pair.SensorLabel);
+                        if (currentSensor != null && mSensorMappings.Values.Contains(currentSensor))
                         {
                             throw new ArgumentOutOfRangeException(String.Format("There is already a sensor with ID \"{0}\"", pair.SensorLabel));
                         }
