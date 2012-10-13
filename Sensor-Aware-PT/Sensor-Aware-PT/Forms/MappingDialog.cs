@@ -34,12 +34,12 @@ namespace Sensor_Aware_PT
         private bool bSaved = false;
         #endregion
 
-
         #region ConstructorDeconstructor
         public MappingDialog()
         {
             InitializeComponent();
             mSensorMappings = mNexus.BoneMapping;
+            if (mSensorMappings.Count > 0) mSensorMappings.Clear();
 
             this.LaunchWorkerThread();
             this.Focus();
@@ -64,14 +64,21 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         private void Configure(object sender, DoWorkEventArgs e)
         {
-
-            foreach (BoneType t in Enum.GetValues(typeof(BoneType)))
+            try
             {
-                if (t != BoneType.None)
+                foreach (BoneType t in Enum.GetValues(typeof(BoneType)))
                 {
-                    mSensorMappings.Add(t, null);
+                    if (t != BoneType.None)
+                    {
+                        mSensorMappings.Add(t, null);
+                    }
                 }
             }
+            catch (ArgumentException)
+            {
+                return;
+            }
+
             try
             {
                 if (this.ReadConfigFile() == false) 
@@ -173,26 +180,32 @@ namespace Sensor_Aware_PT
         /// <param name="mPossibleIds">A list of possible letters we can assign to that sensor.</param>
         private void GenerateControls(String sensorLabel)
         {
-            
-            TabPage newpage = new TabPage(sensorLabel);
-            ComboBox newcombo = new ComboBox();
+            if (mTabControl.TabPages.ContainsKey(sensorLabel) == false)
+            {
+                TabPage newpage = new TabPage(sensorLabel);
+                ComboBox newcombo = new ComboBox();
 
-            newcombo.Name = "newComboBox";
+                newcombo.Name = "newComboBox";
 
-            foreach (BoneType t in mSensorMappings.Keys)
-                newcombo.Items.Add(t.ToString());
-            
-            
-            newpage.Controls.Add(newcombo);
-            newcombo.Dock = DockStyle.None;
-            newcombo.Left = (mTabControl.Width / 2) - newcombo.Width;
-            newcombo.Top = (mTabControl.Height / 2) - newcombo.Height;
+                foreach (BoneType t in mSensorMappings.Keys)
+                    newcombo.Items.Add(t.ToString());
 
-            if (sensorLabel == null) newcombo.SelectedIndex = 0;
-           
+                newpage.Controls.Add(newcombo);
+                newcombo.Dock = DockStyle.None;
+                newcombo.Left = (mTabControl.Width / 2) - newcombo.Width;
+                newcombo.Top = (mTabControl.Height / 2) - newcombo.Height;
 
-            this.mTabControl.TabPages.Add(newpage);
-            newpage.Show();
+                /** WARNING: UGLY LINQ CODE UP AHEAD **/
+                if (mNexus.mSensorDict.Keys.Contains(sensorLabel))
+                {
+                    // Use the sensorMappingDict backwards (select key by value)
+                    IEnumerable<KeyValuePair<BoneType, Sensor>> result = mSensorMappings.Where(pair => pair.Value != null && pair.Value.Id == sensorLabel);
+                    newcombo.SelectedItem = newcombo.Items[(int)result.ElementAt(0).Key];
+                }
+
+                this.mTabControl.TabPages.Add(newpage);
+                newpage.Show();
+            }
         }
 
         /// <summary>
@@ -243,10 +256,14 @@ namespace Sensor_Aware_PT
 
                 foreach (BoneLabelPair pair in tmpArray)
                 {
-                    Sensor currentSensor = mNexus.GetSensor(pair.SensorLabel);
-                    if (mSensorMappings.Values.Contains(currentSensor))
+                    Sensor currentSensor = null;
+                    if (pair.SensorLabel != null)
                     {
-                        throw new ArgumentOutOfRangeException(String.Format("There is already a sensor with ID \"{0}\"", pair.SensorLabel));
+                        currentSensor = mNexus.mSensorDict[pair.SensorLabel];
+                        if (mSensorMappings.Values.Contains(currentSensor))
+                        {
+                            throw new ArgumentOutOfRangeException(String.Format("There is already a sensor with ID \"{0}\"", pair.SensorLabel));
+                        }
                     }
                     mSensorMappings[pair.Bone] = currentSensor;
                 }
