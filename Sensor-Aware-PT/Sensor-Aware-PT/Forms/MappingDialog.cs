@@ -10,6 +10,7 @@ using System.IO;
 using System.Xml.Serialization;
 using System.Management;
 using System.Threading;
+using Sensor_Aware_PT.Forms;
 
 namespace Sensor_Aware_PT
 {
@@ -25,7 +26,7 @@ namespace Sensor_Aware_PT
         #endregion
 
         #region InstanceVariables
-        private BackgroundWorker mRescanWorker = null;
+        private BackgroundWorker mConfigReader = null;
         private Nexus mNexus = Nexus.Instance;
         private Dictionary<BoneType, Sensor> mSensorMappings;
 
@@ -38,10 +39,8 @@ namespace Sensor_Aware_PT
         public MappingDialog()
         {
             InitializeComponent();
-            mSensorMappings = mNexus.BoneMapping;
-            if (mSensorMappings.Count > 0)
-                mSensorMappings.Clear();
-
+            mSensorMappings = mNexus.BoneMappings;
+ 
             this.LaunchWorkerThread();
             this.Focus();
         }
@@ -49,11 +48,11 @@ namespace Sensor_Aware_PT
         private void LaunchWorkerThread()
         {
             /* Threading stuff */
-            this.mRescanWorker = new BackgroundWorker();
-            this.mRescanWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Configure);
+            this.mConfigReader = new BackgroundWorker();
+            this.mConfigReader.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Configure);
 
-            this.mRescanWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.GenerateForm);
-            this.mRescanWorker.RunWorkerAsync();
+            this.mConfigReader.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.GenerateForm);
+            this.mConfigReader.RunWorkerAsync();
         }
         #endregion
 
@@ -67,13 +66,7 @@ namespace Sensor_Aware_PT
         {
             try
             {
-                foreach (BoneType t in Enum.GetValues(typeof(BoneType)))
-                {
-                    if (t != BoneType.None)
-                    {
-                        mSensorMappings.Add(t, null);
-                    }
-                }
+                this.ClearAllMappings();
             }
             catch (ArgumentException)
             {
@@ -95,15 +88,31 @@ namespace Sensor_Aware_PT
             }
         }
 
+        private void ClearAllMappings()
+        {
+            mSensorMappings.Clear();
+
+            foreach( BoneType t in Enum.GetValues( typeof( BoneType ) ) )
+            {
+                if( t != BoneType.None )
+                {
+                    mSensorMappings.Add( t, null );
+                }
+            }
+        }
+
         void HandleConfigNotFound()
         {
             Logger.Warning("Could not read mapping configuration file!");
             Logger.Warning("A new one will have to be generated!");
 
-            mSensorMappings[BoneType.ArmUpperL] = mNexus.GetSensor("A");
-            mSensorMappings[BoneType.ArmLowerL] = mNexus.GetSensor("C");
-            mSensorMappings[BoneType.ArmUpperR] = mNexus.GetSensor("B");
-            mSensorMappings[BoneType.ArmLowerR] = mNexus.GetSensor("D");
+            BoneType current  = BoneType.ArmUpperL;
+
+            foreach( Sensor sensy in mNexus.getAllSensors() )
+            {
+                mSensorMappings[ current ] = sensy;
+                ++current;
+            }
             
         }
 
@@ -178,6 +187,7 @@ namespace Sensor_Aware_PT
                 ComboBox newcombo = new ComboBox();
 
                 newcombo.Name = "newComboBox";
+                newcombo.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
 
                 foreach (BoneType t in mSensorMappings.Keys)
                     newcombo.Items.Add(t.ToString());
@@ -191,7 +201,8 @@ namespace Sensor_Aware_PT
                 if (mNexus.GetSensor(sensorLabel) != null)
                 {
                     // Use the sensorMappingDict backwards (select key by value)
-                    IEnumerable<KeyValuePair<BoneType, Sensor>> result = mSensorMappings.Where(pair => pair.Value != null && pair.Value.Id == sensorLabel);
+                    IEnumerable<KeyValuePair<BoneType, Sensor>> result = 
+                        mSensorMappings.Where(pair => pair.Value != null && pair.Value.Id == sensorLabel);
                     newcombo.SelectedIndex = ((int)result.ElementAt(0).Key) - 1;
                 }
 
@@ -207,6 +218,12 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void mSaveButton_Click(object sender, EventArgs e)
         {
+            if (false == this.VerifyInput())
+            {
+                MessageBox.Show( "Configuration not valid. Stop confusing me", "You're a jerk", MessageBoxButtons.OK );
+                return;
+            }
+            this.ClearAllMappings();
             this.PopulateDictionaries();
 
             this.SaveConfigFile();
@@ -214,6 +231,8 @@ namespace Sensor_Aware_PT
             this.Close();
             
         }
+
+        
 
         /// <summary>
         /// Rescan Button event handler
@@ -247,6 +266,7 @@ namespace Sensor_Aware_PT
 
                 foreach (BoneLabelPair pair in tmpArray)
                 {
+                    
                     Sensor currentSensor = null;
                     if (pair.SensorLabel != null)
                     {
@@ -353,17 +373,50 @@ namespace Sensor_Aware_PT
                 }
                 sensor = mNexus.GetSensor(label);
 
-                if (mSensorMappings.ContainsKey(bone) == false)
+                try
                 {
-                    mSensorMappings.Add(bone, sensor);
+
+                    if( mSensorMappings.ContainsKey( bone ) == false )
+                    {
+                        mSensorMappings.Add( bone, sensor );
+                    }
+                    else
+                    {
+                        mSensorMappings[ bone ] = sensor;
+                    }
                 }
-                else
+                catch( BadJooJooException e )
                 {
-                   mSensorMappings[bone] = sensor;
+                    Logger.Warning( e.Message );
                 }
             }
         }
 
+        private bool VerifyInput()
+        {
+
+            Dictionary<String, Object> CCComboBoxResults = new Dictionary<String, Object>();
+            foreach( TabPage tabby in mTabControl.TabPages )
+            {
+                foreach( Control cont in tabby.Controls )
+                {
+                    if( "newComboBox" == cont.Name )
+                    {
+                        String name = ( cont as ComboBox ).SelectedItem.ToString();
+
+                        try
+                        {
+                            CCComboBoxResults.Add( name, null );
+                        }
+                        catch( Exception )
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
         #endregion
 
         #region oldcode

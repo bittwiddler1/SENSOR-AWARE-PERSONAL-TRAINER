@@ -88,7 +88,7 @@ namespace Sensor_Aware_PT
             }
         }
 
-        public Dictionary<BoneType, Sensor> BoneMapping
+        public Dictionary<BoneType, Sensor> BoneMappings
         {
             get
             {
@@ -473,6 +473,7 @@ namespace Sensor_Aware_PT
             sd.id = "A";
             NotifyObservers( sd );
         }
+
         bool mInvert = false;
         internal void Invert()
         {
