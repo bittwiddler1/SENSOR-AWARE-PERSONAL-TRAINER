@@ -25,19 +25,23 @@ namespace Sensor_Aware_PT
         #endregion
 
         #region InstanceVariables
-        BackgroundWorker mRescanWorker = null;
-        Nexus mNexus = Nexus.Instance;
-        Boolean mbScanForPort = false;
+        private BackgroundWorker mRescanWorker = null;
+        private Nexus mNexus = Nexus.Instance;
+
+        private Boolean mbScanForPort = false;
+
+        private Boolean bSaved = false;
 
         private List<Char> mPossibleIds;
-        private Dictionary<String, String> mPortToID;
         private ManagementObject[] mWmiCOMData = null;
-
+        
         #region GenerateWinformShit
         private SplitContainer mSplitter = null;
         private TabControl mTabControl = null;
         private Button mSaveButton = null;
         private Button mRescanButton = null;
+
+
         #endregion
         #endregion
 
@@ -88,7 +92,7 @@ namespace Sensor_Aware_PT
             else
             {
                 /* If we sucessfully read the file, no need to rescan */
-                if (this.readConfigFile() == true)
+                if (this.ReadConfigFile() == true)
                 {
                     this.mbScanForPort = false;
                 }
@@ -121,8 +125,8 @@ namespace Sensor_Aware_PT
             this.mSplitter.Name = "mSplitter";
             this.mSplitter.Orientation = Orientation.Horizontal;
             this.mSplitter.Dock = DockStyle.Fill;
-            this.mSplitter.SplitterDistance = 253;
-            this.mSplitter.IsSplitterFixed = false;
+            this.mSplitter.SplitterDistance = 200;
+            this.mSplitter.IsSplitterFixed = true;
             this.mSplitter.Show();
 
             /* Setup the TabControl */
@@ -131,7 +135,7 @@ namespace Sensor_Aware_PT
 
             /* Setup the Button */
             this.mSaveButton = new Button();
-            this.mSaveButton.Text = "Save";
+            this.mSaveButton.Text = "Save && Quit";
             this.mSaveButton.Name = "mSaveButton";
             this.mSaveButton.Click += new EventHandler(mSaveButton_Click);
 
@@ -143,30 +147,24 @@ namespace Sensor_Aware_PT
 
             /* Add things to the splitter */
             this.mSplitter.Panel1.Controls.Add(this.mTabControl);
+            this.mSplitter.Panel2.Padding = new Padding(2,2,2,2);
             this.mTabControl.Dock = DockStyle.Fill;
 
             this.mSplitter.Panel2.Controls.Add(this.mSaveButton);
-            this.mSaveButton.Dock = DockStyle.None; //DockStyle.Top | DockStyle.Left;
-
+            this.mSaveButton.Dock = DockStyle.Left; // None; //DockStyle.Top | DockStyle.Left;
+  
             this.mSplitter.Panel2.Controls.Add(this.mRescanButton);
-            this.mRescanButton.Dock = DockStyle.None; //DockStyle.Top | DockStyle.Left;
+            this.mRescanButton.Dock = DockStyle.Right; // None; //DockStyle.Top | DockStyle.Left;
 
 
             /* Add the splitter */
             this.mPanel.Controls.Add(this.mSplitter);
 
-            this.mSaveButton.Height = this.mSplitter.Panel2.Height / 2;
-            this.mSaveButton.Width = this.mSplitter.Panel2.Width / 2;
+            this.mSaveButton.Height = this.mSplitter.Panel2.Height / 2 - this.mSplitter.Panel2.Padding.Vertical;
+            this.mSaveButton.Width = this.mSplitter.Panel2.Width / 2   - this.mSplitter.Panel2.Padding.Horizontal;
 
-            this.mSaveButton.Top = (this.mSplitter.Panel2.Height / 2) - this.mSaveButton.Height;
-            this.mSaveButton.Left = (this.mSplitter.Panel2.Width / 2) - this.mSaveButton.Width;
-
-            this.mRescanButton.Height = this.mSplitter.Panel2.Height / 2;
-            this.mRescanButton.Width = this.mSplitter.Panel2.Width / 2;
-
-            this.mRescanButton.Top = (this.mSplitter.Panel2.Height / 2) - this.mRescanButton.Height;
-            this.mRescanButton.Left = (this.mSplitter.Panel2.Width / 2) - this.mRescanButton.Width + this.mSaveButton.Width + 2;
-
+            this.mRescanButton.Height = this.mSplitter.Panel2.Height / 2 - this.mSplitter.Panel2.Padding.Vertical;
+            this.mRescanButton.Width = this.mSplitter.Panel2.Width / 2   - this.mSplitter.Panel2.Padding.Horizontal;
 
             this.mPanel.Show();
             foreach (Control child in this.mPanel.Controls)
@@ -270,41 +268,10 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void mSaveButton_Click(object sender, EventArgs e)
         {
-            foreach (TabPage page in this.mTabControl.TabPages)
-            {
-                String COMPort = page.Text;
-                String MACAddr = null;
-                String Label   = null;
-                foreach (Control c in page.Controls)
-                {
-                    if (c.Name == "addrlabel")
-                    {
-                        MACAddr = (c as Label).Text;
-                    }
-                    if (c.Name == "newComboBox")
-                    {
-                        Label = ((c as ComboBox).SelectedItem) as String;
-                        if (Label == null)
-                        {
-                            Label = ((c as ComboBox).SelectedValue as String);
-                        }
-                    }
-                }
-                SensorIdentification tmpSensorID = new SensorIdentification(Label, MACAddr, COMPort);
+            this.PopulateDictionaries();
 
-                if (mNexus.mSensorIDDict.ContainsKey(Label) == false)
-                {
-                    mNexus.mSensorIDDict.Add(Label, tmpSensorID);
-                }
-                if (mNexus.mSensorDict.ContainsKey(Label) == false)
-                {
-                    mNexus.mSensorDict.Add(Label, new Sensor(tmpSensorID));
-                }
+            this.SaveConfigFile();
 
-
-                
-            }
-            this.saveConfigFile();
             this.Close();
             
         }
@@ -332,13 +299,34 @@ namespace Sensor_Aware_PT
             this.LaunchWorkerThread(false);
             
         }
+
+        private void ConfigurationDialog_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (false == bSaved)
+            {
+                DialogResult res = MessageBox.Show("Would you like to save the configuration?", "Save Dialog", MessageBoxButtons.YesNoCancel);
+
+                if (System.Windows.Forms.DialogResult.Cancel == res)
+                {
+                    e.Cancel = true;
+                }
+                else if (System.Windows.Forms.DialogResult.Yes == res)
+                {
+                    this.mSaveButton_Click(sender, e);
+                }
+                else
+                {
+                    this.PopulateDictionaries();
+                }
+            }
+        }
         #endregion
 
-        #region ConfigFileFunctions
+        #region ConfigFunctions
         /// <summary>
         /// Reads the config file at %APPDATA%/Sensor-Aware-PT/config.xml
         /// </summary>
-        private bool readConfigFile()
+        private bool ReadConfigFile()
         {
             bool retval = true;
             StreamReader fileStream = null;
@@ -357,7 +345,7 @@ namespace Sensor_Aware_PT
                     if (mNexus.mSensorIDDict.Keys.Contains(id.Id))
                     {
                         throw new ArgumentOutOfRangeException(String.Format("There is already a sensor with ID \"{0}\"", id.Id));
-                    } 
+                    }
                     mNexus.mSensorIDDict[id.Id] = id;
                 }
             }
@@ -368,6 +356,15 @@ namespace Sensor_Aware_PT
                     Logger.Warning(String.Format("{0}- {1}", e.GetType().ToString(), e.Message));
                     retval = false;
                 }
+            }
+            catch (FileNotFoundException exc)
+            {
+                Logger.Warning("FileNotFoundException- {0}", exc.FileName);
+                if (fileStream.BaseStream.CanRead)
+                {
+                    fileStream.Close();
+                }
+                return false;
             }
             catch (Exception)
             {
@@ -383,7 +380,7 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Dumps the contents of the mNexus.mSensorIDDict into a .xml configuration file
         /// </summary>
-        private void saveConfigFile()
+        private void SaveConfigFile()
         {
             StreamWriter fileStream;
 
@@ -404,9 +401,47 @@ namespace Sensor_Aware_PT
 
             fileStream.Flush();
             fileStream.Close();
-        }
-        #endregion
 
+            this.bSaved = true;
+        }
+
+
+        private void PopulateDictionaries()
+        {
+            foreach (TabPage page in this.mTabControl.TabPages)
+            {
+                String COMPort = page.Text;
+                String MACAddr = null;
+                String Label = null;
+                foreach (Control c in page.Controls)
+                {
+                    if (c.Name == "addrlabel")
+                    {
+                        MACAddr = (c as Label).Text;
+                    }
+                    if (c.Name == "newComboBox")
+                    {
+                        Label = ((c as ComboBox).SelectedItem) as String;
+                        if (Label == null)
+                        {
+                            Label = ((c as ComboBox).SelectedValue as String);
+                        }
+                    }
+                }
+                SensorIdentification tmpSensorID = new SensorIdentification(Label, MACAddr, COMPort);
+
+                if (mNexus.mSensorIDDict.ContainsKey(Label) == false)
+                {
+                    mNexus.mSensorIDDict.Add(Label, tmpSensorID);
+                }
+                if (mNexus.mSensorDict.ContainsKey(Label) == false)
+                {
+                    mNexus.mSensorDict.Add(Label, new Sensor(tmpSensorID));
+                }
+            }
+        }
+
+        #endregion
         #region Scans
 
         /// <summary>
@@ -501,6 +536,7 @@ namespace Sensor_Aware_PT
             return wmiObjects;
         }
         #endregion
+
 
         #region oldcode
 

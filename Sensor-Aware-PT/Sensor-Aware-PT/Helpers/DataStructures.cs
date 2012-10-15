@@ -92,4 +92,29 @@ namespace Sensor_Aware_PT
             PortName = port;
         }
     }
+
+    /** Maps a bone to a sensor */
+    [Serializable()]
+    public class BoneLabelPair
+    {
+        public BoneLabelPair()
+        {
+            this.Bone = BoneType.Neck;
+            this.SensorLabel = null;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="k">The BoneType Key</param>
+        /// <param name="v">The Sensor Value</param>
+        public BoneLabelPair(BoneType bone, String label)
+        {
+            this.Bone = bone;
+            this.SensorLabel = label;
+        }
+
+
+        public BoneType Bone; //{ get; set; }
+        public String SensorLabel;//{ get; set; }
+    }
 }

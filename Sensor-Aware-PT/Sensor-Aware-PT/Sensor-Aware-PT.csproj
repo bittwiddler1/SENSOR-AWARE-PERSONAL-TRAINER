@@ -66,6 +66,12 @@
     <Compile Include="Forms\AntiAliasedGLControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Forms\MappingDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MappingDialog.designer.cs">
+      <DependentUpon>MappingDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Helpers\DataStructures.cs" />
     <Compile Include="Forms\ExperimentalForm.cs">
       <SubType>Form</SubType>
@@ -107,6 +113,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\MappingDialog.resx">
+      <DependentUpon>MappingDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -10,8 +10,10 @@ namespace Sensor_Aware_PT
     /// <summary>
     /// Defines different bone types on a body
     /// </summary>
+    [Serializable()]
     public enum BoneType
     {
+        None,
         ArmLowerL, ArmLowerR,
         ArmUpperL, ArmUpperR,
         
@@ -22,7 +24,8 @@ namespace Sensor_Aware_PT
         Neck,
         ShoulderL, ShoulderR,
         HipL, HipR,
-        Head
+        Head,
+        
     }
 
     /// <summary>
