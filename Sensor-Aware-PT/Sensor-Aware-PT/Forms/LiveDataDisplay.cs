@@ -86,6 +86,8 @@ namespace Sensor_Aware_PT
             
             mCamRotation.Transpose();
             mCamRotation.Row2 *= -1f;
+
+            setupSkeleton();
         }
 
         public void subscribeToSource( IObservable<SensorDataEntry> source )
@@ -238,6 +240,7 @@ namespace Sensor_Aware_PT
                     GL.Disable( EnableCap.LineStipple );
                     GL.LineWidth( 1f );
                     
+                    /*
                     GL.PushMatrix();
                     //////////////////////////////
                     //mTransform.Transpose();
@@ -292,7 +295,7 @@ namespace Sensor_Aware_PT
 
                     GL.Disable(EnableCap.LineStipple);
                     GL.PopMatrix();
-                    
+                    */
                     //GL.PushMatrix();
                     //mBones[ 0 ].drawBone();
                     mUpperSkeleton.draw();
@@ -443,6 +446,14 @@ namespace Sensor_Aware_PT
         private void button4_Click( object sender, EventArgs e )
         {
             Nexus.Instance.Invert();
+        }
+
+        private void setupSkeleton()
+        {
+            foreach( KeyValuePair<string, BoneType> kvp in Nexus.Instance.BoneMappings )
+            {
+                mUpperSkeleton.createMapping( kvp.Key, kvp.Value );
+            }
         }
     }
 }

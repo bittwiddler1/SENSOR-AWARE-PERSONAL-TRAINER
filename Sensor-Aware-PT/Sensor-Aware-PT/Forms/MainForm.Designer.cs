@@ -28,41 +28,41 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.btnLiveView = new System.Windows.Forms.Button();
+            this.btnRecorder = new System.Windows.Forms.Button();
+            this.btnMappings = new System.Windows.Forms.Button();
             this.sensorListView = new System.Windows.Forms.ListView();
             this.SuspendLayout();
             // 
-            // button1
+            // btnLiveView
             // 
-            this.button1.Location = new System.Drawing.Point(91, 12);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(199, 68);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Skeletal Viewer";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnLiveView.Location = new System.Drawing.Point(91, 12);
+            this.btnLiveView.Name = "btnLiveView";
+            this.btnLiveView.Size = new System.Drawing.Size(199, 68);
+            this.btnLiveView.TabIndex = 0;
+            this.btnLiveView.Text = "Skeletal Viewer";
+            this.btnLiveView.UseVisualStyleBackColor = true;
+            this.btnLiveView.Click += new System.EventHandler(this.btnLiveView_Click);
             // 
-            // button2
+            // btnRecorder
             // 
-            this.button2.Location = new System.Drawing.Point(91, 86);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(199, 66);
-            this.button2.TabIndex = 1;
-            this.button2.Text = "Record/Replayer";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.btnRecorder.Location = new System.Drawing.Point(91, 86);
+            this.btnRecorder.Name = "btnRecorder";
+            this.btnRecorder.Size = new System.Drawing.Size(199, 66);
+            this.btnRecorder.TabIndex = 1;
+            this.btnRecorder.Text = "Record/Replayer";
+            this.btnRecorder.UseVisualStyleBackColor = true;
+            this.btnRecorder.Click += new System.EventHandler(this.btnRecorder_Click);
             // 
-            // button3
+            // btnMappings
             // 
-            this.button3.Location = new System.Drawing.Point(91, 158);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(199, 72);
-            this.button3.TabIndex = 2;
-            this.button3.Text = "Mappings";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.MappingsButton_Click);
+            this.btnMappings.Location = new System.Drawing.Point(91, 158);
+            this.btnMappings.Name = "btnMappings";
+            this.btnMappings.Size = new System.Drawing.Size(199, 72);
+            this.btnMappings.TabIndex = 2;
+            this.btnMappings.Text = "Mappings";
+            this.btnMappings.UseVisualStyleBackColor = true;
+            this.btnMappings.Click += new System.EventHandler(this.btnMappings_Click);
             // 
             // sensorListView
             // 
@@ -79,9 +79,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(420, 349);
             this.Controls.Add(this.sensorListView);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnMappings);
+            this.Controls.Add(this.btnRecorder);
+            this.Controls.Add(this.btnLiveView);
             this.Name = "MainForm";
             this.Text = "Sensor Aware PT";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
@@ -93,9 +93,9 @@
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button btnLiveView;
+        private System.Windows.Forms.Button btnRecorder;
+        private System.Windows.Forms.Button btnMappings;
         private System.Windows.Forms.ListView sensorListView;
 
 

@@ -122,7 +122,7 @@ namespace Sensor_Aware_PT
     [Serializable()]
     public class ReplayData
     {
-        public List<SensorDataEntry> mDataList;
+        public List<SensorDataEntry> mDataList = new List<SensorDataEntry>();
         public Dictionary<BoneType, Matrix4> mCalibrationData;
         public Dictionary<string, BoneType> mSensorBoneMapping;
     }

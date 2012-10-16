@@ -29,7 +29,7 @@ namespace Sensor_Aware_PT
         {
             if( mIsRecording )
             {
-                mDataList.Add( value );
+                mData.mDataList.Add( value );
             }
         }
 
@@ -38,7 +38,8 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Holds the data that is recoreded
         /// </summary>
-        private List<SensorDataEntry> mDataList = new List<SensorDataEntry>();
+        //private List<SensorDataEntry> mData.mDataList = new List<SensorDataEntry>();
+        private ReplayData mData = new ReplayData();
         
         /// <summary>
         /// Used to keep track of the start of record time, to calculate timespans/offsets
@@ -66,7 +67,7 @@ namespace Sensor_Aware_PT
         {
             get
             {
-                return mDataList.Count > 0;
+                return mData.mDataList.Count > 0;
             }
         }
 
@@ -82,7 +83,9 @@ namespace Sensor_Aware_PT
         {
             Logger.Info( "Started recording sensor data" );
             mIsRecording = true;
-            mDataList.Clear();
+            mData.mDataList.Clear();
+            mData.mCalibrationData = Nexus.CalibratedOrientations;
+            mData.mSensorBoneMapping = Nexus.Instance.BoneMappings;
             mStartTime = DateTime.Now;
         }
 
@@ -99,15 +102,15 @@ namespace Sensor_Aware_PT
                 DateTime stopTime = DateTime.Now;
                 /** We subtract the start time from each of the entries. This makes it so that the first entry is at time 0...etc
                  * so that replaying it is easier*/
-                for( int i = 0; i < mDataList.Count; i++ )
+                for( int i = 0; i < mData.mDataList.Count; i++ )
                 {
-                    TimeSpan t = mDataList[ i ].timeStamp.Subtract( mStartTime );
-                    mDataList[ i ].timeStamp = new DateTime( t.Ticks );
-                    mDataList[ i ].timeSpan = new TimeSpan( t.Ticks );
+                    TimeSpan t = mData.mDataList[ i ].timeStamp.Subtract( mStartTime );
+                    mData.mDataList[ i ].timeStamp = new DateTime( t.Ticks );
+                    mData.mDataList[ i ].timeSpan = new TimeSpan( t.Ticks );
                 }
 
-                Logger.Info( "Recorded {0} seconds of data with {1} entries", ( stopTime - mStartTime ).TotalSeconds, mDataList.Count );
-                return mDataList;
+                Logger.Info( "Recorded {0} seconds of data with {1} entries", ( stopTime - mStartTime ).TotalSeconds, mData.mDataList.Count );
+                return mData.mDataList;
             }
             return null;
         }
@@ -121,7 +124,7 @@ namespace Sensor_Aware_PT
             Logger.Info( "Writing sensor recording to file {0}", outputFile );
             Stream outStream = File.Open( outputFile, FileMode.Create );
             BinaryFormatter outputFormatter = new BinaryFormatter();
-            outputFormatter.Serialize( outStream, mDataList );
+            outputFormatter.Serialize( outStream, mData );
             outStream.Flush();
             outStream.Close();
         }

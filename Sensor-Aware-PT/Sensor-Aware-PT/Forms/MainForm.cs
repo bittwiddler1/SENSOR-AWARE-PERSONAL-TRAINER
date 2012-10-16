@@ -69,26 +69,18 @@ namespace Sensor_Aware_PT
         }
 
 
-        private void button1_Click( object sender, EventArgs e )
+        private void btnLiveView_Click( object sender, EventArgs e )
         {
-            /*
 
-            BackgroundWorker bg = new BackgroundWorker();
-
-            bg.DoWork += new DoWorkEventHandler( delegate
-            {
-                EF.ShowDialog();
-            } );
-
-            bg.RunWorkerAsync();
-             * */
+            MappingDialog MD = new MappingDialog();
+            MD.Show();
             LiveDataDisplayForm EF = new LiveDataDisplayForm();
             EF.subscribeToSource( Nexus.Instance );
 
             EF.Show();
         }
 
-        private void button2_Click( object sender, EventArgs e )
+        private void btnRecorder_Click( object sender, EventArgs e )
         {
             /*
             BackgroundWorker bg = new BackgroundWorker();
@@ -101,11 +93,11 @@ namespace Sensor_Aware_PT
 
             bg.RunWorkerAsync();
              * */
-            SensorDataView SDV = new SensorDataView();
+            DataRecorderForm SDV = new DataRecorderForm();
             SDV.Show();
         }
 
-        private void MappingsButton_Click( object sender, EventArgs e )
+        private void btnMappings_Click( object sender, EventArgs e )
         {
             MappingDialog MD = new MappingDialog();
             MD.ShowDialog();

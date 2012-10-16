@@ -246,6 +246,10 @@ namespace Sensor_Aware_PT
             mBoneTypeMapping.Add( BoneType.HipL, HipL );
             mBoneTypeMapping.Add( BoneType.HipR, HipR );
             mBoneTypeMapping.Add( BoneType.Head, Head );
+            mBoneTypeMapping.Add( BoneType.LegLowerL, LegLL);
+            mBoneTypeMapping.Add( BoneType.LegLowerR, LegLR );
+            mBoneTypeMapping.Add( BoneType.LegUpperL, LegUL );
+            mBoneTypeMapping.Add( BoneType.LegUpperR, LegUR );
 
             // Set the orientations accordingly~
             
@@ -404,6 +408,14 @@ namespace Sensor_Aware_PT
         internal void toggleWireframe()
         {
             mParentBone.DrawWireFrame = !mParentBone.DrawWireFrame;
+        }
+
+        internal void calibrateZero( Dictionary<BoneType, Matrix4> mCalibrationData )
+        {
+            foreach( KeyValuePair<BoneType, Matrix4> kvp in mCalibrationData )
+            {
+                mBoneTypeMapping[ kvp.Key ].calibrateZero( kvp.Value );
+            }
         }
     }
 }

@@ -77,15 +77,15 @@ namespace Sensor_Aware_PT
             try
             {
                 if (this.ReadConfigFile() == false) 
-                    HandleConfigNotFound();
+                    GenerateDefaultConfig();
             }
             catch (FileNotFoundException)
             {
-                HandleConfigNotFound();
+                GenerateDefaultConfig();
             }
             catch (DirectoryNotFoundException)
             {
-                HandleConfigNotFound();
+                GenerateDefaultConfig();
             }
         }
 
@@ -99,7 +99,7 @@ namespace Sensor_Aware_PT
             }
         }
 
-        void HandleConfigNotFound()
+        void GenerateDefaultConfig()
         {
             Logger.Warning("Could not read mapping configuration file!");
             Logger.Warning("A new one will have to be generated!");

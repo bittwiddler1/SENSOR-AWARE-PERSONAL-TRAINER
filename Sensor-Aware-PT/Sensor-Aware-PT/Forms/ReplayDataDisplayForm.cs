@@ -31,12 +31,23 @@ namespace Sensor_Aware_PT
         bool[] mKeyStatePrev = new bool[ 256 ];
         private bool mLoaded = false;
 
+        /*
         public ReplayDataDisplayForm()
         {
             InitializeComponent();
         }
+        */
+        public ReplayDataDisplayForm( Dictionary<BoneType, Matrix4> calibration, Dictionary<string, BoneType> boneMapping )
+        {
+            // TODO: Complete member initialization
+            InitializeComponent();
+            this.mCalibrationData = calibration;
+            this.mSensorBoneMapping = boneMapping;
+        }
 
         private Timer formUpdateTimer;
+        private Dictionary<BoneType, Matrix4> mCalibrationData;
+        private Dictionary<string, BoneType> mSensorBoneMapping;
         #region SimpleOpenGlControl methods
 
         /// <summary>
@@ -86,6 +97,18 @@ namespace Sensor_Aware_PT
             
             mCamRotation.Transpose();
             mCamRotation.Row2 *= -1f;
+
+            setupSkeleton();
+        }
+
+        private void setupSkeleton()
+        {
+            foreach( KeyValuePair<string, BoneType> kvp in mSensorBoneMapping )
+            {
+                mUpperSkeleton.createMapping( kvp.Key, kvp.Value );
+            }
+
+            mUpperSkeleton.calibrateZero( mCalibrationData );
         }
 
         public void subscribeToSource( IObservable<SensorDataEntry> source )

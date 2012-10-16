@@ -29,33 +29,10 @@ namespace Sensor_Aware_PT
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnCalibrate = new System.Windows.Forms.Button();
-            this.btnSynchronize = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.simpleOpenGlControl = new Sensor_Aware_PT.Forms.AntiAliasedGLControl();
-            this.button4 = new System.Windows.Forms.Button();
             this.SuspendLayout();
-            // 
-            // btnCalibrate
-            // 
-            this.btnCalibrate.Location = new System.Drawing.Point(12, 29);
-            this.btnCalibrate.Name = "btnCalibrate";
-            this.btnCalibrate.Size = new System.Drawing.Size(109, 23);
-            this.btnCalibrate.TabIndex = 3;
-            this.btnCalibrate.Text = "Align to screen";
-            this.btnCalibrate.UseVisualStyleBackColor = true;
-            this.btnCalibrate.Click += new System.EventHandler(this.btnCalibrate_Click);
-            // 
-            // btnSynchronize
-            // 
-            this.btnSynchronize.Location = new System.Drawing.Point(137, 29);
-            this.btnSynchronize.Name = "btnSynchronize";
-            this.btnSynchronize.Size = new System.Drawing.Size(125, 23);
-            this.btnSynchronize.TabIndex = 4;
-            this.btnSynchronize.Text = "Resynchronize";
-            this.btnSynchronize.UseVisualStyleBackColor = true;
-            this.btnSynchronize.Click += new System.EventHandler(this.btnSynchronize_Click);
             // 
             // button3
             // 
@@ -92,28 +69,15 @@ namespace Sensor_Aware_PT
             this.simpleOpenGlControl.KeyDown += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyDown);
             this.simpleOpenGlControl.KeyUp += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyUp);
             // 
-            // button4
-            // 
-            this.button4.Location = new System.Drawing.Point(370, 29);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(75, 23);
-            this.button4.TabIndex = 8;
-            this.button4.Text = "button4";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
-            // 
-            // ExperimentalForm
+            // ReplayDataDisplayForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(895, 558);
-            this.Controls.Add(this.button4);
             this.Controls.Add(this.simpleOpenGlControl);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button3);
-            this.Controls.Add(this.btnSynchronize);
-            this.Controls.Add(this.btnCalibrate);
-            this.Name = "ExperimentalForm";
+            this.Name = "ReplayDataDisplayForm";
             this.Text = "Sensor Aware PT Skeletal Viewer of Doom";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExperimentalForm_FormClosing);
             this.Load += new System.EventHandler(this.ExperimentalForm_Load);
@@ -124,12 +88,9 @@ namespace Sensor_Aware_PT
 
         #endregion
 
-        private System.Windows.Forms.Button btnCalibrate;
-        private System.Windows.Forms.Button btnSynchronize;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Label label1;
         private Forms.AntiAliasedGLControl simpleOpenGlControl;
-        private System.Windows.Forms.Button button4;
 
     }
 }

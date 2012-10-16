@@ -133,7 +133,11 @@ namespace Sensor_Aware_PT
             mCalibratedOrientation.Invert();
             return mCalibratedOrientation;
         }
-        
+
+        internal void calibrateZero( Matrix4 calibratedData )
+        {
+            mCalibratedOrientation = calibratedData;
+        }
         /// <summary>
         /// Updates orientation using whatever the last calculated orientation was
         /// </summary>
@@ -485,8 +489,6 @@ namespace Sensor_Aware_PT
         {
             
         }
-
-
     }
 
  

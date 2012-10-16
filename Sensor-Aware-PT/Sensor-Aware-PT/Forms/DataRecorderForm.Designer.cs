@@ -1,6 +1,6 @@
 ﻿namespace Sensor_Aware_PT
 {
-    partial class SensorDataView
+    partial class DataRecorderForm
     {
         /// <summary>
         /// Required designer variable.
