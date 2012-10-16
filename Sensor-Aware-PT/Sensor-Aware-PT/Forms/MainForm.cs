@@ -82,7 +82,7 @@ namespace Sensor_Aware_PT
 
             bg.RunWorkerAsync();
              * */
-            ExperimentalForm EF = new ExperimentalForm();
+            LiveDataDisplayForm EF = new LiveDataDisplayForm();
             EF.subscribeToSource( Nexus.Instance );
 
             EF.Show();

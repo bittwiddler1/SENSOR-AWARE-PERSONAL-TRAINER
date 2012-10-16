@@ -117,4 +117,12 @@ namespace Sensor_Aware_PT
         public BoneType Bone; //{ get; set; }
         public String SensorLabel;//{ get; set; }
     }
+
+    [Serializable()]
+    public class ReplayData
+    {
+        public List<SensorDataEntry> mDataList;
+        public Dictionary<BoneType, Matrix4> mCalibrationData;
+        public Dictionary<string, BoneType> mSensorBoneMapping;
+    }
 }
