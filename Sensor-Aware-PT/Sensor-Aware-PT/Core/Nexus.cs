@@ -33,7 +33,7 @@ namespace Sensor_Aware_PT
         internal Dictionary<String, Sensor> mSensorDict;
         internal Dictionary<String, SensorIdentification> mSensorIDDict;
 
-        internal Dictionary<BoneType, Sensor> mBoneSensorDict;
+        internal Dictionary<String, BoneType> mBoneSensorDict;
         private Sensor[] mAvailableSensors;
 
 
@@ -88,7 +88,7 @@ namespace Sensor_Aware_PT
             }
         }
 
-        public Dictionary<BoneType, Sensor> BoneMappings
+        public Dictionary<String, BoneType> BoneMappings
         {
             get
             {
@@ -299,7 +299,7 @@ namespace Sensor_Aware_PT
     
             mSensorDict   = new Dictionary<String,Sensor>();                   // The actual sensor objects
             mSensorIDDict = new Dictionary<String, SensorIdentification>();
-            mBoneSensorDict = new Dictionary<BoneType, Sensor>();
+            mBoneSensorDict = new Dictionary<String, BoneType>();
         }
 
         /// <summary>

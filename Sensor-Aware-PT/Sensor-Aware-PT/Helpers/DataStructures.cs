@@ -99,15 +99,16 @@ namespace Sensor_Aware_PT
     {
         public BoneLabelPair()
         {
-            this.Bone = BoneType.Neck;
             this.SensorLabel = null;
+            this.Bone = BoneType.Neck;
+            
         }
         /// <summary>
         /// 
         /// </summary>
         /// <param name="k">The BoneType Key</param>
         /// <param name="v">The Sensor Value</param>
-        public BoneLabelPair(BoneType bone, String label)
+        public BoneLabelPair(String label, BoneType bone)
         {
             this.Bone = bone;
             this.SensorLabel = label;

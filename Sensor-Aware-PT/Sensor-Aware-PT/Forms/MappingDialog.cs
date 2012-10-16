@@ -28,8 +28,8 @@ namespace Sensor_Aware_PT
         #region InstanceVariables
         private BackgroundWorker mConfigReader = null;
         private Nexus mNexus = Nexus.Instance;
-        private Dictionary<BoneType, Sensor> mSensorMappings;
-
+        private Dictionary<String, BoneType> mSensorMappings;
+        private String[] mValidSensors = null;
         private int mPageCount = 0;
 
         private bool bSaved = false;
@@ -66,6 +66,7 @@ namespace Sensor_Aware_PT
         {
             try
             {
+                this.mValidSensors = mNexus.mSensorDict.Select(sensor => sensor.Value.Id).ToArray<String>();
                 this.ClearAllMappings();
             }
             catch (ArgumentException)
@@ -92,12 +93,9 @@ namespace Sensor_Aware_PT
         {
             mSensorMappings.Clear();
 
-            foreach( BoneType t in Enum.GetValues( typeof( BoneType ) ) )
+            foreach( String t in this.mValidSensors )
             {
-                if( t != BoneType.None )
-                {
-                    mSensorMappings.Add( t, null );
-                }
+                mSensorMappings.Add( t, BoneType.None );
             }
         }
 
@@ -110,7 +108,7 @@ namespace Sensor_Aware_PT
 
             foreach( Sensor sensy in mNexus.getAllSensors() )
             {
-                mSensorMappings[ current ] = sensy;
+                mSensorMappings[ sensy.Id ] = current;
                 ++current;
             }
             
@@ -164,10 +162,9 @@ namespace Sensor_Aware_PT
                 child.Show();
             }
 
-            foreach (Sensor sensor in mSensorMappings.Values)
+            foreach (String sensorlabel in this.mValidSensors)
             {
-                if (sensor != null)
-                    GenerateControls(sensor.Id);
+                GenerateControls(sensorlabel);
             }
             this.mTabControl.Show();
  
@@ -189,7 +186,7 @@ namespace Sensor_Aware_PT
                 newcombo.Name = "newComboBox";
                 newcombo.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
 
-                foreach (BoneType t in mSensorMappings.Keys)
+                foreach (BoneType t in Enum.GetValues(typeof(BoneType)))
                     newcombo.Items.Add(t.ToString());
 
                 newpage.Controls.Add(newcombo);
@@ -197,13 +194,10 @@ namespace Sensor_Aware_PT
                 newcombo.Left = (mTabControl.Width / 2) - newcombo.Width;
                 newcombo.Top = (mTabControl.Height / 2) - newcombo.Height;
 
-                /** WARNING: UGLY LINQ CODE UP AHEAD **/
+
                 if (mNexus.GetSensor(sensorLabel) != null)
                 {
-                    // Use the sensorMappingDict backwards (select key by value)
-                    IEnumerable<KeyValuePair<BoneType, Sensor>> result = 
-                        mSensorMappings.Where(pair => pair.Value != null && pair.Value.Id == sensorLabel);
-                    newcombo.SelectedIndex = ((int)result.ElementAt(0).Key) - 1;
+                    newcombo.SelectedIndex = (Int32)this.mSensorMappings[sensorLabel];
                 }
 
                 this.mTabControl.TabPages.Add(newpage);
@@ -267,16 +261,17 @@ namespace Sensor_Aware_PT
                 foreach (BoneLabelPair pair in tmpArray)
                 {
                     
-                    Sensor currentSensor = null;
-                    if (pair.SensorLabel != null)
-                    {
-                        currentSensor = mNexus.GetSensor(pair.SensorLabel);
-                        if (currentSensor != null && mSensorMappings.Values.Contains(currentSensor))
-                        {
-                            throw new ArgumentOutOfRangeException(String.Format("There is already a sensor with ID \"{0}\"", pair.SensorLabel));
-                        }
-                    }
-                    mSensorMappings[pair.Bone] = currentSensor;
+                    //Sensor currentSensor = null;
+                    //if (pair.SensorLabel != null)
+                    //{
+                    //    currentSensor = mNexus.GetSensor(pair.SensorLabel);
+
+                    //    if (currentSensor != null && mSensorMappings.Keys.Contains(currentSensor.Id))
+                    //    {
+                    //        throw new ArgumentOutOfRangeException(String.Format("There is already a sensor with ID \"{0}\"", pair.SensorLabel));
+                    //    }
+                    //}
+                    mSensorMappings[pair.SensorLabel] = pair.Bone;
                 }
             }
             catch (System.InvalidOperationException e)
@@ -324,18 +319,11 @@ namespace Sensor_Aware_PT
 
             BoneLabelPair[] tmpArray = new BoneLabelPair[mSensorMappings.Count];
             int count = 0;
-            foreach (BoneType t in mSensorMappings.Keys)
-            {
-                tmpArray[count] = new BoneLabelPair(t, null);
 
-                if (mSensorMappings.Keys.Contains(t) && mSensorMappings[t] != null)
-                {
-                    tmpArray[count].SensorLabel = mSensorMappings[t].Id;
-                }
-                else
-                {
-                    tmpArray[count].SensorLabel = null;
-                }
+            foreach (String t in this.mValidSensors) //(BoneType t in mSensorMappings.Keys)
+            {
+                tmpArray[count] = new BoneLabelPair(t, BoneType.None);
+                tmpArray[count].Bone = mSensorMappings[t];
                 ++count;
             }
             XmlSerializer serializer = new XmlSerializer(tmpArray.GetType());
@@ -353,7 +341,7 @@ namespace Sensor_Aware_PT
             {
                 String label = page.Text;
                 BoneType bone = BoneType.None;
-                Sensor sensor;
+                
 
                 foreach (Control c in page.Controls)
                 {
@@ -371,24 +359,16 @@ namespace Sensor_Aware_PT
                         }
                     }
                 }
-                sensor = mNexus.GetSensor(label);
 
-                try
+                if( mSensorMappings.ContainsKey( label ) == false )
                 {
-
-                    if( mSensorMappings.ContainsKey( bone ) == false )
-                    {
-                        mSensorMappings.Add( bone, sensor );
-                    }
-                    else
-                    {
-                        mSensorMappings[ bone ] = sensor;
-                    }
+                    mSensorMappings.Add( label , bone );
                 }
-                catch( BadJooJooException e )
+                else
                 {
-                    Logger.Warning( e.Message );
+                    mSensorMappings[ label ] = bone;
                 }
+                
             }
         }
 
