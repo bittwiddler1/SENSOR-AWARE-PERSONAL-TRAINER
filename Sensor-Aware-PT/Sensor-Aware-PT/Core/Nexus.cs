@@ -96,6 +96,8 @@ namespace Sensor_Aware_PT
             }
         }
 
+        
+
         public void initialize()
         {
             this.mConfigurator = new ConfigurationDialog();
@@ -481,6 +483,14 @@ namespace Sensor_Aware_PT
         }
 
 
+        /// <summary>
+        /// Holds the calibrated orientations of each bonetype
+        /// </summary>
+        public static Dictionary<BoneType, OpenTK.Matrix4> CalibratedOrientations
+        {
+            get;
+            set;
+        }
     }
 
 }

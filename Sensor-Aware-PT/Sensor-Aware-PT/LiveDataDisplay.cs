@@ -27,10 +27,10 @@ namespace Sensor_Aware_PT
         Matrix4 mTransform = Matrix4.Identity;
         Matrix4 mCalibTrans = Matrix4.Identity;
         Matrix4 mLastTransform = Matrix4.Identity;
-
         bool[] mKeyState = new bool[ 256 ];
         bool[] mKeyStatePrev = new bool[ 256 ];
         private bool mLoaded = false;
+
         public ExperimentalForm()
         {
             InitializeComponent();
@@ -69,12 +69,6 @@ namespace Sensor_Aware_PT
 
             GL.ClearColor( Color.CornflowerBlue );
 
-
-            mUpperSkeleton.createMapping( "A", BoneType.ArmLowerR );
-            mUpperSkeleton.createMapping( "B", BoneType.ArmUpperR );
-            mUpperSkeleton.createMapping( "C", BoneType.ArmLowerL );
-            mUpperSkeleton.createMapping( "D", BoneType.ArmUpperL );
-            mUpperSkeleton.createMapping( "E", BoneType.BackUpper);
             simpleOpenGlControl.Focus();
 
             for( int i = 0; i < 256; i++ )
@@ -311,7 +305,7 @@ namespace Sensor_Aware_PT
 
         #endregion
         
-        private void button1_Click( object sender, EventArgs e )
+        private void btnCalibrate_Click( object sender, EventArgs e )
         {
             //foreach( Bone b in mBones )
               //  b.setYawOffset();
@@ -320,7 +314,7 @@ namespace Sensor_Aware_PT
             mCalibTrans.Transpose();
         }
 
-        private void button2_Click( object sender, EventArgs e )
+        private void btnSynchronize_Click( object sender, EventArgs e )
         {
             Nexus.Instance.resynchronize();
             mCalibTrans = Matrix4.Identity;
@@ -422,11 +416,6 @@ namespace Sensor_Aware_PT
                 simpleOpenGlControl.Context.Dispose();
                 simpleOpenGlControl.Dispose();
             }
-        }
-
-        private void simpleOpenGlControl_KeyPress( object sender, System.Windows.Forms.KeyPressEventArgs e )
-        {
-
         }
 
         private void simpleOpenGlControl_KeyDown( object sender, KeyEventArgs e )

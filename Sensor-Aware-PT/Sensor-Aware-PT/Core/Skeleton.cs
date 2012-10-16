@@ -383,10 +383,15 @@ namespace Sensor_Aware_PT
 
         public void calibrateZero()
         {
+            Dictionary<BoneType, Matrix4> calibratedValues = new Dictionary<BoneType, Matrix4>();
             foreach( Bone b in mSensorBoneMapping.Values )
             {
-                b.calibrateZero();
+                Matrix4 calibData = b.calibrateZero();
+                KeyValuePair<BoneType, Bone> boneKvp = mBoneTypeMapping.Where( bone => bone.Value == b ).First();
+                calibratedValues.Add( boneKvp.Key, calibData );
             }
+
+            Nexus.CalibratedOrientations = calibratedValues;
         }
 
         #endregion

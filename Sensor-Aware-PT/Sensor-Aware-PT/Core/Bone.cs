@@ -127,15 +127,11 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Called to set the current yaw to be the offset. This is useful when trying to align the sensors to the screen.
         /// </summary>
-        public void calibrateZero()
+        public Matrix4 calibrateZero()
         {
             mCalibratedOrientation =  mCurrentOrientation;
             mCalibratedOrientation.Invert();
-
-            //mCalibratedOrientation.Transpose();
-            //mCalibratedOrientation.Transpose();
-            //mCalibratedOrientation.Invert();
-            
+            return mCalibratedOrientation;
         }
         
         /// <summary>
