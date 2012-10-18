@@ -176,7 +176,7 @@ namespace Sensor_Aware_PT
                 //mFinalTransform *= d;
                 //Matrix4 m = Matrix4.Identity;
                 //m.M22 = -1f;
-                mFinalTransform = mFinalTransform * Matrix4.CreateTranslation( mParentBone.mEndPoint );
+                mFinalTransform = mFinalTransform * /*mParentBone.mCalibratedOrientation */ Matrix4.CreateTranslation( mParentBone.mEndPoint );
                 //mFinalTransform *= m;
                 mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform );
                 

@@ -81,7 +81,8 @@ namespace Sensor_Aware_PT
         internal static Matrix4 ORIENT_FRONT;
         internal static Matrix4 ORIENT_DEFAULT = Matrix4.Identity;
         internal static Vector3 VECTOR_ORIENT_RIGHT = new Vector3( 90, 0, 0 );
-        internal static Vector3 VECTOR_ORIENT_LEFT = new Vector3(-90,0, 0 );
+        //internal static Vector3 VECTOR_ORIENT_LEFT = new Vector3(-90,0, 0 );
+        internal static Vector3 VECTOR_ORIENT_LEFT = new Vector3( 90, 90, 0 );
         internal static Vector3 VECTOR_ORIENT_DOWN = new Vector3( 0, 180, 0 );
         internal static Vector3 VECTOR_ORIENT_UP = new Vector3( 0, 0, 0);
         internal static Vector3 VECTOR_ORIENT_FRONT = new Vector3( 0, 90, 0 );
@@ -267,7 +268,7 @@ namespace Sensor_Aware_PT
             ShoulderL.setOrientation( BoneOrientation.Left );
             //ShoulderL.InitialOrientation = ORIENT_LEFT;
             ShoulderR.setOrientation( BoneOrientation.Right );
-            ShoulderL.Color = Color.Gold;
+            ShoulderL.Color = Color.Chartreuse;
             ShoulderR.Color = Color.Gold;
             /** Left Arm upper */
             ShoulderL.addChild( ArmUL );
