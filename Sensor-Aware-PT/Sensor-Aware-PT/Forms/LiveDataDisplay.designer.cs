@@ -33,8 +33,8 @@ namespace Sensor_Aware_PT
             this.btnSynchronize = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.simpleOpenGlControl = new Sensor_Aware_PT.Forms.AntiAliasedGLControl();
             this.button4 = new System.Windows.Forms.Button();
+            this.simpleOpenGlControl = new Sensor_Aware_PT.Forms.AntiAliasedGLControl();
             this.SuspendLayout();
             // 
             // btnCalibrate
@@ -77,6 +77,17 @@ namespace Sensor_Aware_PT
             this.label1.TabIndex = 6;
             this.label1.Text = "Controls\r\n\r\nRotate X - Q, W\r\nRotate Y - A, S\r\nRotate Z - Z, X\r\n\r\nToggle BoundingB" +
     "ox - E\r\nToggle Wireframe - R";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(370, 29);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(75, 23);
+            this.button4.TabIndex = 8;
+            this.button4.Text = "button4";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
             // simpleOpenGlControl
             // 
@@ -92,17 +103,7 @@ namespace Sensor_Aware_PT
             this.simpleOpenGlControl.KeyDown += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyDown);
             this.simpleOpenGlControl.KeyUp += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyUp);
             // 
-            // button4
-            // 
-            this.button4.Location = new System.Drawing.Point(370, 29);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(75, 23);
-            this.button4.TabIndex = 8;
-            this.button4.Text = "button4";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
-            // 
-            // ExperimentalForm
+            // LiveDataDisplayForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -113,7 +114,7 @@ namespace Sensor_Aware_PT
             this.Controls.Add(this.button3);
             this.Controls.Add(this.btnSynchronize);
             this.Controls.Add(this.btnCalibrate);
-            this.Name = "ExperimentalForm";
+            this.Name = "LiveDataDisplayForm";
             this.Text = "Sensor Aware PT Skeletal Viewer of Doom";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExperimentalForm_FormClosing);
             this.Load += new System.EventHandler(this.ExperimentalForm_Load);

@@ -408,6 +408,9 @@ namespace Sensor_Aware_PT
                     /** Wait until we are synchronized */
                     do
                     {
+                        mSerialPort.DiscardInBuffer();
+                        mSerialPort.Write( "#s00" );
+                        Thread.Sleep( 1 );
                         synchronized = readToken( "#SYNCH00\r\n" );
                     }
                     while( !synchronized );
@@ -435,6 +438,7 @@ namespace Sensor_Aware_PT
                             /** Call the event to notify and listeners */
                             DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
                             OnDataReceived( dataEventArgs );
+                            
                         }
                         //Logger.Info( "Sensor {0} data: {1}, {2}, {3}", mID, newData.orientation.X, newData.orientation.Y, newData.orientation.Z );
                     }
@@ -442,6 +446,7 @@ namespace Sensor_Aware_PT
                 catch( Exception e )
                 {
                     Logger.Error( "Sensor {0} read thread exception: {1}", mID, e.Message );
+                    throw;
                     //throw new Exception( String.Format( "Sensor {0} read thread exception: {1}", mID, e.Message ) );
                 }
                 finally

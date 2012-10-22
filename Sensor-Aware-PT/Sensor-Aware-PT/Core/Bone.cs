@@ -160,24 +160,23 @@ namespace Sensor_Aware_PT
             /** This transpose supposedly resets us back to a world frame axis */   
             //newOrientation.Transpose();
             //mCurrentOrientation.Transpose();
+            mFinalTransform = newOrientation * mCalibratedOrientation;
+            
+            /*
             if( mParentBone == null )
             {
-                mFinalTransform = newOrientation * mCalibratedOrientation;//* mCalibratedOrientation ;
+                //mFinalTransform = newOrientation *  mCalibratedOrientation;
             }
             else
             {
-                Matrix4 parentInverse = mParentBone.mCurrentOrientation;
-                Matrix4 parentInverseCalibrated = mParentBone.mCalibratedOrientation;
-                //parentInverse.Invert();
-                //parentInverseCalibrated.Invert();
-                Matrix4 parentMove = parentInverse * parentInverseCalibrated;
-                //parentMove.Invert();
-                mFinalTransform = newOrientation * mCalibratedOrientation;//* mCalibratedOrientation ;
-                mFinalTransform.Invert();
-                parentMove *= mFinalTransform;
-                mFinalTransform = parentMove;
+                Matrix4 parentOrientation = mParentBone.mCurrentOrientation;
+                parentOrientation.Invert();
+                Matrix4 myInv = newOrientation;
+                myInv.Invert();
+                mFinalTransform = myInv  * parentOrientation;
+                
             }
-            
+            */
             
             
             if( mParentBone != null )
@@ -416,7 +415,7 @@ namespace Sensor_Aware_PT
                 GL.Translate( new Vector3( 0, 0, -mLength ) );
                 OpenTK.Graphics.Glu.Cylinder( mConeQuadric, 0.0, mThickness, mLength * ( 1f - mDrawRatio ), 12, 12 );
                 GL.PopMatrix();
-                GL.MultMatrix( ref mFinalTransform );
+                //GL.MultMatrix( ref mFinalTransform );
                 OpenTK.Graphics.Glu.DeleteQuadric( mConeQuadric );
                 #endregion
                 #region draw bounding box

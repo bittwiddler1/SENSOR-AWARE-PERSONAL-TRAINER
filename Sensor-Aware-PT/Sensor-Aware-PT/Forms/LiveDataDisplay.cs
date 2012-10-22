@@ -30,6 +30,7 @@ namespace Sensor_Aware_PT
         bool[] mKeyState = new bool[ 256 ];
         bool[] mKeyStatePrev = new bool[ 256 ];
         private bool mLoaded = false;
+        Dictionary<String, RawDataForm> mRawDataForms = new Dictionary<string, RawDataForm>();
 
         public LiveDataDisplayForm()
         {
@@ -88,6 +89,16 @@ namespace Sensor_Aware_PT
             mCamRotation.Row2 *= -1f;
 
             setupSkeleton();
+
+            
+
+            List<Sensor> sensors = Nexus.Instance.getActivatedSensors();
+            foreach( Sensor s in sensors )
+            {
+                RawDataForm rdf = new RawDataForm( s.Id );
+                mRawDataForms.Add( s.Id, rdf );
+                rdf.Show();
+            }
         }
 
         public void subscribeToSource( IObservable<SensorDataEntry> source )
@@ -327,6 +338,7 @@ namespace Sensor_Aware_PT
         private void ExperimentalForm_Load( object sender, EventArgs e )
         {
 
+
         }
 
         #region IObserver<DataFrame> Members
@@ -368,7 +380,24 @@ namespace Sensor_Aware_PT
             {
                 mLastSensorData[ value.id ] = value;
             }
-            
+
+            try
+            {
+
+                RawDataForm rdf;
+                if( mRawDataForms.TryGetValue( value.id, out rdf ) )
+                {
+                    this.Invoke( ( MethodInvoker ) delegate
+                    {
+                        rdf.updateValues( value.accelerometer.X, value.accelerometer.Y, value.accelerometer.Z );
+                    } );
+                    
+                }
+            }
+            catch( Exception e )
+            {
+                throw;
+            }
             
         }
 
@@ -454,6 +483,11 @@ namespace Sensor_Aware_PT
             {
                 mUpperSkeleton.createMapping( kvp.Key, kvp.Value );
             }
+        }
+
+        private void label1_Click( object sender, EventArgs e )
+        {
+
         }
     }
 }

@@ -56,6 +56,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Forms\RawDataForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\RawDataForm.Designer.cs">
+      <DependentUpon>RawDataForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\ReplayDataDisplayForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -108,9 +114,12 @@
       <DependentUpon>DataRecorderForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Core\SensorDataRecorder.cs" />
-    <Compile Include="Core\Skeleton.cs" />
+    <Compile Include="Forms\Skeleton.cs" />
     <EmbeddedResource Include="Forms\ConfigurationDialog.resx">
       <DependentUpon>ConfigurationDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\RawDataForm.resx">
+      <DependentUpon>RawDataForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ReplayDataDisplayForm.resx">
       <DependentUpon>ReplayDataDisplayForm.cs</DependentUpon>

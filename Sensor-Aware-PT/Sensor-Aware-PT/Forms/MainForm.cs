@@ -105,7 +105,7 @@ namespace Sensor_Aware_PT
 
         private void listView1_SelectedIndexChanged( object sender, EventArgs e )
         {
-
+            
         }
     }
 }
