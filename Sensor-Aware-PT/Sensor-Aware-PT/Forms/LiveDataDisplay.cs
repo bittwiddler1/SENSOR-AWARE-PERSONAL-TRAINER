@@ -96,7 +96,7 @@ namespace Sensor_Aware_PT
             foreach( Sensor s in sensors )
             {
                 RawDataForm rdf = new RawDataForm( s.Id );
-                mRawDataForms.Add( s.Id, rdf );
+                //mRawDataForms.Add( s.Id, rdf );
                 rdf.Show();
             }
         }
@@ -381,23 +381,7 @@ namespace Sensor_Aware_PT
                 mLastSensorData[ value.id ] = value;
             }
 
-            try
-            {
-
-                RawDataForm rdf;
-                if( mRawDataForms.TryGetValue( value.id, out rdf ) )
-                {
-                    this.Invoke( ( MethodInvoker ) delegate
-                    {
-                        rdf.updateValues( value.accelerometer.X, value.accelerometer.Y, value.accelerometer.Z );
-                    } );
-                    
-                }
-            }
-            catch( Exception e )
-            {
-                throw;
-            }
+           
             
         }
 

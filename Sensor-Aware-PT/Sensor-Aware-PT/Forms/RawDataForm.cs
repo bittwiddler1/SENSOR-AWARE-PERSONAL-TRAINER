@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace Sensor_Aware_PT
 {
-    public partial class RawDataForm : Form
+    public partial class RawDataForm : Form, IObserver<SensorDataEntry>
     {
         public RawDataForm()
         {
@@ -20,6 +20,7 @@ namespace Sensor_Aware_PT
         {
             InitializeComponent();
             sensorLabel.Text = sensorID;
+            Nexus.Instance.Subscribe( this );
         }
 
 
@@ -28,11 +29,31 @@ namespace Sensor_Aware_PT
             
         }
 
-        public void updateValues( float yaw, float pitch, float roll )
+        internal void updateValues( float yaw, float pitch, float roll )
         {
             yawLabel.Text = yaw.ToString();
             pitchLabel.Text = pitch.ToString();
             rollLabel.Text = roll.ToString();
         }
+
+        #region IObserver<SensorDataEntry> Members
+
+        public void OnCompleted()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnError( Exception error )
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnNext( SensorDataEntry value )
+        {
+            if( sensorLabel.Text == value.id )
+                updateValues( value.accelerometer.X, value.accelerometer.Y, value.accelerometer.Z );
+        }
+
+        #endregion
     }
 }

@@ -114,7 +114,7 @@
       <DependentUpon>DataRecorderForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Core\SensorDataRecorder.cs" />
-    <Compile Include="Forms\Skeleton.cs" />
+    <Compile Include="Core\Skeleton.cs" />
     <EmbeddedResource Include="Forms\ConfigurationDialog.resx">
       <DependentUpon>ConfigurationDialog.cs</DependentUpon>
     </EmbeddedResource>
