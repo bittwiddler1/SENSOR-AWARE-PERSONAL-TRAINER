@@ -108,6 +108,30 @@ namespace Sensor_Aware_PT
             }
         }
 
+        public Bone ParentBone
+        {
+            get
+            {
+                return mParentBone;
+            }
+        }
+
+        public Matrix4 CurrentOrientation
+        {
+            get
+            {
+                return mCurrentOrientation;
+            }
+        }
+
+        public Matrix4 CurrentZeroOrientation
+        {
+            get
+            {
+                return mCalibratedOrientation;
+            }
+        }
+
         #endregion
 
         public Bone( float length )
@@ -131,6 +155,7 @@ namespace Sensor_Aware_PT
         {
             mCalibratedOrientation =  mCurrentOrientation;
             mCalibratedOrientation.Invert();
+            calibYawPitchRoll = yawPitchRoll;
             return mCalibratedOrientation;
         }
 
@@ -143,25 +168,38 @@ namespace Sensor_Aware_PT
         /// </summary>
         public void updateOrientation()
         {
-            updateOrientation( mCurrentOrientation );
-        }      
+            updateOrientation( mCurrentOrientation, yawPitchRoll );
+        }
 
+        public Vector3 yawPitchRoll = new Vector3();
+        public Vector3 calibYawPitchRoll = new Vector3();
         /// <summary>
         /// Updates orientation with new data
         /// </summary>
         /// <param name="newOrientation">Rotation matrix (DCM) of new orientation values</param>
-        public void updateOrientation( Matrix4 newOrientation )
+        public void updateOrientation( Matrix4 newOrientation, Vector3 ypr )
         {
             /** Save the new orientation as the current, then calculate final transform using our calibrated and new */
             mCurrentOrientation = newOrientation;
-            //Matrix4 d = Matrix4.CreateRotationY( MathHelper.PiOver2 );
+            
             //mCurrentOrientation *=d;
             //newOrientation.Transpose();
             /** This transpose supposedly resets us back to a world frame axis */   
             //newOrientation.Transpose();
             //mCurrentOrientation.Transpose();
-            mFinalTransform = newOrientation * mCalibratedOrientation;
+
+            if( mParentBone != null )
+            {
+                Matrix4 d = Matrix4.CreateRotationZ( ( mParentBone.calibYawPitchRoll.X ) - mParentBone.yawPitchRoll.X );
+                mFinalTransform = d * newOrientation * mCalibratedOrientation;
+            }
+            else
+            {
+                mFinalTransform = newOrientation * mCalibratedOrientation;
+            }
             
+
+            yawPitchRoll = ypr;
             /*
             if( mParentBone == null )
             {

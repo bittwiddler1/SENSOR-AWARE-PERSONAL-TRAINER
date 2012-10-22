@@ -90,21 +90,24 @@ namespace Sensor_Aware_PT
 
             setupSkeleton();
 
-            
-
-            List<Sensor> sensors = Nexus.Instance.getActivatedSensors();
-            foreach( Sensor s in sensors )
-            {
-                RawDataForm rdf = new RawDataForm( s.Id );
-                //mRawDataForms.Add( s.Id, rdf );
-                rdf.Show();
-            }
+           
         }
 
         public void subscribeToSource( IObservable<SensorDataEntry> source )
         {
             source.Subscribe( this );
             source.Subscribe( mUpperSkeleton );
+            
+            /** screw the raw data view for now! 
+            List<Sensor> sensors = Nexus.Instance.getActivatedSensors();
+            foreach( Sensor s in sensors )
+            {
+                RawDataForm rdf = new RawDataForm( s.Id );
+                //mRawDataForms.Add( s.Id, rdf );
+                source.Subscribe( rdf );
+                rdf.Show();
+            }
+             * */
         }
 
         void formUpdateTimer_Tick( object sender, EventArgs e )
@@ -458,7 +461,7 @@ namespace Sensor_Aware_PT
 
         private void button4_Click( object sender, EventArgs e )
         {
-            Nexus.Instance.Invert();
+            mUpperSkeleton.spitAngles();
         }
 
         private void setupSkeleton()

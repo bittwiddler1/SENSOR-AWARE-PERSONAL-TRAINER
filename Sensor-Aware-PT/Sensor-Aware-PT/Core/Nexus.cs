@@ -150,18 +150,15 @@ namespace Sensor_Aware_PT
             }
         }
 
+        /** THIS ENEDS TO BE FIXED due to disposing errors and shizzles */
         public void NotifyObservers( SensorDataEntry dataFrame )
         {
-            foreach( IObserver<SensorDataEntry> observer in mObservers )
-            {
-                if( mInvert )
+
+                for(int i = 0; i < mObservers.Count; i++)
                 {
-                    OpenTK.Matrix4 m = dataFrame.orientation;
-                    m.Invert();
-                    dataFrame.orientation = m;
+                    mObservers[i].OnNext( dataFrame );
                 }
-                observer.OnNext(dataFrame);
-            }
+            
         }
 
         /// <summary>

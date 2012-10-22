@@ -430,16 +430,18 @@ namespace Sensor_Aware_PT
 
                     while( mSensorState == SensorState.Activated )
                     {
+                        SensorDataEntry newData;
                         lock( mSynchronizationLock )
                         {
                             /** Read the data and add to circular buffer */
-                            SensorDataEntry newData = readDataEntry();
-                            mData.Add( newData );
-                            /** Call the event to notify and listeners */
-                            DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
-                            OnDataReceived( dataEventArgs );
-                            
+                            newData = readDataEntry();                          
                         }
+
+                        mData.Add( newData );
+                        /** Call the event to notify and listeners */
+                        DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
+                        OnDataReceived( dataEventArgs );
+                        
                         //Logger.Info( "Sensor {0} data: {1}, {2}, {3}", mID, newData.orientation.X, newData.orientation.Y, newData.orientation.Z );
                     }
                 }
@@ -525,7 +527,10 @@ namespace Sensor_Aware_PT
             {
                 if (handler != null) 
                 {
-                    handler(this, arg);
+                    //lock( handler )
+                    {
+                        handler( this, arg );
+                    }
                 }
             }
             catch(Exception e)

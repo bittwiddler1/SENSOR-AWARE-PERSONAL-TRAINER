@@ -51,9 +51,19 @@ namespace Sensor_Aware_PT
         public void OnNext( SensorDataEntry value )
         {
             if( sensorLabel.Text == value.id )
-                updateValues( value.accelerometer.X, value.accelerometer.Y, value.accelerometer.Z );
+            {
+                this.Invoke( (MethodInvoker)delegate
+                {
+                    updateValues( value.accelerometer.X, value.accelerometer.Y, value.accelerometer.Z );
+                } );
+            }
         }
 
         #endregion
+
+        private void tableLayoutPanel1_Paint( object sender, PaintEventArgs e )
+        {
+
+        }
     }
 }
