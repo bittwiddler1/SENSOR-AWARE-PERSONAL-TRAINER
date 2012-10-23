@@ -191,7 +191,7 @@ namespace Sensor_Aware_PT
             if( mParentBone != null )
             {
                 Matrix4 d = Matrix4.CreateRotationZ( ( mParentBone.calibYawPitchRoll.X ) - mParentBone.yawPitchRoll.X );
-                mFinalTransform = d * newOrientation * mCalibratedOrientation;
+                mFinalTransform = newOrientation * mCalibratedOrientation * d ;
             }
             else
             {
