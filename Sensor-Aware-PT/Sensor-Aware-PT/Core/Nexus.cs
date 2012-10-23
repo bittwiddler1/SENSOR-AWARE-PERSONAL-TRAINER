@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Management;
 using System.Xml.Serialization;
+using OpenTK;
 
 
 namespace Sensor_Aware_PT
@@ -161,6 +162,23 @@ namespace Sensor_Aware_PT
             
         }
 
+        private class SensorDataBuffer
+        {
+            public SensorDataEntry[] mDataBuffer;
+            public string mId;
+            public int mBufferIndex;
+
+            public SensorDataBuffer()
+            {
+                mDataBuffer = new SensorDataEntry[ MAX_BUFFER_SIZE ];
+                //mId = id;
+                mBufferIndex = 0;
+            }
+        }
+        
+        const int MAX_BUFFER_SIZE = 10;
+        
+
         /// <summary>
         /// When a sensor has new data this event gets called.
         /// </summary>
@@ -168,6 +186,22 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void Sensor_DataReceived( object sender, Sensor.DataReceivedEventArgs e )
         {
+            /*
+            mCurrentBufferIndex++;
+            if( mCurrentBufferIndex == MAX_BUFFER_SIZE )
+            {
+                
+                Matrix4 runningSum = new Matrix4();
+                for( int i = 0; i < MAX_BUFFER_SIZE; i++ )
+                {
+                    runningSum += mDataBuffer[ i ];
+                }
+            }
+            else
+            {
+                mDataBuffer[mCurrentBufferIndex] = e.
+            }
+            */
             NotifyObservers( e.Data );
         }
         #endregion
@@ -371,6 +405,7 @@ namespace Sensor_Aware_PT
                 foreach( Sensor s in getActivatedSensors() )
                 {
                     s.DataReceived += new Sensor.DataReceivedHandler( Sensor_DataReceived );
+                    
                 }
                 OnNexusInitializationComplete();
             }

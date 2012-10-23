@@ -202,16 +202,6 @@ namespace Sensor_Aware_PT
             }
         }
 
-        private void createMidBody()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void createLowerBody()
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Creates the upper body skeletal system using the back as a fixed reference point
         /// </summary>

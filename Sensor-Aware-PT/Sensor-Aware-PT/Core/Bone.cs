@@ -39,6 +39,8 @@ namespace Sensor_Aware_PT
         protected Bone mParentBone;
         private float mLength;
         private bool mDrawingEnabled = true;
+        public Vector3 mYawPitchRoll = new Vector3();
+        public Vector3 mCalibYawPitchRoll = new Vector3();
 
         #region Properties
         public static bool DrawLineSegments
@@ -155,7 +157,7 @@ namespace Sensor_Aware_PT
         {
             mCalibratedOrientation =  mCurrentOrientation;
             mCalibratedOrientation.Invert();
-            calibYawPitchRoll = yawPitchRoll;
+            mCalibYawPitchRoll = mYawPitchRoll;
             return mCalibratedOrientation;
         }
 
@@ -168,29 +170,23 @@ namespace Sensor_Aware_PT
         /// </summary>
         public void updateOrientation()
         {
-            updateOrientation( mCurrentOrientation, yawPitchRoll );
+            updateOrientation( mCurrentOrientation, mYawPitchRoll );
         }
 
-        public Vector3 yawPitchRoll = new Vector3();
-        public Vector3 calibYawPitchRoll = new Vector3();
+
         /// <summary>
         /// Updates orientation with new data
         /// </summary>
         /// <param name="newOrientation">Rotation matrix (DCM) of new orientation values</param>
+        /// <param name="ypr"> Yaw Pitch Roll of this orientation</param>
         public void updateOrientation( Matrix4 newOrientation, Vector3 ypr )
         {
             /** Save the new orientation as the current, then calculate final transform using our calibrated and new */
             mCurrentOrientation = newOrientation;
-            
-            //mCurrentOrientation *=d;
-            //newOrientation.Transpose();
-            /** This transpose supposedly resets us back to a world frame axis */   
-            //newOrientation.Transpose();
-            //mCurrentOrientation.Transpose();
 
             if( mParentBone != null )
             {
-                Matrix4 d = Matrix4.CreateRotationZ( ( mParentBone.calibYawPitchRoll.X ) - mParentBone.yawPitchRoll.X );
+                Matrix4 d = Matrix4.CreateRotationZ( ( mParentBone.mCalibYawPitchRoll.X ) - mParentBone.mYawPitchRoll.X );
                 mFinalTransform = d * newOrientation * mCalibratedOrientation;
             }
             else
@@ -199,23 +195,7 @@ namespace Sensor_Aware_PT
             }
             
 
-            yawPitchRoll = ypr;
-            /*
-            if( mParentBone == null )
-            {
-                //mFinalTransform = newOrientation *  mCalibratedOrientation;
-            }
-            else
-            {
-                Matrix4 parentOrientation = mParentBone.mCurrentOrientation;
-                parentOrientation.Invert();
-                Matrix4 myInv = newOrientation;
-                myInv.Invert();
-                mFinalTransform = myInv  * parentOrientation;
-                
-            }
-            */
-            
+            mYawPitchRoll = ypr;       
             
             if( mParentBone != null )
             {
@@ -225,13 +205,8 @@ namespace Sensor_Aware_PT
                 /** Then apply the rotation followed by the translation to the endpt of the parent
                  * to both my start pt and endpt
                  */
-                //mFinalTransform *= d;
-                //Matrix4 m = Matrix4.Identity;
-                //m.M22 = -1f;
                 mFinalTransform = mFinalTransform * /*mParentBone.mCalibratedOrientation */ Matrix4.CreateTranslation( mParentBone.mEndPoint );
-                //mFinalTransform *= m;
-                mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform );
-                
+                mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform ); 
                 mStartPoint = Vector3.Transform( mStartPoint, mFinalTransform );
             }
             else
@@ -240,7 +215,6 @@ namespace Sensor_Aware_PT
                  * Reset the end points back to the initial positions */
                 resetEndPoints();
                 /** Then apply the rotation, as this has no parent so no translate is required */
-                
                 mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform );
             }
 
