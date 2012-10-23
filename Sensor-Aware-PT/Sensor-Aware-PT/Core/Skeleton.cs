@@ -25,7 +25,7 @@ namespace Sensor_Aware_PT
         ShoulderL, ShoulderR,
         HipL, HipR,
         Head,
-        
+        FakeHip
     }
 
     /// <summary>
@@ -188,10 +188,10 @@ namespace Sensor_Aware_PT
                     createUpperBody();
                     break;
                 case SkeletonType.LowerBody:
-                    createLowerBody();
+                    //createLowerBody();
                     break;
                 case SkeletonType.MidBody:
-                    createMidBody();
+                    //createMidBody();
                     break;
                 case SkeletonType.Dog:
                     break;
@@ -209,22 +209,22 @@ namespace Sensor_Aware_PT
         {
             Bone BackU, BackL, ArmUL, ArmUR, ArmLL, ArmLR, ShoulderL, ShoulderR, HipL, HipR, Head,
                 LegLL, LegLR, LegUL, LegUR, FakeHip;
-            BackU = new Bone( mBoneLengthMapping[ BoneType.BackUpper ] );
-            BackL = new Bone( mBoneLengthMapping[ BoneType.BackLower ] );
-            ArmUL = new Bone(mBoneLengthMapping[BoneType.ArmUpperL]);
-            ArmUR = new Bone(mBoneLengthMapping[BoneType.ArmUpperR]);
-            ArmLL = new Bone(mBoneLengthMapping[BoneType.ArmLowerL]);
-            ArmLR = new Bone(mBoneLengthMapping[BoneType.ArmLowerR]);
-            ShoulderL = new Bone(mBoneLengthMapping[BoneType.ShoulderL]);
-            ShoulderR = new Bone(mBoneLengthMapping[BoneType.ShoulderR]);
-            HipR = new Bone( mBoneLengthMapping[ BoneType.HipR] );
-            HipL= new Bone( mBoneLengthMapping[ BoneType.HipL] );
-            Head = new Bone( mBoneLengthMapping[ BoneType.Head] );
-            LegLL = new Bone( mBoneLengthMapping[ BoneType.LegLowerL] );
-            LegLR = new Bone( mBoneLengthMapping[ BoneType.LegLowerR ] );
-            LegUR = new Bone( mBoneLengthMapping[ BoneType.LegUpperR ] );
-            LegUL = new Bone( mBoneLengthMapping[ BoneType.LegUpperL ] );
-            FakeHip = new Bone( 1f );
+            BackU = new Bone( mBoneLengthMapping[ BoneType.BackUpper ], BoneType.BackUpper );
+            BackL = new Bone( mBoneLengthMapping[ BoneType.BackLower ], BoneType.BackLower );
+            ArmUL = new Bone(mBoneLengthMapping[BoneType.ArmUpperL], BoneType.ArmUpperL) ;
+            ArmUR = new Bone( mBoneLengthMapping[ BoneType.ArmUpperR ], BoneType.ArmUpperR);
+            ArmLL = new Bone( mBoneLengthMapping[ BoneType.ArmLowerL ], BoneType.ArmLowerL);
+            ArmLR = new Bone( mBoneLengthMapping[ BoneType.ArmLowerR ], BoneType.ArmLowerR);
+            ShoulderL = new Bone( mBoneLengthMapping[ BoneType.ShoulderL ], BoneType .ShoulderL);
+            ShoulderR = new Bone( mBoneLengthMapping[ BoneType.ShoulderR ], BoneType .ShoulderR);
+            HipR = new Bone( mBoneLengthMapping[ BoneType.HipR ], BoneType.HipR);
+            HipL = new Bone( mBoneLengthMapping[ BoneType.HipL ], BoneType.HipL);
+            Head = new Bone( mBoneLengthMapping[ BoneType.Head ], BoneType.Head);
+            LegLL = new Bone( mBoneLengthMapping[ BoneType.LegLowerL ], BoneType.LegLowerL);
+            LegLR = new Bone( mBoneLengthMapping[ BoneType.LegLowerR ] , BoneType.LegLowerR);
+            LegUR = new Bone( mBoneLengthMapping[ BoneType.LegUpperR ] , BoneType.LegUpperR);
+            LegUL = new Bone( mBoneLengthMapping[ BoneType.LegUpperL ], BoneType.LegUpperL );
+            FakeHip = new Bone( 1f, BoneType.FakeHip);
             
             mBoneTypeMapping.Add( BoneType.BackUpper, BackU );
             mBoneTypeMapping.Add( BoneType.ArmUpperL, ArmUL);

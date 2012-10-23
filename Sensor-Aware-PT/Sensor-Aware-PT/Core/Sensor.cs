@@ -437,11 +437,13 @@ namespace Sensor_Aware_PT
                             newData = readDataEntry();                          
                         }
 
-                        mData.Add( newData );
-                        /** Call the event to notify and listeners */
+                        addDataEntry( newData );
+                        //mData.Add( newData );
+                        
+                        /** Call the event to notify and listeners 
                         DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
                         OnDataReceived( dataEventArgs );
-                        
+                        */
                         //Logger.Info( "Sensor {0} data: {1}, {2}, {3}", mID, newData.orientation.X, newData.orientation.Y, newData.orientation.Z );
                     }
                 }
@@ -515,6 +517,55 @@ namespace Sensor_Aware_PT
             }
         }
 
+        int mBufferIndex = 0;
+        const int MAX_BUFFER_INDEX = 5;
+        SensorDataEntry[] mDataBuffer = new SensorDataEntry[ MAX_BUFFER_INDEX ];
+
+        public void addDataEntry( SensorDataEntry newData )
+        {
+
+            mDataBuffer[ mBufferIndex++ ] = newData;
+
+            if( mBufferIndex == MAX_BUFFER_INDEX )
+            {
+                Matrix4 sum = new Matrix4();
+                for( int i = 0; i < MAX_BUFFER_INDEX; i++ )
+                {
+                    sum.Row0 += mDataBuffer[ i ].orientation.Row0;
+                    sum.Row1 += mDataBuffer[ i ].orientation.Row1;
+                    sum.Row2 += mDataBuffer[ i ].orientation.Row2;
+                    sum.Row3 += mDataBuffer[ i ].orientation.Row3;
+                    
+                }
+
+                sum.Row0 /= (float)MAX_BUFFER_INDEX;
+                sum.Row1 /= ( float ) MAX_BUFFER_INDEX;
+                sum.Row2 /= ( float ) MAX_BUFFER_INDEX;
+                sum.Row3 /= ( float ) MAX_BUFFER_INDEX;
+
+                newData.orientation = sum;
+
+                Vector3 vSum = new Vector3();
+
+                for( int i = 0; i < MAX_BUFFER_INDEX; i++ )
+                {
+                    vSum += mDataBuffer[ i ].accelerometer;
+                }
+
+                vSum /= ( float ) MAX_BUFFER_INDEX;
+
+
+                newData.accelerometer = vSum;
+                
+                mBufferIndex = 0;
+
+                /** Call the event to notify and listeners */
+                DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
+                OnDataReceived( dataEventArgs );
+            }
+
+
+        }
         /// <summary>
         /// Raises the DataReceived event
         /// </summary>
@@ -608,8 +659,11 @@ namespace Sensor_Aware_PT
             matData.M13 = readFloat();
             matData.M23 = readFloat();
             matData.M33 = readFloat();
+            
             rot *= matData;
             matData = rot;
+            
+            
             //matData.Transpose();
 
             //transform2.M22 = -1f;
