@@ -10,8 +10,10 @@ namespace Sensor_Aware_PT
     /// <summary>
     /// Defines different bone types on a body
     /// </summary>
+    [Serializable()]
     public enum BoneType
     {
+        None,
         ArmLowerL, ArmLowerR,
         ArmUpperL, ArmUpperR,
         
@@ -22,7 +24,8 @@ namespace Sensor_Aware_PT
         Neck,
         ShoulderL, ShoulderR,
         HipL, HipR,
-        Head
+        Head,
+        FakeHip
     }
 
     /// <summary>
@@ -77,8 +80,9 @@ namespace Sensor_Aware_PT
         internal static Matrix4 ORIENT_DOWN;
         internal static Matrix4 ORIENT_FRONT;
         internal static Matrix4 ORIENT_DEFAULT = Matrix4.Identity;
-        internal static Vector3 VECTOR_ORIENT_LEFT = new Vector3( 90, 0, 0 );
-        internal static Vector3 VECTOR_ORIENT_RIGHT = new Vector3(-90,0, 0 );
+        internal static Vector3 VECTOR_ORIENT_RIGHT = new Vector3( 90, 0, 0 );
+        internal static Vector3 VECTOR_ORIENT_LEFT = new Vector3(-90,0, 0 );
+        //internal static Vector3 VECTOR_ORIENT_LEFT = new Vector3( 90, 90, 0 );
         internal static Vector3 VECTOR_ORIENT_DOWN = new Vector3( 0, 180, 0 );
         internal static Vector3 VECTOR_ORIENT_UP = new Vector3( 0, 0, 0);
         internal static Vector3 VECTOR_ORIENT_FRONT = new Vector3( 0, 90, 0 );
@@ -184,10 +188,10 @@ namespace Sensor_Aware_PT
                     createUpperBody();
                     break;
                 case SkeletonType.LowerBody:
-                    createLowerBody();
+                    //createLowerBody();
                     break;
                 case SkeletonType.MidBody:
-                    createMidBody();
+                    //createMidBody();
                     break;
                 case SkeletonType.Dog:
                     break;
@@ -198,16 +202,6 @@ namespace Sensor_Aware_PT
             }
         }
 
-        private void createMidBody()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void createLowerBody()
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Creates the upper body skeletal system using the back as a fixed reference point
         /// </summary>
@@ -215,22 +209,22 @@ namespace Sensor_Aware_PT
         {
             Bone BackU, BackL, ArmUL, ArmUR, ArmLL, ArmLR, ShoulderL, ShoulderR, HipL, HipR, Head,
                 LegLL, LegLR, LegUL, LegUR, FakeHip;
-            BackU = new Bone( mBoneLengthMapping[ BoneType.BackUpper ] );
-            BackL = new Bone( mBoneLengthMapping[ BoneType.BackLower ] );
-            ArmUL = new Bone(mBoneLengthMapping[BoneType.ArmUpperL]);
-            ArmUR = new Bone(mBoneLengthMapping[BoneType.ArmUpperR]);
-            ArmLL = new Bone(mBoneLengthMapping[BoneType.ArmLowerL]);
-            ArmLR = new Bone(mBoneLengthMapping[BoneType.ArmLowerR]);
-            ShoulderL = new Bone(mBoneLengthMapping[BoneType.ShoulderL]);
-            ShoulderR = new Bone(mBoneLengthMapping[BoneType.ShoulderR]);
-            HipR = new Bone( mBoneLengthMapping[ BoneType.HipR] );
-            HipL= new Bone( mBoneLengthMapping[ BoneType.HipL] );
-            Head = new Bone( mBoneLengthMapping[ BoneType.Head] );
-            LegLL = new Bone( mBoneLengthMapping[ BoneType.LegLowerL] );
-            LegLR = new Bone( mBoneLengthMapping[ BoneType.LegLowerR ] );
-            LegUR = new Bone( mBoneLengthMapping[ BoneType.LegUpperR ] );
-            LegUL = new Bone( mBoneLengthMapping[ BoneType.LegUpperL ] );
-            FakeHip = new Bone( 1f );
+            BackU = new Bone( mBoneLengthMapping[ BoneType.BackUpper ], BoneType.BackUpper );
+            BackL = new Bone( mBoneLengthMapping[ BoneType.BackLower ], BoneType.BackLower );
+            ArmUL = new Bone(mBoneLengthMapping[BoneType.ArmUpperL], BoneType.ArmUpperL) ;
+            ArmUR = new Bone( mBoneLengthMapping[ BoneType.ArmUpperR ], BoneType.ArmUpperR);
+            ArmLL = new Bone( mBoneLengthMapping[ BoneType.ArmLowerL ], BoneType.ArmLowerL);
+            ArmLR = new Bone( mBoneLengthMapping[ BoneType.ArmLowerR ], BoneType.ArmLowerR);
+            ShoulderL = new Bone( mBoneLengthMapping[ BoneType.ShoulderL ], BoneType .ShoulderL);
+            ShoulderR = new Bone( mBoneLengthMapping[ BoneType.ShoulderR ], BoneType .ShoulderR);
+            HipR = new Bone( mBoneLengthMapping[ BoneType.HipR ], BoneType.HipR);
+            HipL = new Bone( mBoneLengthMapping[ BoneType.HipL ], BoneType.HipL);
+            Head = new Bone( mBoneLengthMapping[ BoneType.Head ], BoneType.Head);
+            LegLL = new Bone( mBoneLengthMapping[ BoneType.LegLowerL ], BoneType.LegLowerL);
+            LegLR = new Bone( mBoneLengthMapping[ BoneType.LegLowerR ] , BoneType.LegLowerR);
+            LegUR = new Bone( mBoneLengthMapping[ BoneType.LegUpperR ] , BoneType.LegUpperR);
+            LegUL = new Bone( mBoneLengthMapping[ BoneType.LegUpperL ], BoneType.LegUpperL );
+            FakeHip = new Bone( 1f, BoneType.FakeHip);
             
             mBoneTypeMapping.Add( BoneType.BackUpper, BackU );
             mBoneTypeMapping.Add( BoneType.ArmUpperL, ArmUL);
@@ -243,6 +237,10 @@ namespace Sensor_Aware_PT
             mBoneTypeMapping.Add( BoneType.HipL, HipL );
             mBoneTypeMapping.Add( BoneType.HipR, HipR );
             mBoneTypeMapping.Add( BoneType.Head, Head );
+            mBoneTypeMapping.Add( BoneType.LegLowerL, LegLL);
+            mBoneTypeMapping.Add( BoneType.LegLowerR, LegLR );
+            mBoneTypeMapping.Add( BoneType.LegUpperL, LegUL );
+            mBoneTypeMapping.Add( BoneType.LegUpperR, LegUR );
 
             // Set the orientations accordingly~
             
@@ -260,7 +258,7 @@ namespace Sensor_Aware_PT
             ShoulderL.setOrientation( BoneOrientation.Left );
             //ShoulderL.InitialOrientation = ORIENT_LEFT;
             ShoulderR.setOrientation( BoneOrientation.Right );
-            ShoulderL.Color = Color.Gold;
+            ShoulderL.Color = Color.Chartreuse;
             ShoulderR.Color = Color.Gold;
             /** Left Arm upper */
             ShoulderL.addChild( ArmUL );
@@ -370,7 +368,7 @@ namespace Sensor_Aware_PT
             Bone mappedBone;
             if( mSensorBoneMapping.TryGetValue( value.id, out mappedBone ) )
             {
-                mappedBone.updateOrientation( value.orientation );
+                mappedBone.updateOrientation( value.orientation, value.accelerometer );
             }
             else
             {
@@ -380,10 +378,15 @@ namespace Sensor_Aware_PT
 
         public void calibrateZero()
         {
+            Dictionary<BoneType, Matrix4> calibratedValues = new Dictionary<BoneType, Matrix4>();
             foreach( Bone b in mSensorBoneMapping.Values )
             {
-                b.calibrateZero();
+                Matrix4 calibData = b.calibrateZero();
+                KeyValuePair<BoneType, Bone> boneKvp = mBoneTypeMapping.Where( bone => bone.Value == b ).First();
+                calibratedValues.Add( boneKvp.Key, calibData );
             }
+
+            Nexus.CalibratedOrientations = calibratedValues;
         }
 
         #endregion
@@ -396,6 +399,35 @@ namespace Sensor_Aware_PT
         internal void toggleWireframe()
         {
             mParentBone.DrawWireFrame = !mParentBone.DrawWireFrame;
+        }
+
+        internal void calibrateZero( Dictionary<BoneType, Matrix4> mCalibrationData )
+        {
+            foreach( KeyValuePair<BoneType, Matrix4> kvp in mCalibrationData )
+            {
+                mBoneTypeMapping[ kvp.Key ].calibrateZero( kvp.Value );
+            }
+        }
+
+        internal void spitAngles()
+        {
+            Logger.Info( "Spitting angles" );
+            foreach( KeyValuePair<String, Bone> kvp in mSensorBoneMapping )
+            {
+                if( kvp.Value.ParentBone != null )
+                {
+                    Matrix4 parent = kvp.Value.ParentBone.CurrentOrientation * kvp.Value.ParentBone.CurrentZeroOrientation;
+                    
+                    Vector3 parentOrient = new Vector3( 1, 0, 0 );
+                    Vector3 meOrient = new Vector3( 1, 0, 0 );
+                    Matrix4 me = kvp.Value.CurrentOrientation * kvp.Value.CurrentZeroOrientation;
+
+                    Vector3 pX = Vector3.TransformVector( parentOrient, parent );
+                    Vector3 mX = Vector3.TransformVector( meOrient, me);
+                    Logger.Info( "{0} {1}", kvp.Key, MathHelper.RadiansToDegrees( Vector3.CalculateAngle( pX, mX ) ) );
+
+                }
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Sensor_Aware_PT
         /** Max number of retries after disconnected */
         static int MAX_RECONNECT_RETRIES = 3;
         /** Amount of time to wait between reconnects, in ms */
-        static int RECONNECT_TIMEOUT = 10000;
+        static int RECONNECT_TIMEOUT = 65000;
         /** Maximum # of disconnects before never reconnecting */
         private const int MAX_READ_ERRORS = 3;
 
@@ -205,9 +205,10 @@ namespace Sensor_Aware_PT
         private void reinitialize()
         {
             Logger.Warning( "Sensor {0} waiting {1} seconds before attempting to reconnect", mID, RECONNECT_TIMEOUT / 1000 );
+            //mReadThread.Abort();
             Thread.Sleep( RECONNECT_TIMEOUT );
             mReconnectRetryCount++;
-
+            mSerialPort.Close();
             if( mReconnectRetryCount < MAX_RECONNECT_RETRIES )
             {
                 try
@@ -232,9 +233,10 @@ namespace Sensor_Aware_PT
                         changeState( SensorState.ReInitialized );
                         OnReInitializationComplete();
                     }
-                    catch( Exception )
+                    catch( Exception Ex)
                     {
-                        Logger.Error( "Sensor {0} unable to reconnect", mID );
+                        
+                        Logger.Error( "Sensor {0} unable to reconnect - {1}", mID, Ex.Message );
                     }
                     finally
                     {
@@ -242,6 +244,7 @@ namespace Sensor_Aware_PT
                         switch( mSensorState )
                         {
                             case SensorState.ReInitialized:
+                                mReadThread.Start();
                                 break;
                             case SensorState.ReConnecting:
                                 reinitialize();
@@ -405,6 +408,9 @@ namespace Sensor_Aware_PT
                     /** Wait until we are synchronized */
                     do
                     {
+                        mSerialPort.DiscardInBuffer();
+                        mSerialPort.Write( "#s00" );
+                        Thread.Sleep( 1 );
                         synchronized = readToken( "#SYNCH00\r\n" );
                     }
                     while( !synchronized );
@@ -424,21 +430,27 @@ namespace Sensor_Aware_PT
 
                     while( mSensorState == SensorState.Activated )
                     {
+                        SensorDataEntry newData;
                         lock( mSynchronizationLock )
                         {
                             /** Read the data and add to circular buffer */
-                            SensorDataEntry newData = readDataEntry();
-                            mData.Add( newData );
-                            /** Call the event to notify and listeners */
-                            DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
-                            OnDataReceived( dataEventArgs );
+                            newData = readDataEntry();                          
                         }
+
+                        addDataEntry( newData );
+                        //mData.Add( newData );
+                        
+                        /** Call the event to notify and listeners 
+                        DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
+                        OnDataReceived( dataEventArgs );
+                        */
                         //Logger.Info( "Sensor {0} data: {1}, {2}, {3}", mID, newData.orientation.X, newData.orientation.Y, newData.orientation.Z );
                     }
                 }
                 catch( Exception e )
                 {
                     Logger.Error( "Sensor {0} read thread exception: {1}", mID, e.Message );
+                    throw;
                     //throw new Exception( String.Format( "Sensor {0} read thread exception: {1}", mID, e.Message ) );
                 }
                 finally
@@ -458,7 +470,9 @@ namespace Sensor_Aware_PT
                                 {
                                     Logger.Error( "Sensor {0} disconnected, attempting to reconnect", mID );
                                     changeState( SensorState.ReConnecting );
-                                    reinitialize();
+                                    Thread reconnectThread = new Thread( reinitialize );
+                                    reconnectThread.IsBackground = true;
+                                    reconnectThread.Start();
                                 }
                                 else
                                 {
@@ -503,6 +517,55 @@ namespace Sensor_Aware_PT
             }
         }
 
+        int mBufferIndex = 0;
+        const int MAX_BUFFER_INDEX = 5;
+        SensorDataEntry[] mDataBuffer = new SensorDataEntry[ MAX_BUFFER_INDEX ];
+
+        public void addDataEntry( SensorDataEntry newData )
+        {
+
+            mDataBuffer[ mBufferIndex++ ] = newData;
+
+            if( mBufferIndex == MAX_BUFFER_INDEX )
+            {
+                Matrix4 sum = new Matrix4();
+                for( int i = 0; i < MAX_BUFFER_INDEX; i++ )
+                {
+                    sum.Row0 += mDataBuffer[ i ].orientation.Row0;
+                    sum.Row1 += mDataBuffer[ i ].orientation.Row1;
+                    sum.Row2 += mDataBuffer[ i ].orientation.Row2;
+                    sum.Row3 += mDataBuffer[ i ].orientation.Row3;
+                    
+                }
+
+                sum.Row0 /= (float)MAX_BUFFER_INDEX;
+                sum.Row1 /= ( float ) MAX_BUFFER_INDEX;
+                sum.Row2 /= ( float ) MAX_BUFFER_INDEX;
+                sum.Row3 /= ( float ) MAX_BUFFER_INDEX;
+
+                newData.orientation = sum;
+
+                Vector3 vSum = new Vector3();
+
+                for( int i = 0; i < MAX_BUFFER_INDEX; i++ )
+                {
+                    vSum += mDataBuffer[ i ].accelerometer;
+                }
+
+                vSum /= ( float ) MAX_BUFFER_INDEX;
+
+
+                newData.accelerometer = vSum;
+                
+                mBufferIndex = 0;
+
+                /** Call the event to notify and listeners */
+                DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
+                OnDataReceived( dataEventArgs );
+            }
+
+
+        }
         /// <summary>
         /// Raises the DataReceived event
         /// </summary>
@@ -515,7 +578,10 @@ namespace Sensor_Aware_PT
             {
                 if (handler != null) 
                 {
-                    handler(this, arg);
+                    //lock( handler )
+                    {
+                        handler( this, arg );
+                    }
                 }
             }
             catch(Exception e)
@@ -571,34 +637,51 @@ namespace Sensor_Aware_PT
 
             /** Read the 4 vectors of data */
             Matrix4 matData = Matrix4.Identity;
-            Matrix4 transform = Matrix4.CreateRotationZ( MathHelper.DegreesToRadians( 90 ) );
-            //Matrix4 transform = Matrix4.Identity;
+            Matrix4 transform = Matrix4.Identity;
+            //Matrix4 transform = Matrix4.CreateRotationY( -MathHelper.PiOver2);
+           //transform = transform * Matrix4.CreateRotationZ( MathHelper.Pi );
+            Matrix4 rot = Matrix4.CreateRotationY( MathHelper.PiOver2 );
 
             /* 1 2 3
-             * 3 2 1
-             * 2 3 1
+             * 4 5 6
+             * 7 8 9
              * 
              * 
              */ 
             matData.M11 = readFloat();
-            matData.M12 = readFloat();
-            matData.M13 = readFloat();
-
             matData.M21 = readFloat();
-            matData.M22 = readFloat();
-            matData.M23 = readFloat();
-
             matData.M31 = readFloat();
+            
+            matData.M12 = readFloat();
+            matData.M22 = readFloat();
             matData.M32 = readFloat();
-            matData.M33 = readFloat();
 
+            matData.M13 = readFloat();
+            matData.M23 = readFloat();
+            matData.M33 = readFloat();
+            
+            rot *= matData;
+            matData = rot;
+            
+            
+            //matData.Transpose();
+
+            //transform2.M22 = -1f;
+            //transform.Row0 *= -1f;
+            //matData = matData * transform2;
+            //matData = matData * transform;
+            
+            
+            
+            //matData.Transpose();
             float yaw, pitch, roll;
             pitch = -1f*(float)Math.Asin(matData.M31);
             roll = (float)Math.Atan2(matData.M32, matData.M33);
             yaw = (float)Math.Atan2(matData.M21, matData.M11);
             Vector3 ypr = new Vector3(yaw, pitch, roll);
 
-            //matData = matData * transform;
+            //transform.Row0 *= -1f;
+           //matData = matData * transform;
             //matData = Matrix4.Transpose( matData );
             //matData.Row1 *= -1;
             /*

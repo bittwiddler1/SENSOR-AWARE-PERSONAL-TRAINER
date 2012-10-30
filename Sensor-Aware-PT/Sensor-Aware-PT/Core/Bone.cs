@@ -34,11 +34,14 @@ namespace Sensor_Aware_PT
         private float mDrawRatio = .3f; // Upper = .3f, lower = 1-.3f
         private static bool mDrawBox = false;
         private static bool mDrawWireframe = false;
-        private static bool mDrawLineSegments = false;
+        private static bool mDrawLineSegments = true;
         private List<Bone> mChildren;
         protected Bone mParentBone;
         private float mLength;
         private bool mDrawingEnabled = true;
+        public Vector3 mYawPitchRoll = new Vector3();
+        public Vector3 mCalibYawPitchRoll = new Vector3();
+        private BoneType mBoneType;
 
         #region Properties
         public static bool DrawLineSegments
@@ -108,9 +111,33 @@ namespace Sensor_Aware_PT
             }
         }
 
+        public Bone ParentBone
+        {
+            get
+            {
+                return mParentBone;
+            }
+        }
+
+        public Matrix4 CurrentOrientation
+        {
+            get
+            {
+                return mCurrentOrientation;
+            }
+        }
+
+        public Matrix4 CurrentZeroOrientation
+        {
+            get
+            {
+                return mCalibratedOrientation;
+            }
+        }
+
         #endregion
 
-        public Bone( float length )
+        public Bone( float length, BoneType bonetype )
         {
             mLength = length;
             mStartPoint = Vector3.Zero;
@@ -120,56 +147,116 @@ namespace Sensor_Aware_PT
             mCurrentOrientation = Matrix4.Identity;
             mCalibratedOrientation = Matrix4.Identity;
             mFinalTransform = Matrix4.Identity;
+            mBoneType = bonetype;
             generateBoxGeometry();
+            
 
         }
 
         /// <summary>
         /// Called to set the current yaw to be the offset. This is useful when trying to align the sensors to the screen.
         /// </summary>
-        public void calibrateZero()
+        public Matrix4 calibrateZero()
         {
-            mCalibratedOrientation =  mCurrentOrientation ;
-            //mCalibratedOrientation.Invert();
-            
+            mCalibratedOrientation =  transformOrientation(mCurrentOrientation);
+            mCalibratedOrientation.Invert();
+            mCalibYawPitchRoll = mYawPitchRoll;
+            return mCalibratedOrientation;
         }
-        
+
+        internal void calibrateZero( Matrix4 calibratedData )
+        {
+            mCalibratedOrientation = calibratedData;
+        }
         /// <summary>
         /// Updates orientation using whatever the last calculated orientation was
         /// </summary>
         public void updateOrientation()
         {
-            updateOrientation( mCurrentOrientation );
-        }      
+            updateOrientation( mCurrentOrientation, mYawPitchRoll );
+        }
+
+        private object mUpdateLock = new object();
+        private Matrix4 transformOrientation( Matrix4 or )
+        {
+
+            Matrix4 rot = Matrix4.Identity;
+            if( or == Matrix4.Identity )
+                return or;
+            switch( mBoneType )
+            {
+                case BoneType.ShoulderL:
+                    rot = Matrix4.CreateRotationZ( MathHelper.PiOver2 );
+                    rot *= Matrix4.CreateRotationY( MathHelper.PiOver2 );
+                                rot *= or;
+                    return rot;
+                    
+                case BoneType.ShoulderR:
+                    rot = Matrix4.CreateRotationZ( MathHelper.PiOver2 );
+                    rot *= Matrix4.CreateRotationY( MathHelper.PiOver2 );
+                                rot *= or;
+                    return rot;
+            }
+
+            return or;
+        }
 
         /// <summary>
         /// Updates orientation with new data
         /// </summary>
         /// <param name="newOrientation">Rotation matrix (DCM) of new orientation values</param>
-        public void updateOrientation( Matrix4 newOrientation )
+        /// <param name="ypr"> Yaw Pitch Roll of this orientation</param>
+        public void updateOrientation( Matrix4 newOrientation, Vector3 ypr )
         {
-            /** Save the new orientation as the current, then calculate final transform using our calibrated and new */
             mCurrentOrientation = newOrientation;
-            /** This transpose supposedly resets us back to a world frame axis */   
-            newOrientation.Transpose();
-            mFinalTransform = mCalibratedOrientation * newOrientation;
+            
+            /** Save the new orientation as the current, then calculate final transform using our calibrated and new */
+            Matrix4 transformedOrientation = transformOrientation( newOrientation );
+            /** Calculate yaw pitch roll shit stuff */
+            mYawPitchRoll = ypr;
+            
+            mYawPitchRoll.Y = -1f * ( float ) Math.Asin( transformedOrientation.M31 );
+            mYawPitchRoll.Z = ( float ) Math.Atan2( transformedOrientation.M32, transformedOrientation.M33 );
+            mYawPitchRoll.X = ( float ) Math.Atan2( transformedOrientation.M21, transformedOrientation.M11 );
+            
+           //mYawPitchRoll = ypr;
+
+            if( mParentBone != null )
+            {
+                Matrix4 d = new Matrix4();
+                if( (mParentBone.mBoneType == BoneType.ShoulderR) || (mParentBone.mBoneType == BoneType.ShoulderL ))
+                {
+                    d = Matrix4.CreateRotationY( ( mParentBone.mCalibYawPitchRoll.Y) - mParentBone.mYawPitchRoll.Y);
+                    mFinalTransform = d * transformedOrientation * mCalibratedOrientation;
+                }
+                else
+                {
+                    d = Matrix4.CreateRotationZ( ( mParentBone.mCalibYawPitchRoll.X ) - mParentBone.mYawPitchRoll.X );
+                    mFinalTransform = d * transformedOrientation * mCalibratedOrientation;
+                }
+                
+            }
+            else
+            {
+                mFinalTransform = transformedOrientation * mCalibratedOrientation;
+            }  
 
             if( mParentBone != null )
             {
                 /** This is a child bone so it's position depends on the parent
-                 * Reset the end points back to the initial positions */
+                    * Reset the end points back to the initial positions */
                 resetEndPoints();
                 /** Then apply the rotation followed by the translation to the endpt of the parent
-                 * to both my start pt and endpt
-                 */
-                mFinalTransform = mFinalTransform * Matrix4.CreateTranslation( mParentBone.mEndPoint );
+                    * to both my start pt and endpt
+                    */
+                mFinalTransform = mFinalTransform * /*mParentBone.mCalibratedOrientation */ Matrix4.CreateTranslation( mParentBone.mEndPoint );
                 mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform );
                 mStartPoint = Vector3.Transform( mStartPoint, mFinalTransform );
             }
             else
             {
                 /**Not a child bone so position does not depend on anything except itself 
-                 * Reset the end points back to the initial positions */
+                    * Reset the end points back to the initial positions */
                 resetEndPoints();
                 /** Then apply the rotation, as this has no parent so no translate is required */
                 mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform );
@@ -180,7 +267,6 @@ namespace Sensor_Aware_PT
             {
                 child.updateOrientation();
             }
-
         }
 
         /// <summary>
@@ -214,6 +300,13 @@ namespace Sensor_Aware_PT
                 default:
                     break;
             }
+            
+        }
+
+        public void setOrientationTest()
+        {
+            mStartPoint = Vector3.Zero;
+            mDrawTransform = Matrix4.Identity;
         }
 
         /// <summary>
@@ -239,11 +332,11 @@ namespace Sensor_Aware_PT
                     break;
                 case BoneOrientation.Left:
                     mEndPoint.Y = mStartPoint.Y - mLength;
-                    mDrawTransform = Skeleton.ORIENT_LEFT;
+                    mDrawTransform = Skeleton.ORIENT_RIGHT;
                     break;
                 case BoneOrientation.Right:
                     mEndPoint.Y = mStartPoint.Y + mLength;
-                    mDrawTransform = Skeleton.ORIENT_RIGHT;
+                    mDrawTransform = Skeleton.ORIENT_LEFT;
                     break;
                 case BoneOrientation.Front:
                     mEndPoint.X = mStartPoint.X - mLength;
@@ -357,6 +450,7 @@ namespace Sensor_Aware_PT
                 /** Draws the bone cone pieces using the draw transform that was calculated */
                 GL.PushMatrix();
                 GL.MultMatrix( ref mDrawTransform );
+                //GL.MultMatrix( ref mFinalTransform );
                 /** Sets the colors and stuff */
                 GL.Color3( Color.Black );
                 GL.ColorMaterial( MaterialFace.FrontAndBack, ColorMaterialParameter.Specular );
@@ -376,6 +470,7 @@ namespace Sensor_Aware_PT
                 GL.Translate( new Vector3( 0, 0, -mLength ) );
                 OpenTK.Graphics.Glu.Cylinder( mConeQuadric, 0.0, mThickness, mLength * ( 1f - mDrawRatio ), 12, 12 );
                 GL.PopMatrix();
+                //GL.MultMatrix( ref mFinalTransform );
                 OpenTK.Graphics.Glu.DeleteQuadric( mConeQuadric );
                 #endregion
                 #region draw bounding box
@@ -463,8 +558,6 @@ namespace Sensor_Aware_PT
         {
             
         }
-
-
     }
 
  

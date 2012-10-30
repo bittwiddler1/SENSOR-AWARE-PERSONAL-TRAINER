@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Management;
 using System.Xml.Serialization;
+using OpenTK;
 
 
 namespace Sensor_Aware_PT
@@ -32,9 +33,10 @@ namespace Sensor_Aware_PT
         /** List to hold the Sensor objects */
         internal Dictionary<String, Sensor> mSensorDict;
         internal Dictionary<String, SensorIdentification> mSensorIDDict;
-        
+
+        internal Dictionary<String, BoneType> mBoneSensorDict;
         private Sensor[] mAvailableSensors;
-        private Boolean bGenerateConfig = true;
+
 
         /** This keeps track of the # of ready events we hve received */
         private static int mReadySensorCount = 0;
@@ -43,9 +45,6 @@ namespace Sensor_Aware_PT
         /** Observable pattern & lock */
         private List<IObserver<SensorDataEntry>> mObservers = new List<IObserver<SensorDataEntry>>();
         private readonly object mObserverLock = new object();
-
-        /** Counter for data frames */
-        private int mCurrentFrameNumber = 0;
 
         /** Keeps the # of active sensors */
 
@@ -89,6 +88,16 @@ namespace Sensor_Aware_PT
                 return mInstance;
             }
         }
+
+        public Dictionary<String, BoneType> BoneMappings
+        {
+            get
+            {
+                return mBoneSensorDict;
+            }
+        }
+
+        
 
         public void initialize()
         {
@@ -142,13 +151,33 @@ namespace Sensor_Aware_PT
             }
         }
 
+        /** THIS ENEDS TO BE FIXED due to disposing errors and shizzles */
         public void NotifyObservers( SensorDataEntry dataFrame )
         {
-            foreach( IObserver<SensorDataEntry> observer in mObservers )
+
+                for(int i = 0; i < mObservers.Count; i++)
+                {
+                    mObservers[i].OnNext( dataFrame );
+                }
+            
+        }
+
+        private class SensorDataBuffer
+        {
+            public SensorDataEntry[] mDataBuffer;
+            public string mId;
+            public int mBufferIndex;
+
+            public SensorDataBuffer()
             {
-                observer.OnNext(dataFrame);
+                mDataBuffer = new SensorDataEntry[ MAX_BUFFER_SIZE ];
+                //mId = id;
+                mBufferIndex = 0;
             }
         }
+        
+        const int MAX_BUFFER_SIZE = 10;
+        
 
         /// <summary>
         /// When a sensor has new data this event gets called.
@@ -157,6 +186,22 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void Sensor_DataReceived( object sender, Sensor.DataReceivedEventArgs e )
         {
+            /*
+            mCurrentBufferIndex++;
+            if( mCurrentBufferIndex == MAX_BUFFER_SIZE )
+            {
+                
+                Matrix4 runningSum = new Matrix4();
+                for( int i = 0; i < MAX_BUFFER_SIZE; i++ )
+                {
+                    runningSum += mDataBuffer[ i ];
+                }
+            }
+            else
+            {
+                mDataBuffer[mCurrentBufferIndex] = e.
+            }
+            */
             NotifyObservers( e.Data );
         }
         #endregion
@@ -244,7 +289,7 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void Sensor_ReInitializationComplete( object sender, EventArgs e )
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         //private void saveConfigFile()
@@ -285,11 +330,8 @@ namespace Sensor_Aware_PT
     
             mSensorDict   = new Dictionary<String,Sensor>();                   // The actual sensor objects
             mSensorIDDict = new Dictionary<String, SensorIdentification>();
-            //mConfigFileDataDict = new SerializableDictionary<String, String>();
+            mBoneSensorDict = new Dictionary<String, BoneType>();
         }
-        
-      
-
 
         /// <summary>
         /// This event gets raised after each sensor completes its initialize routine. Even if a sensor fails to initialize,
@@ -315,7 +357,7 @@ namespace Sensor_Aware_PT
                         mReadySensorCount++;
                         s.ActivationComplete += new Sensor.ActivationCompleteHandler( Sensor_ActivationCompleteEvent );
                         s.ReActivationComplete += new Sensor.ReActivationCompleteHandler( Sensor_ReActivationComplete );
-                        Thread.Sleep( 2000 );
+                        //Thread.Sleep( 2000 );
                         s.activate();
                     }
                     else
@@ -346,7 +388,7 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void Sensor_ReActivationComplete( object sender, EventArgs e )
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -363,6 +405,7 @@ namespace Sensor_Aware_PT
                 foreach( Sensor s in getActivatedSensors() )
                 {
                     s.DataReceived += new Sensor.DataReceivedHandler( Sensor_DataReceived );
+                    
                 }
                 OnNexusInitializationComplete();
             }
@@ -414,6 +457,21 @@ namespace Sensor_Aware_PT
             return new List<Sensor>( mAvailableSensors );
         }
 
+        internal Sensor GetSensor(string label)
+        {
+            try
+            {
+
+                return mSensorDict[label];
+            }
+            catch (KeyNotFoundException exc)
+            {
+                Logger.Warning("Exception- {0}", exc);
+                Logger.Warning("One or more sensors is missing from the configuration Dictionary!");
+                return null;
+            }
+        }
+
         /// <summary>
         /// Resynchronizes all activated sensors.
         /// </summary>
@@ -426,7 +484,7 @@ namespace Sensor_Aware_PT
                 s.resynchronize();
             }
 
-            mCurrentFrameNumber = 0;
+          
         }
 
         /// <summary>
@@ -438,11 +496,33 @@ namespace Sensor_Aware_PT
             {
                 s.resetSequence();
             }
-
-            mCurrentFrameNumber = 0;
         }
 
         #endregion
+
+        internal void fakeData()
+        {
+            SensorDataEntry sd = new SensorDataEntry();
+            sd.orientation = OpenTK.Matrix4.Identity;
+            sd.id = "A";
+            NotifyObservers( sd );
+        }
+
+        bool mInvert = false;
+        internal void Invert()
+        {
+            mInvert = !mInvert;
+        }
+
+
+        /// <summary>
+        /// Holds the calibrated orientations of each bonetype
+        /// </summary>
+        public static Dictionary<BoneType, OpenTK.Matrix4> CalibratedOrientations
+        {
+            get;
+            set;
+        }
     }
 
 }

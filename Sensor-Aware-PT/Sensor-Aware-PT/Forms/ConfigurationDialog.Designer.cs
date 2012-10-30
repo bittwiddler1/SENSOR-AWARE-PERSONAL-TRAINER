@@ -41,7 +41,7 @@
             this.mPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mPanel.Location = new System.Drawing.Point(0, 0);
             this.mPanel.Name = "mPanel";
-            this.mPanel.Size = new System.Drawing.Size(292, 273);
+            this.mPanel.Size = new System.Drawing.Size(292, 238);
             this.mPanel.TabIndex = 0;
             // 
             // mFakeProgressBar
@@ -65,7 +65,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(292, 273);
+            this.ClientSize = new System.Drawing.Size(292, 238);
             this.Controls.Add(this.mPanel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.MaximizeBox = false;
@@ -73,6 +73,7 @@
             this.Name = "ConfigurationDialog";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "ConfigurationDialog";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ConfigurationDialog_FormClosing);
             this.mPanel.ResumeLayout(false);
             this.mPanel.PerformLayout();
             this.ResumeLayout(false);

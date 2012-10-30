@@ -16,22 +16,23 @@ using OpenTK.Input;
 //: base(new GraphicsMode(32, 24, 8, 4), 3, 0, GraphicsContextFlags.ForwardCompatible)
 namespace Sensor_Aware_PT
 {
-    public partial class ExperimentalForm : Form, IObserver<SensorDataEntry>
+    public partial class LiveDataDisplayForm : Form, IObserver<SensorDataEntry>
     {
         private Bone[] mBones = new Bone[ 4 ];
         Dictionary<String, SensorDataEntry> mLastSensorData = new Dictionary<string, SensorDataEntry>();
         Skeleton mUpperSkeleton = new Skeleton( SkeletonType.UpperBody );
         Vector3 mViewRotations = new Vector3(-90,0,90);
-        Vector3 mViewTranslations = new Vector3();
+        //Vector3 mViewTranslations = new Vector3();
         Matrix4 mCamRotation = new Matrix4();
         Matrix4 mTransform = Matrix4.Identity;
         Matrix4 mCalibTrans = Matrix4.Identity;
         Matrix4 mLastTransform = Matrix4.Identity;
-
         bool[] mKeyState = new bool[ 256 ];
         bool[] mKeyStatePrev = new bool[ 256 ];
         private bool mLoaded = false;
-        public ExperimentalForm()
+        Dictionary<String, RawDataForm> mRawDataForms = new Dictionary<string, RawDataForm>();
+
+        public LiveDataDisplayForm()
         {
             InitializeComponent();
         }
@@ -69,11 +70,6 @@ namespace Sensor_Aware_PT
 
             GL.ClearColor( Color.CornflowerBlue );
 
-
-            mUpperSkeleton.createMapping( "C", BoneType.ArmUpperL );
-            mUpperSkeleton.createMapping( "A", BoneType.ArmLowerL );
-            mUpperSkeleton.createMapping( "B", BoneType.ArmLowerR );
-            mUpperSkeleton.createMapping( "D", BoneType.ArmUpperR );
             simpleOpenGlControl.Focus();
 
             for( int i = 0; i < 256; i++ )
@@ -91,12 +87,27 @@ namespace Sensor_Aware_PT
             
             mCamRotation.Transpose();
             mCamRotation.Row2 *= -1f;
+
+            setupSkeleton();
+
+           
         }
 
         public void subscribeToSource( IObservable<SensorDataEntry> source )
         {
             source.Subscribe( this );
             source.Subscribe( mUpperSkeleton );
+            
+            /** screw the raw data view for now! 
+            List<Sensor> sensors = Nexus.Instance.getActivatedSensors();
+            foreach( Sensor s in sensors )
+            {
+                RawDataForm rdf = new RawDataForm( s.Id );
+                //mRawDataForms.Add( s.Id, rdf );
+                source.Subscribe( rdf );
+                rdf.Show();
+            }
+             * */
         }
 
         void formUpdateTimer_Tick( object sender, EventArgs e )
@@ -186,12 +197,12 @@ namespace Sensor_Aware_PT
                     GL.LoadMatrix( ref lookat );
 
                     GL.Translate( 0, 0, 0 );
-                    /*
+                    
                     GL.Rotate( mViewRotations.X, 1f, 0, 0 );
                     GL.Rotate( mViewRotations.Y, 0, 1f, 0 );
                     GL.Rotate( mViewRotations.Z, 0, 0, 1f );
-                    */
-                    GL.MultMatrix(ref mCamRotation);
+                    
+                    //GL.MultMatrix(ref mCamRotation);
                     
                     GL.LineWidth( 2f );
                     //GL.Enable( EnableCap.LineStipple );
@@ -242,6 +253,7 @@ namespace Sensor_Aware_PT
 
                     GL.Disable( EnableCap.LineStipple );
                     GL.LineWidth( 1f );
+                    
                     /*
                     GL.PushMatrix();
                     //////////////////////////////
@@ -310,16 +322,16 @@ namespace Sensor_Aware_PT
 
         #endregion
         
-        private void button1_Click( object sender, EventArgs e )
+        private void btnCalibrate_Click( object sender, EventArgs e )
         {
             //foreach( Bone b in mBones )
               //  b.setYawOffset();
             mUpperSkeleton.calibrateZero();
             mCalibTrans = mLastTransform;
-            mCalibTrans.Invert();
+            mCalibTrans.Transpose();
         }
 
-        private void button2_Click( object sender, EventArgs e )
+        private void btnSynchronize_Click( object sender, EventArgs e )
         {
             Nexus.Instance.resynchronize();
             mCalibTrans = Matrix4.Identity;
@@ -328,6 +340,7 @@ namespace Sensor_Aware_PT
 
         private void ExperimentalForm_Load( object sender, EventArgs e )
         {
+
 
         }
 
@@ -346,7 +359,7 @@ namespace Sensor_Aware_PT
         void IObserver<SensorDataEntry>.OnNext( SensorDataEntry value )
         {
             mLastTransform = value.orientation;
-            mLastTransform.Transpose();
+            //mLastTransform.Transpose();
             mTransform = mCalibTrans * mLastTransform;
             /*
             switch(value.id)
@@ -370,7 +383,8 @@ namespace Sensor_Aware_PT
             {
                 mLastSensorData[ value.id ] = value;
             }
-            
+
+           
             
         }
 
@@ -382,11 +396,34 @@ namespace Sensor_Aware_PT
             {
                 foreach( SensorDataEntry s in mLastSensorData.Values )
                 {
-                    Logger.Info( "{0}", s.ToString() );
+                    //Logger.Info( "{0}", s.ToString() );
                 }
             }
 
-            Logger.Info("{0},{1},{2}", mViewRotations.X, mViewRotations.Y, mViewRotations.Z);
+            
+            //Logger.Info("{0},{1},{2}", mViewRotations.X, mViewRotations.Y, mViewRotations.Z);
+            Logger.Info( "Matrix det {0}", mLastTransform.Determinant );
+            Logger.Info( "\n" + mLastTransform.ToString() );
+            Matrix4 a = mLastTransform;
+            a.Invert();
+            Logger.Info( "Inverse" );
+            Logger.Info( "\n" + a.ToString() );
+            a = mLastTransform;
+            a.Transpose();
+            Logger.Info( "Transpose" );
+            Logger.Info( "\n" + a.ToString() );
+            Matrix4 b = mLastTransform;
+            
+            a = a * b;
+            Logger.Info( "Input * Inverse" );
+            Logger.Info( "\n" + a.ToString() );
+            Logger.Info( "Input * Transpose" );
+            b.Transpose();
+            a = mLastTransform * b;
+            Logger.Info( "\n" + a.ToString() );
+
+            
+            Nexus.Instance.fakeData();
         }
 
         private void ExperimentalForm_FormClosing( object sender, FormClosingEventArgs e )
@@ -398,11 +435,6 @@ namespace Sensor_Aware_PT
                 simpleOpenGlControl.Context.Dispose();
                 simpleOpenGlControl.Dispose();
             }
-        }
-
-        private void simpleOpenGlControl_KeyPress( object sender, System.Windows.Forms.KeyPressEventArgs e )
-        {
-
         }
 
         private void simpleOpenGlControl_KeyDown( object sender, KeyEventArgs e )
@@ -425,6 +457,24 @@ namespace Sensor_Aware_PT
         private void simpleOpenGlControl_KeyUp( object sender, KeyEventArgs e )
         {
             mKeyState[ ( int ) e.KeyCode ] = false;
+        }
+
+        private void button4_Click( object sender, EventArgs e )
+        {
+            mUpperSkeleton.spitAngles();
+        }
+
+        private void setupSkeleton()
+        {
+            foreach( KeyValuePair<string, BoneType> kvp in Nexus.Instance.BoneMappings )
+            {
+                mUpperSkeleton.createMapping( kvp.Key, kvp.Value );
+            }
+        }
+
+        private void label1_Click( object sender, EventArgs e )
+        {
+
         }
     }
 }

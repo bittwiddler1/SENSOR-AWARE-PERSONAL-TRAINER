@@ -9,11 +9,11 @@ using System.Windows.Forms;
 
 namespace Sensor_Aware_PT
 {
-    public partial class SensorDataView : Form
+    public partial class DataRecorderForm : Form
     {
         SensorDataRecorder mRecorder;
         bool init = false;
-        public SensorDataView()
+        public DataRecorderForm()
         {
             InitializeComponent();
         }
@@ -82,13 +82,18 @@ namespace Sensor_Aware_PT
             if( result == System.Windows.Forms.DialogResult.OK )
             {
                 SensorDataPlayer sdp = new SensorDataPlayer();
-                ExperimentalForm EF = new ExperimentalForm();
-                EF.subscribeToSource( sdp );
-                EF.Show();
+
+
+
 
                 BackgroundWorker bg = new BackgroundWorker();
-                List<SensorDataEntry> data = sdp.loadFile( openDialog.FileName );
-                BindingList<SensorDataEntry> blist = new BindingList<SensorDataEntry>( data );
+                ReplayData data = sdp.loadFile( openDialog.FileName );
+                ReplayDataDisplayForm Replay = new ReplayDataDisplayForm(data.mCalibrationData, data.mSensorBoneMapping);
+
+                Replay.subscribeToSource( sdp );
+                Replay.Show();
+
+                BindingList<SensorDataEntry> blist = new BindingList<SensorDataEntry>( data.mDataList );
                 dataGridView1.DataSource = blist;
 
                 bg.DoWork += new DoWorkEventHandler( delegate

@@ -56,6 +56,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Forms\RawDataForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\RawDataForm.Designer.cs">
+      <DependentUpon>RawDataForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ReplayDataDisplayForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ReplayDataDisplayForm.designer.cs">
+      <DependentUpon>ReplayDataDisplayForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\LiveDataDisplay.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\LiveDataDisplay.designer.cs">
+      <DependentUpon>LiveDataDisplay.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\BadJooJooException.cs" />
     <Compile Include="Forms\ConfigurationDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -66,13 +85,13 @@
     <Compile Include="Forms\AntiAliasedGLControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Helpers\DataStructures.cs" />
-    <Compile Include="Forms\ExperimentalForm.cs">
+    <Compile Include="Forms\MappingDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\ExperimentalForm.designer.cs">
-      <DependentUpon>ExperimentalForm.cs</DependentUpon>
+    <Compile Include="Forms\MappingDialog.designer.cs">
+      <DependentUpon>MappingDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\DataStructures.cs" />
     <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -99,14 +118,23 @@
     <EmbeddedResource Include="Forms\ConfigurationDialog.resx">
       <DependentUpon>ConfigurationDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\RawDataForm.resx">
+      <DependentUpon>RawDataForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ReplayDataDisplayForm.resx">
+      <DependentUpon>ReplayDataDisplayForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\LiveDataDisplay.resx">
+      <DependentUpon>LiveDataDisplay.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\DataRecorderForm.resx">
       <DependentUpon>DataRecorderForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ExperimentalForm.resx">
-      <DependentUpon>ExperimentalForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\MappingDialog.resx">
+      <DependentUpon>MappingDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

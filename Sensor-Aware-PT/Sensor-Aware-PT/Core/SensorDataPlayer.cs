@@ -29,7 +29,8 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Holds the data to be played
         /// </summary>
-        private List<SensorDataEntry> mDataList;
+        //private List<SensorDataEntry> mData.mDataList;
+        private ReplayData mData;
 
         #region ObserverPattern
 
@@ -102,7 +103,7 @@ namespace Sensor_Aware_PT
             
             while( mCurrentIndex < mMaxIndex )
             {
-                SensorDataEntry data = mDataList[ mCurrentIndex ];
+                SensorDataEntry data = mData.mDataList[ mCurrentIndex ];
                 if( mPreciseCounter.Elapsed.CompareTo( data.timeSpan ) >= 0 )
                 {
                     NotifyObservers( data );
@@ -113,20 +114,20 @@ namespace Sensor_Aware_PT
             mPreciseCounter.Reset();
             mMaxIndex = 0;
             mCurrentIndex = 0;
-            mDataList.Clear();
+            mData.mDataList.Clear();
              
             
         }
 
-        public List<SensorDataEntry> loadFile( string filename )
+        public ReplayData loadFile( string filename )
         {
             Stream inputStream = File.OpenRead( filename );
             BinaryFormatter inputFormatter = new BinaryFormatter();
 
-            mDataList = ( List<SensorDataEntry> ) inputFormatter.Deserialize( inputStream );
-            mMaxIndex = mDataList.Count;
+            mData = ( ReplayData ) inputFormatter.Deserialize( inputStream );
+            mMaxIndex = mData.mDataList.Count;
 
-            return mDataList;
+            return mData;
         }
 
         public void play()
@@ -134,7 +135,7 @@ namespace Sensor_Aware_PT
             mPreciseCounter.Start();
             while( mCurrentIndex < mMaxIndex )
             {
-                SensorDataEntry data = mDataList[ mCurrentIndex ];
+                SensorDataEntry data = mData.mDataList[ mCurrentIndex ];
                 if( mPreciseCounter.Elapsed.CompareTo( data.timeSpan ) >= 0 )
                 {
                     NotifyObservers( data );
