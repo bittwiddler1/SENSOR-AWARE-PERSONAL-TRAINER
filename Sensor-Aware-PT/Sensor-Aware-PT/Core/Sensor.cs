@@ -524,10 +524,13 @@ namespace Sensor_Aware_PT
         public void addDataEntry( SensorDataEntry newData )
         {
 
+            /*
             mDataBuffer[ mBufferIndex++ ] = newData;
 
+            
             if( mBufferIndex == MAX_BUFFER_INDEX )
             {
+             
                 Matrix4 sum = new Matrix4();
                 for( int i = 0; i < MAX_BUFFER_INDEX; i++ )
                 {
@@ -538,10 +541,12 @@ namespace Sensor_Aware_PT
                     
                 }
 
+                
                 sum.Row0 /= (float)MAX_BUFFER_INDEX;
                 sum.Row1 /= ( float ) MAX_BUFFER_INDEX;
                 sum.Row2 /= ( float ) MAX_BUFFER_INDEX;
                 sum.Row3 /= ( float ) MAX_BUFFER_INDEX;
+                 
 
                 newData.orientation = sum;
 
@@ -558,11 +563,11 @@ namespace Sensor_Aware_PT
                 newData.accelerometer = vSum;
                 
                 mBufferIndex = 0;
-
+             */
                 /** Call the event to notify and listeners */
                 DataReceivedEventArgs dataEventArgs = new DataReceivedEventArgs( mID, newData );
                 OnDataReceived( dataEventArgs );
-            }
+            /*}*/
 
 
         }
@@ -733,7 +738,7 @@ namespace Sensor_Aware_PT
         {
             SensorDataEntry newEntry = new SensorDataEntry();
             newEntry.orientation = orientation;
-            newEntry.accelerometer = accel;
+            newEntry.yawpitchroll = accel;
             newEntry.magnetometer = mag;
             newEntry.gyroscope = gyro;
             newEntry.sequenceNumber = mSequenceNum++;

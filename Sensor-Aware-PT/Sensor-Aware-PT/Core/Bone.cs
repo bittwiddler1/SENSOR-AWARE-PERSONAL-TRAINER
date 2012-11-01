@@ -43,6 +43,10 @@ namespace Sensor_Aware_PT
         public Vector3 mCalibYawPitchRoll = new Vector3();
         private BoneType mBoneType;
 
+
+        private SensorDataEntry mCurrentData = new SensorDataEntry();
+        private Object mCurrentDataLock = new Object();
+
         #region Properties
         public static bool DrawLineSegments
         {
@@ -176,7 +180,7 @@ namespace Sensor_Aware_PT
             updateOrientation( mCurrentOrientation, mYawPitchRoll );
         }
 
-        private object mUpdateLock = new object();
+
         private Matrix4 transformOrientation( Matrix4 or )
         {
 
@@ -262,10 +266,11 @@ namespace Sensor_Aware_PT
                 mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform );
             }
 
+
             /** Now that our position is finalized, go ahead and update the positions of all children */
-            foreach( Bone child in mChildren )
+            foreach (Bone child in mChildren)
             {
-                child.updateOrientation();
+                child.TriggerOrientationUpdate();
             }
         }
 
@@ -557,6 +562,30 @@ namespace Sensor_Aware_PT
         ~Bone()
         {
             
+        }
+
+        internal void DataUpdate(SensorDataEntry value)
+        {
+            lock (mCurrentDataLock)
+            {
+                this.mCurrentData = value;
+            }
+        }
+
+        internal void TriggerOrientationUpdate()
+        {
+            lock (mCurrentDataLock)
+            {
+                if (new SensorDataEntry() != this.mCurrentData)
+                {
+                    this.updateOrientation(mCurrentData.orientation, mCurrentData.yawpitchroll);
+                }
+                else
+                {
+                    this.updateOrientation();
+                }
+            }
+
         }
     }
 

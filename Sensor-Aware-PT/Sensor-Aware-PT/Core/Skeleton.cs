@@ -94,14 +94,32 @@ namespace Sensor_Aware_PT
 
         private static bool mInitialized = false;
 
+        private System.Timers.Timer mTheUpdateTimer = new System.Timers.Timer();
+
         public Skeleton()
         {
             if( !mInitialized )
             {
                 initializeBoneLengths();
                 initializeOrientations();
+; // this is bobby. he has a right to exist. 
+
                 mInitialized = true;
             }
+            initializeTimer();
+        }
+
+        private void initializeTimer()
+        {
+            mTheUpdateTimer.Interval = 1000 / 50; // 50Hz yo
+            mTheUpdateTimer.Elapsed += mTheUpdateTimer_Elapsed;
+            mTheUpdateTimer.AutoReset = true;
+            mTheUpdateTimer.Start();
+        }
+
+        void mTheUpdateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            this.mParentBone.TriggerOrientationUpdate();
         }
 
         /// <summary>
@@ -368,7 +386,8 @@ namespace Sensor_Aware_PT
             Bone mappedBone;
             if( mSensorBoneMapping.TryGetValue( value.id, out mappedBone ) )
             {
-                mappedBone.updateOrientation( value.orientation, value.accelerometer );
+                mappedBone.DataUpdate(value);
+                
             }
             else
             {

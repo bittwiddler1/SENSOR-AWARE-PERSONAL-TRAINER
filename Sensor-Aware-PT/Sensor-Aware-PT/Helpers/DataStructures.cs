@@ -10,8 +10,8 @@ namespace Sensor_Aware_PT
     [Serializable()]
     public class SensorDataEntry
     {
-        public Matrix4 orientation = new Matrix4();
-        public Vector3 accelerometer = new Vector3();
+        public Matrix4 orientation = Matrix4.Identity;
+        public Vector3 yawpitchroll = new Vector3();
         public Vector3 gyroscope = new Vector3();
         public Vector3 magnetometer = new Vector3();
         public DateTime timeStamp = new DateTime();
@@ -25,9 +25,9 @@ namespace Sensor_Aware_PT
          orientation.ToString(),
          "Blank-FIXME",
          "Blank-FIXME",
-         accelerometer.X,
-         accelerometer.Y,
-         accelerometer.Z,
+         yawpitchroll.X,
+         yawpitchroll.Y,
+         yawpitchroll.Z,
          magnetometer.X,
          magnetometer.Y,
          magnetometer.Z,

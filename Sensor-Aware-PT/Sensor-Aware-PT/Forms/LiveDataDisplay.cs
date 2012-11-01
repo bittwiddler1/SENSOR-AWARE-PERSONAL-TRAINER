@@ -95,7 +95,8 @@ namespace Sensor_Aware_PT
 
         public void subscribeToSource( IObservable<SensorDataEntry> source )
         {
-            source.Subscribe( this );
+
+            // source.Subscribe( this ); // the view shouldnt have anything to do with the data
             source.Subscribe( mUpperSkeleton );
             
             /** screw the raw data view for now! 
@@ -379,13 +380,10 @@ namespace Sensor_Aware_PT
                     break;
             }
              * */
-            lock( mLastSensorData )
+            lock (mLastSensorData)
             {
-                mLastSensorData[ value.id ] = value;
+                mLastSensorData[value.id] = value;
             }
-
-           
-            
         }
 
         #endregion

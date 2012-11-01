@@ -54,7 +54,7 @@ namespace Sensor_Aware_PT
             {
                 this.Invoke( (MethodInvoker)delegate
                 {
-                    updateValues( value.accelerometer.X, value.accelerometer.Y, value.accelerometer.Z );
+                    updateValues( value.yawpitchroll.X, value.yawpitchroll.Y, value.yawpitchroll.Z );
                 } );
             }
         }

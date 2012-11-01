@@ -154,27 +154,13 @@ namespace Sensor_Aware_PT
         /** THIS ENEDS TO BE FIXED due to disposing errors and shizzles */
         public void NotifyObservers( SensorDataEntry dataFrame )
         {
-
                 for(int i = 0; i < mObservers.Count; i++)
                 {
+                    // huge data bottleneck
                     mObservers[i].OnNext( dataFrame );
                 }
-            
         }
 
-        private class SensorDataBuffer
-        {
-            public SensorDataEntry[] mDataBuffer;
-            public string mId;
-            public int mBufferIndex;
-
-            public SensorDataBuffer()
-            {
-                mDataBuffer = new SensorDataEntry[ MAX_BUFFER_SIZE ];
-                //mId = id;
-                mBufferIndex = 0;
-            }
-        }
         
         const int MAX_BUFFER_SIZE = 10;
         
