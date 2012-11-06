@@ -19,7 +19,7 @@ namespace Sensor_Aware_PT
     public partial class LiveDataDisplayForm : Form, IObserver<SensorDataEntry>
     {
         
-        Skeleton mUpperSkeleton = new Skeleton( SkeletonType.UpperBody );
+        Skeleton mSkeleton = new Skeleton( SkeletonType.UpperBody );
         Scene3D mScene;
         bool[] mKeyState = new bool[ 256 ];
         bool[] mKeyStatePrev = new bool[ 256 ];
@@ -55,7 +55,8 @@ namespace Sensor_Aware_PT
                 mKeyStatePrev[ i ] = false;
             }
 
-            setupSkeleton();
+            setupSkeletonBoneMappings();
+            mScene.addSceneObject( mSkeleton );
 
            
         }
@@ -72,7 +73,7 @@ namespace Sensor_Aware_PT
         {
 
             // source.Subscribe( this ); // the view shouldnt have anything to do with the data
-            source.Subscribe( mUpperSkeleton );
+            source.Subscribe( mSkeleton );
         }
 
         void formUpdateTimer_Tick( object sender, EventArgs e )
@@ -146,7 +147,7 @@ namespace Sensor_Aware_PT
                 lock( this )
                 {
                     simpleOpenGlControl.MakeCurrent();
-                    
+                    mScene.draw();
                     simpleOpenGlControl.SwapBuffers();
                 }
             }
@@ -156,7 +157,7 @@ namespace Sensor_Aware_PT
         
         private void btnCalibrate_Click( object sender, EventArgs e )
         {
-            mUpperSkeleton.calibrateZero();
+            mSkeleton.calibrateZero();
         }
 
         private void btnSynchronize_Click( object sender, EventArgs e )
@@ -212,10 +213,10 @@ namespace Sensor_Aware_PT
             switch( e.KeyCode)
             {
                 case Keys.E:
-                    mUpperSkeleton.toggleBox();
+                    mSkeleton.toggleBox();
                     break;
                 case Keys.R:
-                    mUpperSkeleton.toggleWireframe();
+                    mSkeleton.toggleWireframe();
                     break;
                 default:
                     break;
@@ -229,15 +230,16 @@ namespace Sensor_Aware_PT
 
         private void button4_Click( object sender, EventArgs e )
         {
-            mUpperSkeleton.spitAngles();
+            mSkeleton.spitAngles();
         }
 
-        private void setupSkeleton()
+        private void setupSkeletonBoneMappings()
         {
             foreach( KeyValuePair<string, BoneType> kvp in Nexus.Instance.BoneMappings )
             {
-                mUpperSkeleton.createMapping( kvp.Key, kvp.Value );
+                mSkeleton.createMapping( kvp.Key, kvp.Value );
             }
+
         }
 
         private void label1_Click( object sender, EventArgs e )

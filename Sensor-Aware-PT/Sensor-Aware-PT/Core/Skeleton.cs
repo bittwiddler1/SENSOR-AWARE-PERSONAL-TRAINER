@@ -200,16 +200,14 @@ namespace Sensor_Aware_PT
         /// <param name="skelType">The skeletal system type to create</param>
         public Skeleton(SkeletonType skelType) : this()
         {
+            createSkeleton();
             switch (skelType)
             {
                 case SkeletonType.UpperBody:
-                    createUpperBody();
                     break;
                 case SkeletonType.LowerBody:
-                    //createLowerBody();
                     break;
                 case SkeletonType.MidBody:
-                    //createMidBody();
                     break;
                 case SkeletonType.Dog:
                     break;
@@ -226,7 +224,7 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Creates the upper body skeletal system using the back as a fixed reference point
         /// </summary>
-        private void createUpperBody()
+        private void createSkeleton()
         {
             Bone BackU, BackL, ArmUL, ArmUR, ArmLL, ArmLR, ShoulderL, ShoulderR, HipL, HipR, Head,
                 LegLL, LegLR, LegUL, LegUR, FakeHip;
@@ -340,8 +338,24 @@ namespace Sensor_Aware_PT
             mParentBone = FakeHip;
             mParentBone.DrawingEnabled = false;
             mParentBone.updateOrientation();
-
+            
+            debugWritePositions();
         }
+
+
+        private void debugWritePositions()
+        {
+            foreach( KeyValuePair<BoneType, Bone> kvp in mBoneTypeMapping )
+            {
+                Logger.Info( "Bone {0} loc: {1}, {2}, {3}",
+                    kvp.Key.ToString(),
+                    kvp.Value.StartPosition.X,
+                    kvp.Value.StartPosition.Y,
+                    kvp.Value.StartPosition.Z
+                    );
+            }
+        }
+
         /// <summary>
         /// Draws the entire skeletal structure
         /// </summary>
