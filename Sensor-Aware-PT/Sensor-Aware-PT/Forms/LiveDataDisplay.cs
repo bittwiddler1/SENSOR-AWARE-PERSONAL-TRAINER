@@ -18,12 +18,13 @@ namespace Sensor_Aware_PT
 {
     public partial class LiveDataDisplayForm : Form, IObserver<SensorDataEntry>
     {
-        Dictionary<String, SensorDataEntry> mLastSensorData = new Dictionary<string, SensorDataEntry>();
+        
         Skeleton mUpperSkeleton = new Skeleton( SkeletonType.UpperBody );
+        Scene3D mScene;
         bool[] mKeyState = new bool[ 256 ];
         bool[] mKeyStatePrev = new bool[ 256 ];
         private bool mLoaded = false;
-        Dictionary<String, RawDataForm> mRawDataForms = new Dictionary<string, RawDataForm>();
+        
 
         public LiveDataDisplayForm()
         {
@@ -39,29 +40,12 @@ namespace Sensor_Aware_PT
         private void simpleOpenGlControl_Load( object sender, EventArgs ex )
         {
             mLoaded = true;
-            
-            //simpleOpenGlControl.SwapBuffers();
             simpleOpenGlControl_SizeChanged( sender, ex );
-            GL.ShadeModel( ShadingModel.Smooth );
-            GL.Enable( EnableCap.LineSmooth);
-            
-            					    // Enable Texture Mapping            
-            //GL.Enable( GL._NORMALIZE );
-            GL.Enable( EnableCap.ColorMaterial );
-            GL.Enable( EnableCap.DepthTest);						    // Enables Depth Testing
-            GL.Enable( EnableCap.Blend );
-            GL.Enable( EnableCap.Lighting );
-            GL.Enable( EnableCap.Light0 );
-            
-            GL.Hint( HintTarget.PolygonSmoothHint, HintMode.Nicest);     // Really Nice Point Smoothing
-            
-            //this.Text = "Sensor " + mSensor.Id;
-            formUpdateTimer = new Timer();
-            formUpdateTimer.Interval = 20;
-            formUpdateTimer.Tick += new EventHandler( formUpdateTimer_Tick );
-            formUpdateTimer.Start();
 
-            GL.ClearColor( Color.CornflowerBlue );
+            /** Setup the 3d scene object */
+            mScene = new Scene3D(new Vector3(40, 35, 40), new Vector3(0, 0, 0), new Vector3( 0, 1, 0 ));
+
+            initializeRedrawTimer();
 
             simpleOpenGlControl.Focus();
 
@@ -71,19 +55,17 @@ namespace Sensor_Aware_PT
                 mKeyStatePrev[ i ] = false;
             }
 
-/*
-            Matrix4 rx, ry, rz;
-            rx = Matrix4.CreateRotationX(-MathHelper.PiOver2);
-            ry = Matrix4.Identity;
-            rz = Matrix4.CreateRotationZ(MathHelper.PiOver2);
-            mCamRotation = rx * ry * rz;
-            
-            mCamRotation.Transpose();
-            mCamRotation.Row2 *= -1f;
-            */
             setupSkeleton();
 
            
+        }
+
+        private void initializeRedrawTimer()
+        {
+            formUpdateTimer = new Timer();
+            formUpdateTimer.Interval = 20;
+            formUpdateTimer.Tick += new EventHandler( formUpdateTimer_Tick );
+            formUpdateTimer.Start();
         }
 
         public void subscribeToSource( IObservable<SensorDataEntry> source )
@@ -104,27 +86,25 @@ namespace Sensor_Aware_PT
 
         void handleInput()
         {
-
-
             if(mKeyState[ (int)Keys.Q]){
-            mViewRotations.X += 1f;
+                mScene.incrementCameraRotation( 1, 0, 0 );
             }
         if(mKeyState[ (int)Keys.W]){
-            mViewRotations.X -= 1f;
+            mScene.incrementCameraRotation( -1, 0, 0 );
             }
         if(mKeyState[ (int)Keys.A]){
-            mViewRotations.Y += 1f;
+            mScene.incrementCameraRotation( 0, 1, 0 );
             }
         if(mKeyState[ (int)Keys.S]){
-            mViewRotations.Y -= 1f;
+            mScene.incrementCameraRotation( 0, -1, 0 );
             }
         if(mKeyState[ (int)Keys.Z]){
-            mViewRotations.Z += 1f;
+            mScene.incrementCameraRotation( 0, 0, 1 );
             }
         if(mKeyState[ (int)Keys.X]){
-            mViewRotations.Z -= 1f;
+            mScene.incrementCameraRotation( 0, 0, -1 );
                     }
-
+            
         }
 
         /// <summary>
@@ -182,8 +162,6 @@ namespace Sensor_Aware_PT
         private void btnSynchronize_Click( object sender, EventArgs e )
         {
             Nexus.Instance.resynchronize();
-            mCalibTrans = Matrix4.Identity;
-            
         }
 
         private void ExperimentalForm_Load( object sender, EventArgs e )

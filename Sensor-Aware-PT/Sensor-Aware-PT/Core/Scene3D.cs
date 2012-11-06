@@ -6,7 +6,7 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System.Drawing;
 
-namespace Sensor_Aware_PT.Core
+namespace Sensor_Aware_PT
 {
     /// <summary>
     /// Handles all the 3d shit
@@ -35,6 +35,18 @@ namespace Sensor_Aware_PT.Core
             get;
             set;
         }
+
+        public Vector3 CameraRotation
+        {
+            get
+            {
+                return mCameraRotation;
+            }
+            set
+            {
+                mCameraRotation = value;
+            }
+        }
         #endregion
 
         public Scene3D( Vector3 camLocation, Vector3 targetLocation, Vector3 upVec )
@@ -49,6 +61,25 @@ namespace Sensor_Aware_PT.Core
 
             DrawWireframe = false;
 
+            setupScene();
+
+        }
+
+        private void setupScene()
+        {
+            GL.ShadeModel( ShadingModel.Smooth );
+            GL.Enable( EnableCap.LineSmooth );
+
+            // Enable Texture Mapping            
+            //GL.Enable( GL._NORMALIZE );
+            GL.Enable( EnableCap.ColorMaterial );
+            GL.Enable( EnableCap.DepthTest );						    // Enables Depth Testing
+            GL.Enable( EnableCap.Blend );
+            GL.Enable( EnableCap.Lighting );
+            GL.Enable( EnableCap.Light0 );
+
+            GL.Hint( HintTarget.PolygonSmoothHint, HintMode.Nicest );     // Really Nice Point Smoothing
+            GL.ClearColor( Color.CornflowerBlue );
         }
 
         /// <summary>
@@ -65,7 +96,9 @@ namespace Sensor_Aware_PT.Core
 
         public void draw()
         {
-            /** First prepare the camera */
+            /** First prepare stuff */
+            preDraw();
+
             foreach( IDrawable drawObj in mObjectList )
             {
                 drawObj.draw();
@@ -89,9 +122,6 @@ namespace Sensor_Aware_PT.Core
 
             if( DrawAxes )
                 drawAxes();
-
-
-            
         }
 
         /// <summary>
@@ -152,6 +182,13 @@ namespace Sensor_Aware_PT.Core
 
             GL.Disable( EnableCap.LineStipple );
             GL.LineWidth( 1f );
+        }
+
+        public void incrementCameraRotation( float x, float y, float z )
+        {
+            mCameraRotation.X += x;
+            mCameraRotation.Y += y;
+            mCameraRotation.Z += z;
         }
     }
 }
