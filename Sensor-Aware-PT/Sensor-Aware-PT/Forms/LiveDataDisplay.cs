@@ -78,7 +78,7 @@ namespace Sensor_Aware_PT
                 mKeyStatePrev[ i ] = false;
             }
 
-
+/*
             Matrix4 rx, ry, rz;
             rx = Matrix4.CreateRotationX(-MathHelper.PiOver2);
             ry = Matrix4.Identity;
@@ -87,7 +87,7 @@ namespace Sensor_Aware_PT
             
             mCamRotation.Transpose();
             mCamRotation.Row2 *= -1f;
-
+            */
             setupSkeleton();
 
            
@@ -98,17 +98,6 @@ namespace Sensor_Aware_PT
 
             // source.Subscribe( this ); // the view shouldnt have anything to do with the data
             source.Subscribe( mUpperSkeleton );
-            
-            /** screw the raw data view for now! 
-            List<Sensor> sensors = Nexus.Instance.getActivatedSensors();
-            foreach( Sensor s in sensors )
-            {
-                RawDataForm rdf = new RawDataForm( s.Id );
-                //mRawDataForms.Add( s.Id, rdf );
-                source.Subscribe( rdf );
-                rdf.Show();
-            }
-             * */
         }
 
         void formUpdateTimer_Tick( object sender, EventArgs e )
@@ -325,11 +314,7 @@ namespace Sensor_Aware_PT
         
         private void btnCalibrate_Click( object sender, EventArgs e )
         {
-            //foreach( Bone b in mBones )
-              //  b.setYawOffset();
             mUpperSkeleton.calibrateZero();
-            mCalibTrans = mLastTransform;
-            mCalibTrans.Transpose();
         }
 
         private void btnSynchronize_Click( object sender, EventArgs e )
@@ -390,38 +375,7 @@ namespace Sensor_Aware_PT
 
         private void button3_Click( object sender, EventArgs e )
         {
-            lock( mLastSensorData )
-            {
-                foreach( SensorDataEntry s in mLastSensorData.Values )
-                {
-                    //Logger.Info( "{0}", s.ToString() );
-                }
-            }
 
-            
-            //Logger.Info("{0},{1},{2}", mViewRotations.X, mViewRotations.Y, mViewRotations.Z);
-            Logger.Info( "Matrix det {0}", mLastTransform.Determinant );
-            Logger.Info( "\n" + mLastTransform.ToString() );
-            Matrix4 a = mLastTransform;
-            a.Invert();
-            Logger.Info( "Inverse" );
-            Logger.Info( "\n" + a.ToString() );
-            a = mLastTransform;
-            a.Transpose();
-            Logger.Info( "Transpose" );
-            Logger.Info( "\n" + a.ToString() );
-            Matrix4 b = mLastTransform;
-            
-            a = a * b;
-            Logger.Info( "Input * Inverse" );
-            Logger.Info( "\n" + a.ToString() );
-            Logger.Info( "Input * Transpose" );
-            b.Transpose();
-            a = mLastTransform * b;
-            Logger.Info( "\n" + a.ToString() );
-
-            
-            Nexus.Instance.fakeData();
         }
 
         private void ExperimentalForm_FormClosing( object sender, FormClosingEventArgs e )

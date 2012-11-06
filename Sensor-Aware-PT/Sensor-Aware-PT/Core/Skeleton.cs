@@ -43,7 +43,7 @@ namespace Sensor_Aware_PT
     /// <summary>
     /// Models a simple skeleton
     /// </summary>
-    public class Skeleton : IObserver<SensorDataEntry>
+    public class Skeleton : IObserver<SensorDataEntry>, IDrawable
     {
         /// <summary>
         /// Holds all the <c>Bone</c>s in this Skeleton
@@ -346,7 +346,6 @@ namespace Sensor_Aware_PT
         {
             /** Each child bone will automatically be drawn by it's parent so we only need to call draw on the parent bone of the structure */
             mParentBone.drawBone();
-            
         }
 
         /// <summary>

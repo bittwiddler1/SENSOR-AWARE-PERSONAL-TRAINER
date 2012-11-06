@@ -126,4 +126,9 @@ namespace Sensor_Aware_PT
         public Dictionary<BoneType, Matrix4> mCalibrationData;
         public Dictionary<string, BoneType> mSensorBoneMapping;
     }
+
+    public interface IDrawable
+    {
+        public void draw();
+    }
 }
