@@ -213,7 +213,10 @@ namespace Sensor_Aware_PT
         public void updateOrientation( Matrix4 newOrientation, Vector3 ypr )
         {
             mCurrentOrientation = newOrientation;
-            
+
+            DumpAngleWithParent();
+
+
             /** Save the new orientation as the current, then calculate final transform using our calibrated and new */
             Matrix4 transformedOrientation = transformOrientation( newOrientation );
             /** Calculate yaw pitch roll shit stuff */
@@ -238,7 +241,6 @@ namespace Sensor_Aware_PT
                     d = Matrix4.CreateRotationZ( ( mParentBone.mCalibYawPitchRoll.X ) - mParentBone.mYawPitchRoll.X );
                     mFinalTransform = d * transformedOrientation * mCalibratedOrientation;
                 }
-                
             }
             else
             {
@@ -272,6 +274,13 @@ namespace Sensor_Aware_PT
             {
                 child.TriggerOrientationUpdate();
             }
+        }
+
+        private void DumpAngleWithParent()
+        {
+            Vector3 parent_ypr = this.mParentBone.mYawPitchRoll;
+            Vector3 my_ypr = this.mYawPitchRoll;
+            Vector3 difference = parent_ypr - my_ypr;
         }
 
         /// <summary>
