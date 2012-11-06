@@ -139,6 +139,21 @@ namespace Sensor_Aware_PT
             }
         }
 
+        public Vector3 StartPosition
+        {
+            get
+            {
+                return mStartPoint;
+            }
+        }
+
+        public Vector3 EndPosition
+        {
+            get
+            {
+                return mEndPoint;
+            }
+        }
         #endregion
 
         public Bone( float length, BoneType bonetype )

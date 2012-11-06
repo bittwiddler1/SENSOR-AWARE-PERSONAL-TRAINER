@@ -18,19 +18,13 @@ namespace Sensor_Aware_PT
 {
     public partial class LiveDataDisplayForm : Form, IObserver<SensorDataEntry>
     {
-        private Bone[] mBones = new Bone[ 4 ];
-        Dictionary<String, SensorDataEntry> mLastSensorData = new Dictionary<string, SensorDataEntry>();
-        Skeleton mUpperSkeleton = new Skeleton( SkeletonType.UpperBody );
-        Vector3 mViewRotations = new Vector3(-90,0,90);
-        //Vector3 mViewTranslations = new Vector3();
-        Matrix4 mCamRotation = new Matrix4();
-        Matrix4 mTransform = Matrix4.Identity;
-        Matrix4 mCalibTrans = Matrix4.Identity;
-        Matrix4 mLastTransform = Matrix4.Identity;
+        
+        Skeleton mSkeleton = new Skeleton( SkeletonType.UpperBody );
+        Scene3D mScene;
         bool[] mKeyState = new bool[ 256 ];
         bool[] mKeyStatePrev = new bool[ 256 ];
         private bool mLoaded = false;
-        Dictionary<String, RawDataForm> mRawDataForms = new Dictionary<string, RawDataForm>();
+        
 
         public LiveDataDisplayForm()
         {
@@ -46,29 +40,12 @@ namespace Sensor_Aware_PT
         private void simpleOpenGlControl_Load( object sender, EventArgs ex )
         {
             mLoaded = true;
-            
-            //simpleOpenGlControl.SwapBuffers();
             simpleOpenGlControl_SizeChanged( sender, ex );
-            GL.ShadeModel( ShadingModel.Smooth );
-            GL.Enable( EnableCap.LineSmooth);
-            
-            					    // Enable Texture Mapping            
-            //GL.Enable( GL._NORMALIZE );
-            GL.Enable( EnableCap.ColorMaterial );
-            GL.Enable( EnableCap.DepthTest);						    // Enables Depth Testing
-            GL.Enable( EnableCap.Blend );
-            GL.Enable( EnableCap.Lighting );
-            GL.Enable( EnableCap.Light0 );
-            
-            GL.Hint( HintTarget.PolygonSmoothHint, HintMode.Nicest);     // Really Nice Point Smoothing
-            
-            //this.Text = "Sensor " + mSensor.Id;
-            formUpdateTimer = new Timer();
-            formUpdateTimer.Interval = 20;
-            formUpdateTimer.Tick += new EventHandler( formUpdateTimer_Tick );
-            formUpdateTimer.Start();
 
-            GL.ClearColor( Color.CornflowerBlue );
+            /** Setup the 3d scene object */
+            mScene = new Scene3D(new Vector3(40, 35, 40), new Vector3(0, 0, 0), new Vector3( 0, 1, 0 ));
+
+            initializeRedrawTimer();
 
             simpleOpenGlControl.Focus();
 
@@ -78,26 +55,25 @@ namespace Sensor_Aware_PT
                 mKeyStatePrev[ i ] = false;
             }
 
-/*
-            Matrix4 rx, ry, rz;
-            rx = Matrix4.CreateRotationX(-MathHelper.PiOver2);
-            ry = Matrix4.Identity;
-            rz = Matrix4.CreateRotationZ(MathHelper.PiOver2);
-            mCamRotation = rx * ry * rz;
-            
-            mCamRotation.Transpose();
-            mCamRotation.Row2 *= -1f;
-            */
-            setupSkeleton();
+            setupSkeletonBoneMappings();
+            mScene.addSceneObject( mSkeleton );
 
            
+        }
+
+        private void initializeRedrawTimer()
+        {
+            formUpdateTimer = new Timer();
+            formUpdateTimer.Interval = 20;
+            formUpdateTimer.Tick += new EventHandler( formUpdateTimer_Tick );
+            formUpdateTimer.Start();
         }
 
         public void subscribeToSource( IObservable<SensorDataEntry> source )
         {
 
             // source.Subscribe( this ); // the view shouldnt have anything to do with the data
-            source.Subscribe( mUpperSkeleton );
+            source.Subscribe( mSkeleton );
         }
 
         void formUpdateTimer_Tick( object sender, EventArgs e )
@@ -111,27 +87,25 @@ namespace Sensor_Aware_PT
 
         void handleInput()
         {
-
-
             if(mKeyState[ (int)Keys.Q]){
-            mViewRotations.X += 1f;
+                mScene.incrementCameraRotation( 1, 0, 0 );
             }
         if(mKeyState[ (int)Keys.W]){
-            mViewRotations.X -= 1f;
+            mScene.incrementCameraRotation( -1, 0, 0 );
             }
         if(mKeyState[ (int)Keys.A]){
-            mViewRotations.Y += 1f;
+            mScene.incrementCameraRotation( 0, 1, 0 );
             }
         if(mKeyState[ (int)Keys.S]){
-            mViewRotations.Y -= 1f;
+            mScene.incrementCameraRotation( 0, -1, 0 );
             }
         if(mKeyState[ (int)Keys.Z]){
-            mViewRotations.Z += 1f;
+            mScene.incrementCameraRotation( 0, 0, 1 );
             }
         if(mKeyState[ (int)Keys.X]){
-            mViewRotations.Z -= 1f;
+            mScene.incrementCameraRotation( 0, 0, -1 );
                     }
-
+            
         }
 
         /// <summary>
@@ -173,139 +147,8 @@ namespace Sensor_Aware_PT
                 lock( this )
                 {
                     simpleOpenGlControl.MakeCurrent();
-                       
-                    GL.Clear( ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit );    // Clear screen and DepthBuffer
-
-                    GL.PolygonMode( MaterialFace.Front, PolygonMode.Fill );
-
-                    // Set camera view and distance
-                    Matrix4 lookat = Matrix4.LookAt( 40, 35, 40, 0, 0, 0, 0, 1, 0 );
-
-                    GL.MatrixMode( MatrixMode.Modelview );
-                    GL.LoadIdentity();
-                    //Tao.OpenGL.u.gluLookAt( 0, 0, 15, 0, 0, 0, 0, 1, 0 );
-                    GL.LoadMatrix( ref lookat );
-
-                    GL.Translate( 0, 0, 0 );
-                    
-                    GL.Rotate( mViewRotations.X, 1f, 0, 0 );
-                    GL.Rotate( mViewRotations.Y, 0, 1f, 0 );
-                    GL.Rotate( mViewRotations.Z, 0, 0, 1f );
-                    
-                    //GL.MultMatrix(ref mCamRotation);
-                    
-                    GL.LineWidth( 2f );
-                    //GL.Enable( EnableCap.LineStipple );
-                    GL.LineStipple(1, Convert.ToInt16("1000110001100011", 2));
-                    
-                    //x+
-                    GL.Begin( BeginMode.Lines );
-                    GL.Color3( Color.Red );
-                    GL.Vertex3( 0, 0, 0 );
-                    GL.Vertex3( 100, 0, 0 );
-                    GL.End();
-
-                    GL.Enable(EnableCap.LineStipple);
-                    //x-
-                    GL.Begin(BeginMode.Lines);
-                    GL.Color3(Color.Red);
-                    GL.Vertex3(0, 0, 0);
-                    GL.Vertex3(-100, 0, 0);
-                    GL.End();
-                    GL.Disable(EnableCap.LineStipple);
-
-                    
-                    GL.Begin( BeginMode.Lines );
-                    GL.Color3( Color.Green );
-                    GL.Vertex3( 0, 0, 0 );
-                    GL.Vertex3( 0, 100, 0 );
-                    GL.End();
-
-                    GL.Enable(EnableCap.LineStipple);
-                    GL.Begin(BeginMode.Lines);
-                    GL.Color3(Color.Green);
-                    GL.Vertex3(0, 0, 0);
-                    GL.Vertex3(0, -100, 0);
-                    GL.End();
-
-                    GL.Disable(EnableCap.LineStipple);
-                    GL.Begin( BeginMode.Lines );
-                    GL.Color3( Color.Blue );
-                    GL.Vertex3( 0, 0, 0 );
-                    GL.Vertex3( 0, 0, 100 );
-                    GL.End();
-                    GL.Enable(EnableCap.LineStipple);
-                    GL.Begin(BeginMode.Lines);
-                    GL.Color3(Color.Blue);
-                    GL.Vertex3(0, 0, 0);
-                    GL.Vertex3(0, 0, -100);
-                    GL.End();
-
-                    GL.Disable( EnableCap.LineStipple );
-                    GL.LineWidth( 1f );
-                    
-                    /*
-                    GL.PushMatrix();
-                    //////////////////////////////
-                    //mTransform.Transpose();
-                    GL.MultMatrix(ref mTransform);
-                    //GL.MultTransposeMatrix(ref mTransform);
-                    GL.LineWidth(4f);
-                    //GL.Enable( EnableCap.LineStipple );
-                    GL.LineStipple(1, Convert.ToInt16("1000110001100011", 2));
-
-                    //x+
-                    GL.Begin(BeginMode.Lines);
-                    GL.Color3(Color.Red);
-                    GL.Vertex3(0, 0, 0);
-                    GL.Vertex3(100, 0, 0);
-                    GL.End();
-
-                    GL.Enable(EnableCap.LineStipple);
-                    //x-
-                    GL.Begin(BeginMode.Lines);
-                    GL.Color3(Color.Red);
-                    GL.Vertex3(0, 0, 0);
-                    GL.Vertex3(-100, 0, 0);
-                    GL.End();
-                    GL.Disable(EnableCap.LineStipple);
-
-
-                    GL.Begin(BeginMode.Lines);
-                    GL.Color3(Color.Green);
-                    GL.Vertex3(0, 0, 0);
-                    GL.Vertex3(0, 100, 0);
-                    GL.End();
-
-                    GL.Enable(EnableCap.LineStipple);
-                    GL.Begin(BeginMode.Lines);
-                    GL.Color3(Color.Green);
-                    GL.Vertex3(0, 0, 0);
-                    GL.Vertex3(0, -100, 0);
-                    GL.End();
-
-                    GL.Disable(EnableCap.LineStipple);
-                    GL.Begin(BeginMode.Lines);
-                    GL.Color3(Color.Blue);
-                    GL.Vertex3(0, 0, 0);
-                    GL.Vertex3(0, 0, 100);
-                    GL.End();
-                    GL.Enable(EnableCap.LineStipple);
-                    GL.Begin(BeginMode.Lines);
-                    GL.Color3(Color.Blue);
-                    GL.Vertex3(0, 0, 0);
-                    GL.Vertex3(0, 0, -100);
-                    GL.End();
-
-                    GL.Disable(EnableCap.LineStipple);
-                    GL.PopMatrix();
-                    */
-                    //GL.PushMatrix();
-                    //mBones[ 0 ].drawBone();
-                    mUpperSkeleton.draw();
+                    mScene.draw();
                     simpleOpenGlControl.SwapBuffers();
-                    //GL.PopMatrix();
-                    //GL.Flush();
                 }
             }
         }
@@ -314,14 +157,12 @@ namespace Sensor_Aware_PT
         
         private void btnCalibrate_Click( object sender, EventArgs e )
         {
-            mUpperSkeleton.calibrateZero();
+            mSkeleton.calibrateZero();
         }
 
         private void btnSynchronize_Click( object sender, EventArgs e )
         {
             Nexus.Instance.resynchronize();
-            mCalibTrans = Matrix4.Identity;
-            
         }
 
         private void ExperimentalForm_Load( object sender, EventArgs e )
@@ -344,31 +185,7 @@ namespace Sensor_Aware_PT
 
         void IObserver<SensorDataEntry>.OnNext( SensorDataEntry value )
         {
-            mLastTransform = value.orientation;
-            //mLastTransform.Transpose();
-            mTransform = mCalibTrans * mLastTransform;
-            /*
-            switch(value.id)
-            {
 
-                case "A":
-                    mBones[ 0 ].updateOrientation( value.orientation );
-                    break;
-                case "B":
-                    mBones[ 1 ].updateOrientation( value.orientation );
-                    break;
-                case "C":
-                    mBones[ 2 ].updateOrientation( value.orientation );
-                    break;
-                case "D":
-                    mBones[ 3 ].updateOrientation( value.orientation );
-                    break;
-            }
-             * */
-            lock (mLastSensorData)
-            {
-                mLastSensorData[value.id] = value;
-            }
         }
 
         #endregion
@@ -396,10 +213,10 @@ namespace Sensor_Aware_PT
             switch( e.KeyCode)
             {
                 case Keys.E:
-                    mUpperSkeleton.toggleBox();
+                    mSkeleton.toggleBox();
                     break;
                 case Keys.R:
-                    mUpperSkeleton.toggleWireframe();
+                    mSkeleton.toggleWireframe();
                     break;
                 default:
                     break;
@@ -413,15 +230,16 @@ namespace Sensor_Aware_PT
 
         private void button4_Click( object sender, EventArgs e )
         {
-            mUpperSkeleton.spitAngles();
+            mSkeleton.spitAngles();
         }
 
-        private void setupSkeleton()
+        private void setupSkeletonBoneMappings()
         {
             foreach( KeyValuePair<string, BoneType> kvp in Nexus.Instance.BoneMappings )
             {
-                mUpperSkeleton.createMapping( kvp.Key, kvp.Value );
+                mSkeleton.createMapping( kvp.Key, kvp.Value );
             }
+
         }
 
         private void label1_Click( object sender, EventArgs e )

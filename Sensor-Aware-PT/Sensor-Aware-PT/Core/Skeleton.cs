@@ -94,7 +94,7 @@ namespace Sensor_Aware_PT
 
         private static bool mInitialized = false;
 
-        private System.Timers.Timer mTheUpdateTimer = new System.Timers.Timer();
+        private System.Timers.Timer mOrientationUpdateTimer = new System.Timers.Timer();
 
         public Skeleton()
         {
@@ -103,21 +103,21 @@ namespace Sensor_Aware_PT
                 initializeBoneLengths();
                 initializeOrientations();
 ; // this is bobby. he has a right to exist. 
+;; // this is bobby's friends, they also have a right to exist since bobby is all by himself and will never amount to anyhting on his own
 
                 mInitialized = true;
             }
-            initializeTimer();
         }
 
         private void initializeTimer()
         {
-            mTheUpdateTimer.Interval = 1000 / 50; // 50Hz yo
-            mTheUpdateTimer.Elapsed += mTheUpdateTimer_Elapsed;
-            mTheUpdateTimer.AutoReset = true;
-            mTheUpdateTimer.Start();
+            mOrientationUpdateTimer.Interval = 1000 / 50; // 50Hz yo
+            mOrientationUpdateTimer.Elapsed += mOrientationUpdateTimer_Elapsed;
+            mOrientationUpdateTimer.AutoReset = true;
+            mOrientationUpdateTimer.Start();
         }
 
-        void mTheUpdateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        void mOrientationUpdateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             this.mParentBone.TriggerOrientationUpdate();
         }
@@ -200,16 +200,14 @@ namespace Sensor_Aware_PT
         /// <param name="skelType">The skeletal system type to create</param>
         public Skeleton(SkeletonType skelType) : this()
         {
+            createSkeleton();
             switch (skelType)
             {
                 case SkeletonType.UpperBody:
-                    createUpperBody();
                     break;
                 case SkeletonType.LowerBody:
-                    //createLowerBody();
                     break;
                 case SkeletonType.MidBody:
-                    //createMidBody();
                     break;
                 case SkeletonType.Dog:
                     break;
@@ -218,12 +216,15 @@ namespace Sensor_Aware_PT
                 default:
                     break;
             }
+
+            /** set up the timer ONLY after the skeleton has been created, otherwise bad stuff happens */
+            initializeTimer();
         }
 
         /// <summary>
         /// Creates the upper body skeletal system using the back as a fixed reference point
         /// </summary>
-        private void createUpperBody()
+        private void createSkeleton()
         {
             Bone BackU, BackL, ArmUL, ArmUR, ArmLL, ArmLR, ShoulderL, ShoulderR, HipL, HipR, Head,
                 LegLL, LegLR, LegUL, LegUR, FakeHip;
@@ -337,8 +338,24 @@ namespace Sensor_Aware_PT
             mParentBone = FakeHip;
             mParentBone.DrawingEnabled = false;
             mParentBone.updateOrientation();
-
+            
+            debugWritePositions();
         }
+
+
+        private void debugWritePositions()
+        {
+            foreach( KeyValuePair<BoneType, Bone> kvp in mBoneTypeMapping )
+            {
+                Logger.Info( "Bone {0} loc: {1}, {2}, {3}",
+                    kvp.Key.ToString(),
+                    kvp.Value.StartPosition.X,
+                    kvp.Value.StartPosition.Y,
+                    kvp.Value.StartPosition.Z
+                    );
+            }
+        }
+
         /// <summary>
         /// Draws the entire skeletal structure
         /// </summary>
