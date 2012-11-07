@@ -135,6 +135,9 @@ namespace Sensor_Aware_PT
             }
         }
 
+        /// <summary>
+        /// Internally called to set opengl options and camera options before each draw call
+        /// </summary>
         private void preDraw()
         {
             /** 1. Clear screen, set polygon fill mode */
@@ -214,6 +217,12 @@ namespace Sensor_Aware_PT
             GL.LineWidth( 1f );
         }
 
+        /// <summary>
+        /// used to add or remove x,y,z components from the world camera's rotation angles
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
         public void incrementCameraRotation( float x, float y, float z )
         {
             mCameraRotation.X += x;
@@ -221,6 +230,12 @@ namespace Sensor_Aware_PT
             mCameraRotation.Z += z;
         }
 
+        /// <summary>
+        /// Increments the x, y, z parameters of the camera rotation (the target/look at gets rotated around the camera position)
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
         public void incrementCameraRotationLookAt( float x, float y, float z )
         {
             float magnitude = 0f;
@@ -248,17 +263,14 @@ namespace Sensor_Aware_PT
             recalculateCameraTransform();
         }
 
+        /// <summary>
+        /// Increments the position of the camera and target together. 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
         public void incrementCameraPositionLookAt( float x, float y, float z )
         {
-            /*
-            mCameraPosition.X += x;
-            mCameraPosition.Y += y;
-            mCameraPosition.Z += z;
-
-            mTargetPosition.X += x;
-            mTargetPosition.Y += y;
-            mTargetPosition.Z += z;
-             * */
             Vector3 diff = mTargetPosition - mCameraPosition;
             diff.Normalize();
 
@@ -278,6 +290,12 @@ namespace Sensor_Aware_PT
             recalculateCameraTransform();
         }
 
+        /// <summary>
+        /// Increments the position of the camera, without changing the look at
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
         public void incrementCameraPosition( float x, float y, float z )
         {
             Vector3 diff = mTargetPosition - mCameraPosition;
@@ -295,6 +313,12 @@ namespace Sensor_Aware_PT
             recalculateCameraTransform();
         }
 
+        /// <summary>
+        /// Increments the position of the target/lookat, without modifying camera position
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
         public void incrementTargetPosition( float x, float y, float z )
         {
             /*
@@ -309,6 +333,10 @@ namespace Sensor_Aware_PT
             recalculateCameraTransform();
         }
 
+        /// <summary>
+        /// Increments the camera towards or away from the current lookat/target by an amount
+        /// </summary>
+        /// <param name="amt"></param>
         public void incrementPositionTowardsTarget( float amt )
         {
             Vector3 diff = mTargetPosition - mCameraPosition;
@@ -319,21 +347,12 @@ namespace Sensor_Aware_PT
             recalculateCameraTransform();
 
         }
+
+        /// <summary>
+        /// Camera transform must be recalculated after every modification of the camera position/rotation
+        /// </summary>
         private void recalculateCameraTransform()
         {
-            /*
-            Vector3 transformedCameraPos, transformedTargetPos;
-            Matrix4 camTransform;
-
-            camTransform = Matrix4.CreateRotationX( MathHelper.DegreesToRadians( mCameraRotation.X ) ) *
-                Matrix4.CreateRotationY( MathHelper.DegreesToRadians( mCameraRotation.Y ) ) *
-                Matrix4.CreateRotationZ( MathHelper.DegreesToRadians( mCameraRotation.Z ) );
-
-            transformedCameraPos = Vector3.Transform( mCameraPosition, camTransform );
-            transformedTargetPos = Vector3.Transform( v, camTransform );
-
-            mCameraTransform = Matrix4.LookAt( transformedCameraPos, transformedTargetPos, mWorldNormal );
-             * */
             mCameraTransform = Matrix4.LookAt( mCameraPosition, mTargetPosition, mWorldNormal );
         }
     }
