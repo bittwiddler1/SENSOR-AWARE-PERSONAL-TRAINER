@@ -428,5 +428,10 @@ namespace Sensor_Aware_PT
             mMouseLoc.X = e.X;
             mMouseLoc.Y = e.Y;
         }
+
+        private void LiveDataDisplayForm_Resize( object sender, EventArgs e )
+        {
+
+        }
     }
 }

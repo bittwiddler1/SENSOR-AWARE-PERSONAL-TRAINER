@@ -127,6 +127,9 @@ namespace Sensor_Aware_PT
         public Dictionary<string, BoneType> mSensorBoneMapping;
     }
 
+    /// <summary>
+    /// Interface used by scene and skeleton, or anything that must be drawn
+    /// </summary>
     public interface IDrawable
     {
         void draw();

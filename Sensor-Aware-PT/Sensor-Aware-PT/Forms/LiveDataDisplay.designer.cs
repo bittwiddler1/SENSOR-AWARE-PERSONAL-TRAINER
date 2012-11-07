@@ -116,10 +116,13 @@ namespace Sensor_Aware_PT
             // 
             // simpleOpenGlControl
             // 
+            this.simpleOpenGlControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.simpleOpenGlControl.BackColor = System.Drawing.Color.Black;
             this.simpleOpenGlControl.Location = new System.Drawing.Point(195, 67);
             this.simpleOpenGlControl.Name = "simpleOpenGlControl";
-            this.simpleOpenGlControl.Size = new System.Drawing.Size(703, 490);
+            this.simpleOpenGlControl.Size = new System.Drawing.Size(688, 479);
             this.simpleOpenGlControl.TabIndex = 7;
             this.simpleOpenGlControl.VSync = true;
             this.simpleOpenGlControl.Load += new System.EventHandler(this.simpleOpenGlControl_Load);
@@ -150,6 +153,7 @@ namespace Sensor_Aware_PT
             this.Text = "Sensor Aware PT Skeletal Viewer of Doom";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExperimentalForm_FormClosing);
             this.Load += new System.EventHandler(this.ExperimentalForm_Load);
+            this.Resize += new System.EventHandler(this.LiveDataDisplayForm_Resize);
             this.ResumeLayout(false);
             this.PerformLayout();
 
