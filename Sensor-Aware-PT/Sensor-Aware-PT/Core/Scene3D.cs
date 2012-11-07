@@ -221,6 +221,32 @@ namespace Sensor_Aware_PT
             mCameraRotation.Z += z;
         }
 
+        public void incrementCameraRotationLookAt( float x, float y, float z )
+        {
+            float magnitude = 0f;
+            Vector3 diff = mTargetPosition - mCameraPosition;
+            magnitude = diff.Length;
+            diff.Normalize();
+
+            /** diff is camera to target, rotate by 90 to get some value? */
+            Matrix4 ry = Matrix4.CreateRotationX( y);
+            Matrix4 rx = Matrix4.CreateRotationY( x);
+            Vector3 xt = Vector3.TransformPosition( diff, rx );
+            
+
+            //mCameraPosition += x * xt;
+            mTargetPosition = (xt*magnitude) + mCameraPosition;
+
+            diff = mTargetPosition - mCameraPosition;
+            magnitude = diff.Length;
+            diff.Normalize();
+
+            Vector3 yt = Vector3.TransformPosition( diff, ry );
+            //mCameraPosition += y * yt;
+            mTargetPosition = (yt * magnitude) + mCameraPosition;
+
+            recalculateCameraTransform();
+        }
 
         public void incrementCameraPositionLookAt( float x, float y, float z )
         {
@@ -254,15 +280,18 @@ namespace Sensor_Aware_PT
 
         public void incrementCameraPosition( float x, float y, float z )
         {
-            mCameraPosition.X += x;
-            mCameraPosition.Y += y;
-            mCameraPosition.Z += z;
+            Vector3 diff = mTargetPosition - mCameraPosition;
+            diff.Normalize();
 
-            /*
-            mTargetPosition.X += x;
-            mTargetPosition.Y += y;
-            mTargetPosition.Z += z;
-             * */
+            /** diff is camera to target, rotate by 90 to get some value? */
+            Matrix4 ry = Matrix4.CreateRotationX( MathHelper.PiOver2 );
+            Matrix4 rx = Matrix4.CreateRotationY( MathHelper.PiOver2 );
+            Vector3 xt = Vector3.Transform( diff, rx );
+            Vector3 yt = Vector3.Transform( diff, ry );
+
+            mCameraPosition += diff * z;
+            mCameraPosition += x * xt;
+            mCameraPosition += y * yt;
             recalculateCameraTransform();
         }
 

@@ -370,25 +370,32 @@ namespace Sensor_Aware_PT
         {
             if( e.Delta != 0 )
             {
-                mScene.incrementPositionTowardsTarget( ( float ) e.Delta/100f );
+                if( mKeyState[ ( int ) Keys.ShiftKey ] )
+                    mScene.incrementCameraPosition( 0, 0, e.Delta / 100f );
+                else
+                    mScene.incrementPositionTowardsTarget( ( float ) e.Delta/100f );
             }
-        }
+        } 
 
         private void simpleOpenGlControl_MouseMove( object sender, System.Windows.Forms.MouseEventArgs e )
         {
             Vector2 mouseNow = new Vector2( e.X, e.Y );
-            //left drag
+            Vector2 delta = mouseNow - mMouseLoc;
+            //left drag, pan
+            /** If you hold shift, we pan the camera without changing the target */
             if( mMouseState[ 0 ] == true )
             {
-                Vector2 delta = mouseNow - mMouseLoc;
-                mScene.incrementCameraPositionLookAt( delta.X/10f, delta.Y/10f, 0 );
+                if( mKeyState[ ( int ) Keys.ShiftKey ] )
+                    mScene.incrementCameraPosition(delta.X/10f, delta.Y/10f, 0);
+                else
+                    mScene.incrementCameraPositionLookAt( delta.X/100f, delta.Y/100f, 0 );
             }
 
 
             //right drag
             if( mMouseState[ 1 ] == true )
             {
-
+                mScene.incrementCameraRotationLookAt( delta.X / 1000f, delta.Y / 1000f, 0 );
             }
 
             mMouseLoc.X = e.X;
