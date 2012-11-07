@@ -251,6 +251,7 @@ namespace Sensor_Aware_PT
         private void button4_Click( object sender, EventArgs e )
         {
             mSkeleton.spitAngles();
+            mSkeleton.debugWritePositions();
         }
 
         private void setupSkeletonBoneMappings()

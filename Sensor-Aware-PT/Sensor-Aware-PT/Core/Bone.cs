@@ -21,6 +21,7 @@ namespace Sensor_Aware_PT
     {
         Vector3 mStartPoint;
         Vector3 mEndPoint;
+        Vector3 mCurrentStartPoint, mCurrentEndPoint;
         Vector3[] mBoxVerts;
         Vector3[] mInitialBoxVerts;
         BoneOrientation mOrientation;
@@ -33,7 +34,7 @@ namespace Sensor_Aware_PT
         private float mThickness = .2f;
         private float mDrawRatio = .3f; // Upper = .3f, lower = 1-.3f
         private static bool mDrawBox = false;
-        private static bool mDrawWireframe = false;
+        private static bool mDrawWireframe = true;
         private static bool mDrawLineSegments = true;
         private List<Bone> mChildren;
         protected Bone mParentBone;
@@ -143,7 +144,7 @@ namespace Sensor_Aware_PT
         {
             get
             {
-                return mStartPoint;
+                return mCurrentStartPoint;
             }
         }
 
@@ -151,7 +152,7 @@ namespace Sensor_Aware_PT
         {
             get
             {
-                return mEndPoint;
+                return mCurrentEndPoint;
             }
         }
         #endregion
@@ -281,6 +282,8 @@ namespace Sensor_Aware_PT
                 mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform );
             }
 
+            mCurrentEndPoint = mEndPoint;
+            mCurrentStartPoint = mStartPoint;
 
             /** Now that our position is finalized, go ahead and update the positions of all children */
             foreach (Bone child in mChildren)
@@ -557,12 +560,13 @@ namespace Sensor_Aware_PT
                 /** Draw the line segment for this bone, in world-space coordinates */
                 if( mDrawLineSegments )
                 {
-                    GL.LineWidth( 1f );
+                    GL.LineWidth( 5f );
                     GL.Begin( BeginMode.Lines );
                     GL.Color3( Color.Black );
                     GL.Vertex3( mStartPoint );
                     GL.Vertex3( mEndPoint );
                     GL.End();
+                    GL.LineWidth( 1f );
                 }
             }
 

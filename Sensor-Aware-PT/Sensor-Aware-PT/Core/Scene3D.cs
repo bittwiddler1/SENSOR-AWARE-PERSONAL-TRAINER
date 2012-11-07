@@ -228,6 +228,9 @@ namespace Sensor_Aware_PT
             mCameraPosition.Y += y;
             mCameraPosition.Z += z;
 
+            mTargetPosition.X += x;
+            mTargetPosition.Y += y;
+            mTargetPosition.Z += z;
             recalculateCameraTransform();
         }
 

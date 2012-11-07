@@ -230,7 +230,7 @@ namespace Sensor_Aware_PT
                 torso = new SkeletonView(),
                 hip = new SkeletonView();
 
-            armL.lookAt = new Vector3( 0f, -1.5f, 5 );
+            armL.lookAt = new Vector3( 0f, -1.5f, 2.9f );
             armL.position = new Vector3( 8f, 6f, 8f );
            
              mSkeletonViewMapping.Add("Arms L", armL);
@@ -385,20 +385,23 @@ namespace Sensor_Aware_PT
             mParentBone = FakeHip;
             mParentBone.DrawingEnabled = false;
             mParentBone.updateOrientation();
-            
+
+
+            this.mParentBone.TriggerOrientationUpdate();
+
             debugWritePositions();
         }
 
 
-        private void debugWritePositions()
+        public  void debugWritePositions()
         {
             foreach( KeyValuePair<BoneType, Bone> kvp in mBoneTypeMapping )
             {
                 Logger.Info( "Bone {0} loc: {1}, {2}, {3}",
                     kvp.Key.ToString(),
-                    kvp.Value.StartPosition.X,
-                    kvp.Value.StartPosition.Y,
-                    kvp.Value.StartPosition.Z
+                    kvp.Value.EndPosition.X,
+                    kvp.Value.EndPosition.Y,
+                    kvp.Value.EndPosition.Z
                     );
             }
         }
