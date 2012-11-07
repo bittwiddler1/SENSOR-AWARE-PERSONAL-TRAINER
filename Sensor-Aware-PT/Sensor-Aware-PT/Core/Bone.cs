@@ -291,11 +291,30 @@ namespace Sensor_Aware_PT
             }
         }
 
+        int mnumTime = 0;
         private void DumpAngleWithParent()
         {
-            Vector3 parent_ypr = this.mParentBone.mYawPitchRoll;
-            Vector3 my_ypr = this.mYawPitchRoll;
-            Vector3 difference = parent_ypr - my_ypr;
+            if (this.mParentBone != null && 
+               (this.mBoneType == BoneType.ArmLowerL)
+                && (mnumTime % 10 == 0))
+            {
+                int pos = System.Console.CursorTop;
+                if (pos == 0) return;
+                System.Console.SetCursorPosition(0, pos);
+                System.Console.Write("                    ");
+                System.Console.SetCursorPosition(0, pos);
+
+                Matrix4 parent = this.ParentBone.CurrentOrientation * this.ParentBone.CurrentZeroOrientation;
+
+                Vector3 parentOrient = new Vector3(1, 0, 0);
+                Vector3 meOrient = new Vector3(1, 0, 0);
+                Matrix4 me = this.CurrentOrientation * this.CurrentZeroOrientation;
+
+                Vector3 pX = Vector3.TransformVector(parentOrient, parent);
+                Vector3 mX = Vector3.TransformVector(meOrient, me);
+                System.Console.Write("{0} {1}", "ArmLowerL", MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pX, mX)));
+                 
+            }
         }
 
         /// <summary>

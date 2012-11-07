@@ -459,8 +459,7 @@ namespace Sensor_Aware_PT
 
                     Vector3 pX = Vector3.TransformVector( parentOrient, parent );
                     Vector3 mX = Vector3.TransformVector( meOrient, me);
-                    Logger.Info( "{0} {1}", kvp.Key, MathHelper.RadiansToDegrees( Vector3.CalculateAngle( pX, mX ) ) );
-
+                    Logger.Info("{0} {1}", kvp.Key, MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pX, mX)));
                 }
             }
         }
