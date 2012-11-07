@@ -78,6 +78,13 @@ namespace Sensor_Aware_PT
         }
         #endregion
 
+
+        /// <summary>
+        /// Constructs the 3d scene
+        /// </summary>
+        /// <param name="camLocation">location of the camera</param>
+        /// <param name="targetLocation">location of the target the camera will look at</param>
+        /// <param name="upVec">normal vector for up direction</param>
         public Scene3D( Vector3 camLocation, Vector3 targetLocation, Vector3 upVec )
         {
             mCameraPosition = camLocation;
@@ -90,11 +97,12 @@ namespace Sensor_Aware_PT
 
             DrawWireframe = false;
             DrawAxes = true;
-
             setupScene();
-
         }
 
+        /// <summary>
+        /// Internally called to set up initial openGL parameters
+        /// </summary>
         private void setupScene()
         {
             GL.ShadeModel( ShadingModel.Smooth );
@@ -124,6 +132,9 @@ namespace Sensor_Aware_PT
                 mObjectList.Add( obj );
         }
 
+        /// <summary>
+        /// Called per frame update, sets up drawing and then draws all objects in the frame list
+        /// </summary>
         public void draw()
         {
             /** First prepare stuff */
