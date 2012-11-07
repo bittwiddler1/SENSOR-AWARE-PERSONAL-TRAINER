@@ -17,5 +17,19 @@ namespace Sensor_Aware_PT.Forms
         {
             
         }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // AntiAliasedGLControl
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.Name = "AntiAliasedGLControl";
+            
+            this.ResumeLayout(false);
+
+        }
+
     }
 }

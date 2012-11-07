@@ -35,6 +35,7 @@ namespace Sensor_Aware_PT
             this.label1 = new System.Windows.Forms.Label();
             this.button4 = new System.Windows.Forms.Button();
             this.cameraFocusDropdown = new System.Windows.Forms.ComboBox();
+            this.txtDebug = new System.Windows.Forms.TextBox();
             this.simpleOpenGlControl = new Sensor_Aware_PT.Forms.AntiAliasedGLControl();
             this.SuspendLayout();
             // 
@@ -105,6 +106,14 @@ namespace Sensor_Aware_PT
             this.cameraFocusDropdown.TabIndex = 9;
             this.cameraFocusDropdown.SelectedIndexChanged += new System.EventHandler(this.cameraFocusDropdown_SelectedIndexChanged);
             // 
+            // txtDebug
+            // 
+            this.txtDebug.Location = new System.Drawing.Point(9, 289);
+            this.txtDebug.Multiline = true;
+            this.txtDebug.Name = "txtDebug";
+            this.txtDebug.Size = new System.Drawing.Size(162, 91);
+            this.txtDebug.TabIndex = 10;
+            // 
             // simpleOpenGlControl
             // 
             this.simpleOpenGlControl.BackColor = System.Drawing.Color.Black;
@@ -114,16 +123,22 @@ namespace Sensor_Aware_PT
             this.simpleOpenGlControl.TabIndex = 7;
             this.simpleOpenGlControl.VSync = true;
             this.simpleOpenGlControl.Load += new System.EventHandler(this.simpleOpenGlControl_Load);
+            this.simpleOpenGlControl.Scroll += new System.Windows.Forms.ScrollEventHandler(this.simpleOpenGlControl_Scroll);
             this.simpleOpenGlControl.SizeChanged += new System.EventHandler(this.simpleOpenGlControl_SizeChanged);
             this.simpleOpenGlControl.Paint += new System.Windows.Forms.PaintEventHandler(this.simpleOpenGlControl_Paint);
             this.simpleOpenGlControl.KeyDown += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyDown);
             this.simpleOpenGlControl.KeyUp += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyUp);
+            this.simpleOpenGlControl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.simpleOpenGlControl_MouseDown);
+            this.simpleOpenGlControl.MouseMove += new System.Windows.Forms.MouseEventHandler(this.simpleOpenGlControl_MouseMove);
+            this.simpleOpenGlControl.MouseUp += new System.Windows.Forms.MouseEventHandler(this.simpleOpenGlControl_MouseUp);
+            this.simpleOpenGlControl.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.simpleOpenGlControl_MouseWheel);
             // 
             // LiveDataDisplayForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(895, 558);
+            this.Controls.Add(this.txtDebug);
             this.Controls.Add(this.cameraFocusDropdown);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.simpleOpenGlControl);
@@ -149,6 +164,7 @@ namespace Sensor_Aware_PT
         private Forms.AntiAliasedGLControl simpleOpenGlControl;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.ComboBox cameraFocusDropdown;
+        private System.Windows.Forms.TextBox txtDebug;
 
     }
 }

@@ -230,15 +230,27 @@ namespace Sensor_Aware_PT
                 torso = new SkeletonView(),
                 hip = new SkeletonView();
 
-            armL.lookAt = new Vector3( 0f, -1.5f, 2.9f );
-            armL.position = new Vector3( 8f, 6f, 8f );
-           
-             mSkeletonViewMapping.Add("Arms L", armL);
-             mSkeletonViewMapping.Add("Arms R", armR);
-             mSkeletonViewMapping.Add("Legs L", legL);
-             mSkeletonViewMapping.Add("Legs R", legR);
-             mSkeletonViewMapping.Add("Torso", torso);
-             mSkeletonViewMapping.Add( "Hip", hip );
+            armL.position = new Vector3( -14f, 25f, 18f);
+            armL.lookAt = new Vector3( -1f, 6.5f, 2.9f );
+
+            armR.position = new Vector3( 14f, 25f, 18f );
+            armR.lookAt = new Vector3( 1f, 6.5f, 2.9f );
+
+            torso.position = new Vector3( -14f, 25f, 18f );
+            torso.lookAt = new Vector3( -1f, 5.5f, 2.9f );
+
+            legL.position = new Vector3( -13f, 17f, 17f );
+            legL.lookAt = new Vector3( -0f, 0.5f, 1.9f );
+
+            legR.position = new Vector3( -13f, 20f, 18f );
+            legR.lookAt = new Vector3( -1f, 0.5f, 1.9f );
+
+            mSkeletonViewMapping.Add("Arms L", armL);
+            mSkeletonViewMapping.Add("Arms R", armR);
+            mSkeletonViewMapping.Add("Legs L", legL);
+            mSkeletonViewMapping.Add("Legs R", legR);
+            mSkeletonViewMapping.Add("Torso", torso);
+            mSkeletonViewMapping.Add( "Hip", hip );
 
         }
         /// <summary>

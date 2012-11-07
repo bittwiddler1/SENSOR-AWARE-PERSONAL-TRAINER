@@ -23,6 +23,9 @@ namespace Sensor_Aware_PT
         Scene3D mScene;
         bool[] mKeyState = new bool[ 256 ];
         bool[] mKeyStatePrev = new bool[ 256 ];
+        bool[] mMouseState = new bool[ 2 ];
+        Vector2 mMouseLoc = new Vector2();
+        //bool[] mMouseState = new bool[ 2 ];
         private bool mLoaded = false;
         
 
@@ -55,6 +58,8 @@ namespace Sensor_Aware_PT
                 mKeyStatePrev[ i ] = false;
             }
 
+            mMouseState[ 0 ] = false;
+            mMouseState[ 1 ] = false;
             setupSkeletonBoneMappings();
             mScene.addSceneObject( mSkeleton );
 
@@ -106,7 +111,7 @@ namespace Sensor_Aware_PT
             if(mKeyState[ (int)Keys.X])
                 mScene.incrementCameraRotation( 0, 0, -1 );
 
-            ///TRANSLATION
+            ///TRANSLATION camera ONLY
             if( mKeyState[ ( int ) Keys.I ] )
                 mScene.incrementCameraPosition( 1, 0, 0 );
 
@@ -124,7 +129,43 @@ namespace Sensor_Aware_PT
 
             if( mKeyState[ ( int ) Keys.OemPeriod] )
                 mScene.incrementCameraPosition( 0, 0, -1 );
-                    
+
+
+            ///TRANSLATION LOOKAT
+            if( mKeyState[ ( int ) Keys.T ] )
+                mScene.incrementTargetPosition( 1, 0, 0 );
+
+            if( mKeyState[ ( int ) Keys.Y ] )
+                mScene.incrementTargetPosition( -1, 0, 0 );
+
+            if( mKeyState[ ( int ) Keys.G ] )
+                mScene.incrementTargetPosition( 0, 1, 0 );
+
+            if( mKeyState[ ( int ) Keys.H ] )
+                mScene.incrementTargetPosition( 0, -1, 0 );
+
+            if( mKeyState[ ( int ) Keys.B ] )
+                mScene.incrementTargetPosition( 0, 0, 1 );
+
+            if( mKeyState[ ( int ) Keys.N ] )
+                mScene.incrementTargetPosition( 0, 0, -1 );
+
+
+            if( mKeyState[ ( int ) Keys.C ] )
+                mScene.incrementPositionTowardsTarget(1f);
+            if( mKeyState[ ( int ) Keys.V ] )
+                mScene.incrementPositionTowardsTarget(-1f);
+
+            
+
+            txtDebug.Text = String.Format( "Pos: {0},{1},{2}\r\nLook {3},{4},{5}",
+                                            mScene.CameraPosition.X,
+                                            mScene.CameraPosition.Y,
+                                            mScene.CameraPosition.Z,
+                                            mScene.CameraLookAt.X,
+                                            mScene.CameraLookAt.Y,
+                                            mScene.CameraLookAt.Z
+                                            );
             
         }
 
@@ -246,6 +287,7 @@ namespace Sensor_Aware_PT
         private void simpleOpenGlControl_KeyUp( object sender, KeyEventArgs e )
         {
             mKeyState[ ( int ) e.KeyCode ] = false;
+            
         }
 
         private void button4_Click( object sender, EventArgs e )
@@ -272,16 +314,112 @@ namespace Sensor_Aware_PT
                     mScene.CameraLookAt = Skeleton.getSkeletonView( "Arms L" ).lookAt;
                     break;
                 case "Arms R":
+                    mScene.CameraPosition = Skeleton.getSkeletonView( "Arms R" ).position;
+                    mScene.CameraLookAt = Skeleton.getSkeletonView( "Arms R" ).lookAt;
                     break;
                 case "Legs L":
+                    mScene.CameraPosition = Skeleton.getSkeletonView( "Legs L" ).position;
+                    mScene.CameraLookAt = Skeleton.getSkeletonView( "Legs L" ).lookAt;
                     break;
                 case "Legs R":
+                    mScene.CameraPosition = Skeleton.getSkeletonView( "Legs R" ).position;
+                    mScene.CameraLookAt = Skeleton.getSkeletonView( "Legs R" ).lookAt;
                     break;
                 case "Torso":
+                    mScene.CameraPosition = Skeleton.getSkeletonView( "Torso" ).position;
+                    mScene.CameraLookAt = Skeleton.getSkeletonView( "Torso" ).lookAt;
                     break;
                 case "Hip":
                     break;
             }
+        }
+
+        private void simpleOpenGlControl_MouseDown( object sender, System.Windows.Forms.MouseEventArgs e )
+        {
+            switch( e.Button )
+            {
+                case MouseButtons.Left:
+                    mMouseState[ 0 ] = true;
+                    break;
+                case MouseButtons.Middle:
+                    break;
+                case MouseButtons.None:
+                    break;
+                case MouseButtons.Right:
+                    mMouseState[ 1 ] = true;
+                    break;
+                case MouseButtons.XButton1:
+                    break;
+                case MouseButtons.XButton2:
+                    break;
+                default:
+                    break;
+            }
+
+            mMouseLoc.X = e.X;
+            mMouseLoc.Y = e.Y;
+        }
+
+        private void simpleOpenGlControl_Scroll( object sender, ScrollEventArgs e )
+        {
+
+        }
+
+        //this.simpleOpenGlControl.MouseWheel += new System.Windows.Forms.MouseEventHandler( this.simpleOpenGlControl_MouseWheel );
+        private void simpleOpenGlControl_MouseWheel( object sender, System.Windows.Forms.MouseEventArgs e )
+        {
+            if( e.Delta != 0 )
+            {
+                mScene.incrementPositionTowardsTarget( ( float ) e.Delta/100f );
+            }
+        }
+
+        private void simpleOpenGlControl_MouseMove( object sender, System.Windows.Forms.MouseEventArgs e )
+        {
+            Vector2 mouseNow = new Vector2( e.X, e.Y );
+            //left drag
+            if( mMouseState[ 0 ] == true )
+            {
+                Vector2 delta = mouseNow - mMouseLoc;
+                mScene.incrementCameraPositionLookAt( delta.X/10f, delta.Y/10f, 0 );
+            }
+
+
+            //right drag
+            if( mMouseState[ 1 ] == true )
+            {
+
+            }
+
+            mMouseLoc.X = e.X;
+            mMouseLoc.Y = e.Y;
+
+        }
+
+        private void simpleOpenGlControl_MouseUp( object sender, System.Windows.Forms.MouseEventArgs e )
+        {
+            switch( e.Button )
+            {
+                case MouseButtons.Left:
+                    mMouseState[ 0 ] = false;
+                    break;
+                case MouseButtons.Middle:
+                    break;
+                case MouseButtons.None:
+                    break;
+                case MouseButtons.Right:
+                    mMouseState[ 1 ] = false;
+                    break;
+                case MouseButtons.XButton1:
+                    break;
+                case MouseButtons.XButton2:
+                    break;
+                default:
+                    break;
+            }
+
+            mMouseLoc.X = e.X;
+            mMouseLoc.Y = e.Y;
         }
     }
 }

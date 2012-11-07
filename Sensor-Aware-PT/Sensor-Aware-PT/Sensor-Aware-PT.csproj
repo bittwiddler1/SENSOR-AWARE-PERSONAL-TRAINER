@@ -116,6 +116,9 @@
     </Compile>
     <Compile Include="Core\SensorDataRecorder.cs" />
     <Compile Include="Core\Skeleton.cs" />
+    <EmbeddedResource Include="Forms\AntiAliasedGLControl.resx">
+      <DependentUpon>AntiAliasedGLControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ConfigurationDialog.resx">
       <DependentUpon>ConfigurationDialog.cs</DependentUpon>
     </EmbeddedResource>

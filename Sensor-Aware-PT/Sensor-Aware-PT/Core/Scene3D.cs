@@ -222,8 +222,9 @@ namespace Sensor_Aware_PT
         }
 
 
-        public void incrementCameraPosition( float x, float y, float z )
+        public void incrementCameraPositionLookAt( float x, float y, float z )
         {
+            /*
             mCameraPosition.X += x;
             mCameraPosition.Y += y;
             mCameraPosition.Z += z;
@@ -231,11 +232,79 @@ namespace Sensor_Aware_PT
             mTargetPosition.X += x;
             mTargetPosition.Y += y;
             mTargetPosition.Z += z;
+             * */
+            Vector3 diff = mTargetPosition - mCameraPosition;
+            diff.Normalize();
+
+            /** diff is camera to target, rotate by 90 to get some value? */
+            Matrix4 ry= Matrix4.CreateRotationX( MathHelper.PiOver2 );
+            Matrix4 rx= Matrix4.CreateRotationY( MathHelper.PiOver2 );
+            Vector3 xt = Vector3.Transform( diff, rx );
+            Vector3 yt = Vector3.Transform( diff, ry );
+            
+            mCameraPosition += x * xt;
+            mTargetPosition += x * xt;
+
+            mCameraPosition += y * yt;
+            mTargetPosition += y * yt;
+
+
             recalculateCameraTransform();
         }
 
+        public void incrementCameraPosition( float x, float y, float z )
+        {
+            mCameraPosition.X += x;
+            mCameraPosition.Y += y;
+            mCameraPosition.Z += z;
+
+            /*
+            mTargetPosition.X += x;
+            mTargetPosition.Y += y;
+            mTargetPosition.Z += z;
+             * */
+            recalculateCameraTransform();
+        }
+
+        public void incrementTargetPosition( float x, float y, float z )
+        {
+            /*
+            mCameraPosition.X += x;
+            mCameraPosition.Y += y;
+            mCameraPosition.Z += z;
+            */
+            
+            mTargetPosition.X += x;
+            mTargetPosition.Y += y;
+            mTargetPosition.Z += z;
+            recalculateCameraTransform();
+        }
+
+        public void incrementPositionTowardsTarget( float amt )
+        {
+            Vector3 diff = mTargetPosition - mCameraPosition;
+            diff.Normalize();
+
+            mCameraPosition += (amt * diff);
+
+            recalculateCameraTransform();
+
+        }
         private void recalculateCameraTransform()
         {
+            /*
+            Vector3 transformedCameraPos, transformedTargetPos;
+            Matrix4 camTransform;
+
+            camTransform = Matrix4.CreateRotationX( MathHelper.DegreesToRadians( mCameraRotation.X ) ) *
+                Matrix4.CreateRotationY( MathHelper.DegreesToRadians( mCameraRotation.Y ) ) *
+                Matrix4.CreateRotationZ( MathHelper.DegreesToRadians( mCameraRotation.Z ) );
+
+            transformedCameraPos = Vector3.Transform( mCameraPosition, camTransform );
+            transformedTargetPos = Vector3.Transform( v, camTransform );
+
+            mCameraTransform = Matrix4.LookAt( transformedCameraPos, transformedTargetPos, mWorldNormal );
+             * */
             mCameraTransform = Matrix4.LookAt( mCameraPosition, mTargetPosition, mWorldNormal );
         }
     }
