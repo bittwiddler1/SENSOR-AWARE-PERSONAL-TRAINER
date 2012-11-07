@@ -34,6 +34,7 @@ namespace Sensor_Aware_PT
             this.button3 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.button4 = new System.Windows.Forms.Button();
+            this.cameraFocusDropdown = new System.Windows.Forms.ComboBox();
             this.simpleOpenGlControl = new Sensor_Aware_PT.Forms.AntiAliasedGLControl();
             this.SuspendLayout();
             // 
@@ -77,7 +78,6 @@ namespace Sensor_Aware_PT
             this.label1.TabIndex = 6;
             this.label1.Text = "Controls\r\n\r\nRotate X - Q, W\r\nRotate Y - A, S\r\nRotate Z - Z, X\r\n\r\nToggle BoundingB" +
     "ox - E\r\nToggle Wireframe - R";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // button4
             // 
@@ -88,6 +88,22 @@ namespace Sensor_Aware_PT
             this.button4.Text = "button4";
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
+            // cameraFocusDropdown
+            // 
+            this.cameraFocusDropdown.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cameraFocusDropdown.Items.AddRange(new object[] {
+            "Arms L",
+            "Arms R",
+            "Legs L",
+            "Legs R",
+            "Torso",
+            "Hip"});
+            this.cameraFocusDropdown.Location = new System.Drawing.Point(13, 241);
+            this.cameraFocusDropdown.Name = "cameraFocusDropdown";
+            this.cameraFocusDropdown.Size = new System.Drawing.Size(121, 21);
+            this.cameraFocusDropdown.TabIndex = 9;
+            this.cameraFocusDropdown.SelectedIndexChanged += new System.EventHandler(this.cameraFocusDropdown_SelectedIndexChanged);
             // 
             // simpleOpenGlControl
             // 
@@ -108,6 +124,7 @@ namespace Sensor_Aware_PT
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(895, 558);
+            this.Controls.Add(this.cameraFocusDropdown);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.simpleOpenGlControl);
             this.Controls.Add(this.label1);
@@ -131,6 +148,7 @@ namespace Sensor_Aware_PT
         private System.Windows.Forms.Label label1;
         private Forms.AntiAliasedGLControl simpleOpenGlControl;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.ComboBox cameraFocusDropdown;
 
     }
 }

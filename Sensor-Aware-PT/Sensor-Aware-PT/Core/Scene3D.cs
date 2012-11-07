@@ -47,6 +47,35 @@ namespace Sensor_Aware_PT
                 mCameraRotation = value;
             }
         }
+
+        public Vector3 CameraPosition
+        {
+            get
+            {
+                return mCameraPosition;
+            }
+
+            set
+            {
+                mCameraPosition = value;
+                Logger.Info( "Camera pos {0}, {1}, {2}", mCameraPosition.X, mCameraPosition.Y, mCameraPosition.Z );
+                recalculateCameraTransform();
+            }
+        }
+
+        public Vector3 CameraLookAt
+        {
+            get
+            {
+                return mTargetPosition;
+            }
+
+            set
+            {
+                mTargetPosition = value;
+                mCameraTransform = Matrix4.LookAt( mCameraPosition, mTargetPosition, mWorldNormal );
+            }
+        }
         #endregion
 
         public Scene3D( Vector3 camLocation, Vector3 targetLocation, Vector3 upVec )
@@ -60,6 +89,7 @@ namespace Sensor_Aware_PT
             mObjectList = new List<IDrawable>();
 
             DrawWireframe = false;
+            DrawAxes = true;
 
             setupScene();
 
@@ -189,6 +219,21 @@ namespace Sensor_Aware_PT
             mCameraRotation.X += x;
             mCameraRotation.Y += y;
             mCameraRotation.Z += z;
+        }
+
+
+        public void incrementCameraPosition( float x, float y, float z )
+        {
+            mCameraPosition.X += x;
+            mCameraPosition.Y += y;
+            mCameraPosition.Z += z;
+
+            recalculateCameraTransform();
+        }
+
+        private void recalculateCameraTransform()
+        {
+            mCameraTransform = Matrix4.LookAt( mCameraPosition, mTargetPosition, mWorldNormal );
         }
     }
 }

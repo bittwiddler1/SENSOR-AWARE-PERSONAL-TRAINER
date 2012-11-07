@@ -41,6 +41,24 @@ namespace Sensor_Aware_PT
     }
 
     /// <summary>
+    /// Holds camera info for a view type
+    /// </summary>
+    public struct SkeletonView
+    {
+        public Vector3 position;
+        public Vector3 lookAt;
+
+        /*
+        public SkeletonView()
+        {
+            position = new Vector3();
+            lookAt = new Vector3();
+        }
+         * */
+
+    }
+
+    /// <summary>
     /// Models a simple skeleton
     /// </summary>
     public class Skeleton : IObserver<SensorDataEntry>, IDrawable
@@ -59,6 +77,11 @@ namespace Sensor_Aware_PT
         /// Maps a bone type to it's length
         /// </summary>
         protected static Dictionary<BoneType, float> mBoneLengthMapping = new Dictionary<BoneType, float>();
+
+        /// <summary>
+        /// Maps the string for a view type
+        /// </summary>
+        public static Dictionary<String, SkeletonView> mSkeletonViewMapping = new Dictionary<string, SkeletonView>();
 
         /// <summary>
         /// Maps a bonetype to a specific bone 
@@ -102,6 +125,7 @@ namespace Sensor_Aware_PT
             {
                 initializeBoneLengths();
                 initializeOrientations();
+                initializeSkeletonViews();
 ; // this is bobby. he has a right to exist. 
 ;; // this is bobby's friends, they also have a right to exist since bobby is all by himself and will never amount to anyhting on his own
 
@@ -194,6 +218,29 @@ namespace Sensor_Aware_PT
             mBoneLengthMapping.Add( BoneType.Head, 1f );
         }
 
+        /// <summary>
+        /// Sets up the skeleton view camera stuff
+        /// </summary>
+        private static void initializeSkeletonViews()
+        {
+            SkeletonView armL = new SkeletonView(),
+                armR = new SkeletonView(),
+                legL = new SkeletonView(),
+                legR = new SkeletonView(),
+                torso = new SkeletonView(),
+                hip = new SkeletonView();
+
+            armL.lookAt = new Vector3( 0f, -1.5f, 5 );
+            armL.position = new Vector3( 8f, 6f, 8f );
+           
+             mSkeletonViewMapping.Add("Arms L", armL);
+             mSkeletonViewMapping.Add("Arms R", armR);
+             mSkeletonViewMapping.Add("Legs L", legL);
+             mSkeletonViewMapping.Add("Legs R", legR);
+             mSkeletonViewMapping.Add("Torso", torso);
+             mSkeletonViewMapping.Add( "Hip", hip );
+
+        }
         /// <summary>
         /// Creates a new skeletal system
         /// </summary>
@@ -383,6 +430,15 @@ namespace Sensor_Aware_PT
                 /** Bone mapping doesn't exist, error */
                 throw new Exception("The requested BoneType has no mapping for this skeleton.");
             }
+        }
+
+        public static SkeletonView getSkeletonView( String view )
+        {
+            SkeletonView skelView;
+            if( mSkeletonViewMapping.TryGetValue( view, out skelView ) )
+                return skelView;
+            else
+                throw new ArgumentException( "That skeletonviewtype does not exist" );
         }
 
         #region IObserver<SensorDataEntry> Members

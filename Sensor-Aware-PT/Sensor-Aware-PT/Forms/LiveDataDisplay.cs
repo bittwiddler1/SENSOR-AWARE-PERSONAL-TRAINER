@@ -87,24 +87,44 @@ namespace Sensor_Aware_PT
 
         void handleInput()
         {
-            if(mKeyState[ (int)Keys.Q]){
+            /// ROTATION
+            if(mKeyState[ (int)Keys.Q])
                 mScene.incrementCameraRotation( 1, 0, 0 );
-            }
-        if(mKeyState[ (int)Keys.W]){
-            mScene.incrementCameraRotation( -1, 0, 0 );
-            }
-        if(mKeyState[ (int)Keys.A]){
-            mScene.incrementCameraRotation( 0, 1, 0 );
-            }
-        if(mKeyState[ (int)Keys.S]){
-            mScene.incrementCameraRotation( 0, -1, 0 );
-            }
-        if(mKeyState[ (int)Keys.Z]){
-            mScene.incrementCameraRotation( 0, 0, 1 );
-            }
-        if(mKeyState[ (int)Keys.X]){
-            mScene.incrementCameraRotation( 0, 0, -1 );
-                    }
+            
+            if(mKeyState[ (int)Keys.W])
+                mScene.incrementCameraRotation( -1, 0, 0 );
+            
+            if(mKeyState[ (int)Keys.A])
+                mScene.incrementCameraRotation( 0, 1, 0 );
+            
+            if(mKeyState[ (int)Keys.S])
+                mScene.incrementCameraRotation( 0, -1, 0 );
+            
+            if(mKeyState[ (int)Keys.Z])
+                mScene.incrementCameraRotation( 0, 0, 1 );
+            
+            if(mKeyState[ (int)Keys.X])
+                mScene.incrementCameraRotation( 0, 0, -1 );
+
+            ///TRANSLATION
+            if( mKeyState[ ( int ) Keys.I ] )
+                mScene.incrementCameraPosition( 1, 0, 0 );
+
+            if( mKeyState[ ( int ) Keys.O ] )
+                mScene.incrementCameraPosition( -1, 0, 0 );
+
+            if( mKeyState[ ( int ) Keys.K ] )
+                mScene.incrementCameraPosition( 0, 1, 0 );
+
+            if( mKeyState[ ( int ) Keys.L ] )
+                mScene.incrementCameraPosition( 0, -1, 0 );
+
+            if( mKeyState[ ( int ) Keys.Oemcomma ] )
+                mScene.incrementCameraPosition( 0, 0, 1 );
+
+            if( mKeyState[ ( int ) Keys.OemPeriod] )
+                mScene.incrementCameraPosition( 0, 0, -1 );
+                    
             
         }
 
@@ -242,9 +262,25 @@ namespace Sensor_Aware_PT
 
         }
 
-        private void label1_Click( object sender, EventArgs e )
+        private void cameraFocusDropdown_SelectedIndexChanged( object sender, EventArgs e )
         {
-
+            switch( (string)cameraFocusDropdown.SelectedItem)
+            {
+                case "Arms L":
+                    mScene.CameraPosition = Skeleton.getSkeletonView( "Arms L" ).position;
+                    mScene.CameraLookAt = Skeleton.getSkeletonView( "Arms L" ).lookAt;
+                    break;
+                case "Arms R":
+                    break;
+                case "Legs L":
+                    break;
+                case "Legs R":
+                    break;
+                case "Torso":
+                    break;
+                case "Hip":
+                    break;
+            }
         }
     }
 }
