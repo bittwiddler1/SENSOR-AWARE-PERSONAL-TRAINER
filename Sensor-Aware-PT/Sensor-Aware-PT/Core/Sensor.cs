@@ -152,6 +152,8 @@ namespace Sensor_Aware_PT
             mData = new RingBuffer<SensorDataEntry>(HISTORY_BUFFER_SIZE);
             /** Add an empty entry in case getLastEntry is called before data comes in */
             mData.Add( new SensorDataEntry() );
+
+            
         }
 
         /// <summary>
@@ -434,7 +436,8 @@ namespace Sensor_Aware_PT
                         lock( mSynchronizationLock )
                         {
                             /** Read the data and add to circular buffer */
-                            newData = readDataEntry();                          
+                            newData = readDataEntry();
+                            Thread.SpinWait( 10000 );
                         }
 
                         addDataEntry( newData );

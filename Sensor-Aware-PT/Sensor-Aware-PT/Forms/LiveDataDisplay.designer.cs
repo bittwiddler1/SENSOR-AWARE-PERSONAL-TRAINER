@@ -34,6 +34,8 @@ namespace Sensor_Aware_PT
             this.button3 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.button4 = new System.Windows.Forms.Button();
+            this.cameraFocusDropdown = new System.Windows.Forms.ComboBox();
+            this.txtDebug = new System.Windows.Forms.TextBox();
             this.simpleOpenGlControl = new Sensor_Aware_PT.Forms.AntiAliasedGLControl();
             this.SuspendLayout();
             // 
@@ -77,7 +79,6 @@ namespace Sensor_Aware_PT
             this.label1.TabIndex = 6;
             this.label1.Text = "Controls\r\n\r\nRotate X - Q, W\r\nRotate Y - A, S\r\nRotate Z - Z, X\r\n\r\nToggle BoundingB" +
     "ox - E\r\nToggle Wireframe - R";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // button4
             // 
@@ -89,25 +90,59 @@ namespace Sensor_Aware_PT
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
+            // cameraFocusDropdown
+            // 
+            this.cameraFocusDropdown.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cameraFocusDropdown.Items.AddRange(new object[] {
+            "Arms L",
+            "Arms R",
+            "Legs L",
+            "Legs R",
+            "Torso",
+            "Hip"});
+            this.cameraFocusDropdown.Location = new System.Drawing.Point(13, 241);
+            this.cameraFocusDropdown.Name = "cameraFocusDropdown";
+            this.cameraFocusDropdown.Size = new System.Drawing.Size(121, 21);
+            this.cameraFocusDropdown.TabIndex = 9;
+            this.cameraFocusDropdown.SelectedIndexChanged += new System.EventHandler(this.cameraFocusDropdown_SelectedIndexChanged);
+            // 
+            // txtDebug
+            // 
+            this.txtDebug.Location = new System.Drawing.Point(9, 289);
+            this.txtDebug.Multiline = true;
+            this.txtDebug.Name = "txtDebug";
+            this.txtDebug.Size = new System.Drawing.Size(162, 91);
+            this.txtDebug.TabIndex = 10;
+            // 
             // simpleOpenGlControl
             // 
+            this.simpleOpenGlControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.simpleOpenGlControl.BackColor = System.Drawing.Color.Black;
             this.simpleOpenGlControl.Location = new System.Drawing.Point(195, 67);
             this.simpleOpenGlControl.Name = "simpleOpenGlControl";
-            this.simpleOpenGlControl.Size = new System.Drawing.Size(703, 490);
+            this.simpleOpenGlControl.Size = new System.Drawing.Size(688, 479);
             this.simpleOpenGlControl.TabIndex = 7;
             this.simpleOpenGlControl.VSync = true;
             this.simpleOpenGlControl.Load += new System.EventHandler(this.simpleOpenGlControl_Load);
+            this.simpleOpenGlControl.Scroll += new System.Windows.Forms.ScrollEventHandler(this.simpleOpenGlControl_Scroll);
             this.simpleOpenGlControl.SizeChanged += new System.EventHandler(this.simpleOpenGlControl_SizeChanged);
             this.simpleOpenGlControl.Paint += new System.Windows.Forms.PaintEventHandler(this.simpleOpenGlControl_Paint);
             this.simpleOpenGlControl.KeyDown += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyDown);
             this.simpleOpenGlControl.KeyUp += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyUp);
+            this.simpleOpenGlControl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.simpleOpenGlControl_MouseDown);
+            this.simpleOpenGlControl.MouseMove += new System.Windows.Forms.MouseEventHandler(this.simpleOpenGlControl_MouseMove);
+            this.simpleOpenGlControl.MouseUp += new System.Windows.Forms.MouseEventHandler(this.simpleOpenGlControl_MouseUp);
+            this.simpleOpenGlControl.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.simpleOpenGlControl_MouseWheel);
             // 
             // LiveDataDisplayForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(895, 558);
+            this.Controls.Add(this.txtDebug);
+            this.Controls.Add(this.cameraFocusDropdown);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.simpleOpenGlControl);
             this.Controls.Add(this.label1);
@@ -118,6 +153,7 @@ namespace Sensor_Aware_PT
             this.Text = "Sensor Aware PT Skeletal Viewer of Doom";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExperimentalForm_FormClosing);
             this.Load += new System.EventHandler(this.ExperimentalForm_Load);
+            this.Resize += new System.EventHandler(this.LiveDataDisplayForm_Resize);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -131,6 +167,8 @@ namespace Sensor_Aware_PT
         private System.Windows.Forms.Label label1;
         private Forms.AntiAliasedGLControl simpleOpenGlControl;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.ComboBox cameraFocusDropdown;
+        private System.Windows.Forms.TextBox txtDebug;
 
     }
 }

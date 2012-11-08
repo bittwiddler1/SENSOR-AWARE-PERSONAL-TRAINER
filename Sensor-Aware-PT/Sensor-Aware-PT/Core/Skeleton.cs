@@ -41,6 +41,24 @@ namespace Sensor_Aware_PT
     }
 
     /// <summary>
+    /// Holds camera info for a view type
+    /// </summary>
+    public struct SkeletonView
+    {
+        public Vector3 position;
+        public Vector3 lookAt;
+
+        /*
+        public SkeletonView()
+        {
+            position = new Vector3();
+            lookAt = new Vector3();
+        }
+         * */
+
+    }
+
+    /// <summary>
     /// Models a simple skeleton
     /// </summary>
     public class Skeleton : IObserver<SensorDataEntry>, IDrawable
@@ -59,6 +77,11 @@ namespace Sensor_Aware_PT
         /// Maps a bone type to it's length
         /// </summary>
         protected static Dictionary<BoneType, float> mBoneLengthMapping = new Dictionary<BoneType, float>();
+
+        /// <summary>
+        /// Maps the string for a view type
+        /// </summary>
+        public static Dictionary<String, SkeletonView> mSkeletonViewMapping = new Dictionary<string, SkeletonView>();
 
         /// <summary>
         /// Maps a bonetype to a specific bone 
@@ -102,6 +125,7 @@ namespace Sensor_Aware_PT
             {
                 initializeBoneLengths();
                 initializeOrientations();
+                initializeSkeletonViews();
 ; // this is bobby. he has a right to exist. 
 ;; // this is bobby's friends, they also have a right to exist since bobby is all by himself and will never amount to anyhting on his own
 
@@ -194,6 +218,41 @@ namespace Sensor_Aware_PT
             mBoneLengthMapping.Add( BoneType.Head, 1f );
         }
 
+        /// <summary>
+        /// Sets up the skeleton view camera stuff
+        /// </summary>
+        private static void initializeSkeletonViews()
+        {
+            SkeletonView armL = new SkeletonView(),
+                armR = new SkeletonView(),
+                legL = new SkeletonView(),
+                legR = new SkeletonView(),
+                torso = new SkeletonView(),
+                hip = new SkeletonView();
+
+            armL.position = new Vector3( -14f, 25f, 18f);
+            armL.lookAt = new Vector3( -1f, 6.5f, 2.9f );
+
+            armR.position = new Vector3( 14f, 25f, 18f );
+            armR.lookAt = new Vector3( 1f, 6.5f, 2.9f );
+
+            torso.position = new Vector3( -14f, 25f, 18f );
+            torso.lookAt = new Vector3( -1f, 5.5f, 2.9f );
+
+            legL.position = new Vector3( -13f, 17f, 17f );
+            legL.lookAt = new Vector3( -0f, 0.5f, 1.9f );
+
+            legR.position = new Vector3( -13f, 20f, 18f );
+            legR.lookAt = new Vector3( -1f, 0.5f, 1.9f );
+
+            mSkeletonViewMapping.Add("Arms L", armL);
+            mSkeletonViewMapping.Add("Arms R", armR);
+            mSkeletonViewMapping.Add("Legs L", legL);
+            mSkeletonViewMapping.Add("Legs R", legR);
+            mSkeletonViewMapping.Add("Torso", torso);
+            mSkeletonViewMapping.Add( "Hip", hip );
+
+        }
         /// <summary>
         /// Creates a new skeletal system
         /// </summary>
@@ -338,20 +397,23 @@ namespace Sensor_Aware_PT
             mParentBone = FakeHip;
             mParentBone.DrawingEnabled = false;
             mParentBone.updateOrientation();
-            
+
+
+            this.mParentBone.TriggerOrientationUpdate();
+
             debugWritePositions();
         }
 
 
-        private void debugWritePositions()
+        public  void debugWritePositions()
         {
             foreach( KeyValuePair<BoneType, Bone> kvp in mBoneTypeMapping )
             {
                 Logger.Info( "Bone {0} loc: {1}, {2}, {3}",
                     kvp.Key.ToString(),
-                    kvp.Value.StartPosition.X,
-                    kvp.Value.StartPosition.Y,
-                    kvp.Value.StartPosition.Z
+                    kvp.Value.EndPosition.X,
+                    kvp.Value.EndPosition.Y,
+                    kvp.Value.EndPosition.Z
                     );
             }
         }
@@ -383,6 +445,15 @@ namespace Sensor_Aware_PT
                 /** Bone mapping doesn't exist, error */
                 throw new Exception("The requested BoneType has no mapping for this skeleton.");
             }
+        }
+
+        public static SkeletonView getSkeletonView( String view )
+        {
+            SkeletonView skelView;
+            if( mSkeletonViewMapping.TryGetValue( view, out skelView ) )
+                return skelView;
+            else
+                throw new ArgumentException( "That skeletonviewtype does not exist" );
         }
 
         #region IObserver<SensorDataEntry> Members
