@@ -295,8 +295,8 @@ namespace Sensor_Aware_PT
         private void DumpAngleWithParent()
         {
             if (this.mParentBone != null && 
-               (this.mBoneType == BoneType.ArmLowerL)
-                && (mnumTime % 10 == 0))
+               (this.mBoneType == BoneType.ArmLowerL))
+                //&& (mnumTime % 10 == 0))
             {
                 int pos = System.Console.CursorTop;
                 if (pos == 0) return;
@@ -313,8 +313,9 @@ namespace Sensor_Aware_PT
                 Vector3 pX = Vector3.TransformVector(parentOrient, parent);
                 Vector3 mX = Vector3.TransformVector(meOrient, me);
                 System.Console.Write("{0} {1}", "ArmLowerL", MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pX, mX)));
-                 
+                
             }
+            mnumTime++;
         }
 
         /// <summary>
