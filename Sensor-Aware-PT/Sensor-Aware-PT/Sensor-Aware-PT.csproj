@@ -93,10 +93,10 @@
       <DependentUpon>MappingDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\DataStructures.cs" />
-    <Compile Include="Core\MainForm.cs">
+    <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Core\MainForm.Designer.cs">
+    <Compile Include="Forms\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\Logger.cs" />
@@ -133,7 +133,7 @@
     <EmbeddedResource Include="Forms\DataRecorderForm.resx">
       <DependentUpon>DataRecorderForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\MainForm.resx">
+    <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\MappingDialog.resx">
