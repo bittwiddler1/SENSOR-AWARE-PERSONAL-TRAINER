@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="Sensor-Aware-Personal-Trainer" company="JB FitTech" webLink="http://" view-date="2012-07-01" view-index="0" gantt-divider-location="383" resource-divider-location="300" version="2.0">
+<?xml version="1.0" encoding="UTF-8"?><project name="Sensor-Aware-Personal-Trainer" company="JB FitTech" webLink="http://" view-date="2012-07-01" view-index="0" gantt-divider-location="383" resource-divider-location="300" version="2.0">
     <description><![CDATA[A sensor-based utility to assist gym trainees in learning basic exercise form.]]></description>
     <view zooming-state="default:8" id="gantt-chart"/>
     <view id="resource-table">
@@ -59,51 +58,31 @@
         <task id="30" name="Fix port timeouts; reinitialize ports" color="#8cb6ce" meeting="false" start="2012-09-01" duration="10" complete="100" expand="true"/>
         <task id="42" name="Basic 3D Bone-Joint rendering" color="#8cb6ce" meeting="false" start="2012-09-01" duration="7" complete="100" expand="true">
             <depend id="43" type="2" difference="0" hardness="Strong"/>
-            <depend id="46" type="2" difference="0" hardness="Rubber"/>
         </task>
-        <task id="38" name="Find way to attach sensors to body" color="#8cb6ce" meeting="false" start="2012-09-11" duration="7" complete="100" expand="true">
-            <depend id="44" type="2" difference="0" hardness="Rubber"/>
-        </task>
-        <task id="33" name="SensorRecorder module" color="#8cb6ce" meeting="false" start="2012-09-17" duration="7" complete="100" expand="true">
-            <depend id="44" type="2" difference="0" hardness="Rubber"/>
-        </task>
-        <task id="34" name="SensorPlayback Module" color="#8cb6ce" meeting="false" start="2012-09-17" duration="7" complete="100" expand="true">
-            <depend id="44" type="2" difference="0" hardness="Rubber"/>
-        </task>
+        <task id="38" name="Find way to attach sensors to body" color="#8cb6ce" meeting="false" start="2012-09-11" duration="7" complete="100" expand="true"/>
+        <task id="33" name="SensorRecorder module" color="#8cb6ce" meeting="false" start="2012-09-17" duration="7" complete="100" expand="true"/>
+        <task id="34" name="SensorPlayback Module" color="#8cb6ce" meeting="false" start="2012-09-17" duration="7" complete="100" expand="true"/>
         <task id="43" name="Set up Skeleton Model System" color="#8cb6ce" meeting="false" start="2012-09-08" duration="6" complete="100" expand="true">
             <depend id="59" type="2" difference="0" hardness="Strong"/>
             <depend id="84" type="2" difference="0" hardness="Strong"/>
         </task>
         <task id="84" name="Figure out Skeletal Alignment Issues" color="#8cb6ce" meeting="false" start="2012-09-14" duration="4" complete="100" expand="true">
-            <depend id="44" type="2" difference="0" hardness="Strong"/>
             <depend id="92" type="2" difference="0" hardness="Rubber"/>
         </task>
         <task id="89" name="Replace the Rescan &amp; Configuration Prompts with a Form" color="#8cb6ce" meeting="false" start="2012-09-24" duration="3" complete="100" expand="true">
             <depend id="90" type="2" difference="0" hardness="Rubber"/>
         </task>
         <task id="90" name="Begin Work on Skeletal Configuration Dialog" color="#8cb6ce" meeting="false" start="2012-10-01" duration="15" complete="100" expand="true">
-            <depend id="44" type="2" difference="0" hardness="Rubber"/>
             <depend id="95" type="2" difference="0" hardness="Rubber"/>
         </task>
-        <task id="95" name="Integrate Mapping Dialog with SkeletonViews and DataRecording/Playing" color="#8cb6ce" meeting="false" start="2012-10-16" duration="4" complete="0" expand="true">
-            <depend id="44" type="2" difference="0" hardness="Strong"/>
-        </task>
+        <task id="95" name="Integrate Mapping Dialog with SkeletonViews and DataRecording/Playing" color="#8cb6ce" meeting="false" start="2012-10-16" duration="4" complete="0" expand="true"/>
         <task id="92" name="Figure out Skeletal Alignment Again" color="#8cb6ce" meeting="false" start="2012-09-18" duration="12" complete="100" expand="true"/>
-        <task id="44" name="Collect and Analyze Data" color="#8cb6ce" meeting="false" start="2012-10-20" duration="11" complete="0" expand="true">
-            <depend id="46" type="2" difference="0" hardness="Rubber"/>
+        <task id="98" name="Prepare for Presentation" color="#8cb6ce" meeting="false" start="2012-10-23" duration="3" complete="0" expand="true"/>
+        <task id="97" name="Throw in Code to calculate angles between limbs" color="#8cb6ce" meeting="false" start="2012-11-07" duration="1" complete="0" expand="true"/>
+        <task id="58" name="Create user interface" color="#8cb6ce" meeting="false" start="2012-11-08" duration="3" complete="0" expand="true">
             <depend id="59" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="46" name="Camera Integration" color="#8cb6ce" meeting="false" start="2012-11-05" duration="23" complete="0" expand="true">
-            <depend id="57" type="2" difference="0" hardness="Strong"/>
-        </task>
-        <task id="57" name="Create modular exercise database" color="#8cb6ce" meeting="false" start="2012-11-28" duration="15" complete="0" expand="true">
-            <depend id="58" type="2" difference="0" hardness="Strong"/>
-            <depend id="59" type="2" difference="0" hardness="Strong"/>
-        </task>
-        <task id="58" name="Create user interface" color="#8cb6ce" meeting="false" start="2012-12-13" duration="13" complete="0" expand="true">
-            <depend id="59" type="2" difference="0" hardness="Strong"/>
-        </task>
-        <task id="59" name="Integration testing" color="#8cb6ce" meeting="false" start="2012-12-26" duration="9" complete="0" expand="true"/>
+        <task id="59" name="Integration testing" color="#8cb6ce" meeting="false" start="2012-11-11" duration="9" complete="0" expand="true"/>
     </tasks>
     <resources/>
     <allocations/>
@@ -117,9 +96,9 @@
         <displaycolumn property-id="tpd9" order="-1" width="75" visible="false"/>
         <displaycolumn property-id="tpd1" order="-1" width="75" visible="false"/>
         <displaycolumn property-id="tpd0" order="-1" width="75" visible="false"/>
-        <displaycolumn property-id="tpd3" order="0" width="250" visible="true"/>
-        <displaycolumn property-id="tpd4" order="1" width="63" visible="true"/>
-        <displaycolumn property-id="tpd5" order="2" width="66" visible="true"/>
+        <displaycolumn property-id="tpd3" order="0" width="239" visible="true"/>
+        <displaycolumn property-id="tpd4" order="1" width="61" visible="true"/>
+        <displaycolumn property-id="tpd5" order="2" width="64" visible="true"/>
     </taskdisplaycolumns>
     <previous/>
     <roles roleset-name="Default"/>
