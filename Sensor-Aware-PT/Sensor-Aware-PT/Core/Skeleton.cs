@@ -517,22 +517,43 @@ namespace Sensor_Aware_PT
 
         internal void spitAngles()
         {
-            Logger.Info( "Spitting angles" );
-            foreach( KeyValuePair<String, Bone> kvp in mSensorBoneMapping )
-            {
-                if( kvp.Value.ParentBone != null )
-                {
-                    Matrix4 parent = kvp.Value.ParentBone.CurrentOrientation * kvp.Value.ParentBone.CurrentZeroOrientation;
-                    
-                    Vector3 parentOrient = new Vector3( 1, 0, 0 );
-                    Vector3 meOrient = new Vector3( 1, 0, 0 );
-                    Matrix4 me = kvp.Value.CurrentOrientation * kvp.Value.CurrentZeroOrientation;
 
-                    Vector3 pX = Vector3.TransformVector( parentOrient, parent );
-                    Vector3 mX = Vector3.TransformVector( meOrient, me);
-                    Logger.Info("{0} {1}", kvp.Key, MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pX, mX)));
+            //Logger.Info( "Spitting angles" );
+            //foreach( KeyValuePair<String, Bone> kvp in mSensorBoneMapping )
+            //{
+            //    if( kvp.Value.ParentBone != null )
+            //    {
+            //        Matrix4 parent = kvp.Value.ParentBone.CurrentOrientation * kvp.Value.ParentBone.CurrentZeroOrientation;
+                    
+            //        Vector3 parentOrient = new Vector3( 1, 0, 0 );
+            //        Vector3 meOrient = new Vector3( 1, 0, 0 );
+            //        Matrix4 me = kvp.Value.CurrentOrientation * kvp.Value.CurrentZeroOrientation;
+
+            //        Vector3 pX = Vector3.TransformVector( parentOrient, parent );
+            //        Vector3 mX = Vector3.TransformVector( meOrient, me);
+            //        Logger.Info("{0} {1}", kvp.Key, MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pX, mX)));
+            //    }
+            //}
+        }
+
+        internal Dictionary<String, Vector3> getAngles()
+        {
+            var result = new Dictionary<string, Vector3>();
+            foreach (var pair in this.mBoneTypeMapping)
+            {
+                try
+                {
+
+                    result[pair.Key.ToString()] = pair.Value.getAngleWithParent();
                 }
+                catch (NullReferenceException e)
+                {
+                    continue;
+                }
+
             }
+
+            return result;
         }
     }
 }

@@ -109,8 +109,9 @@ namespace Sensor_Aware_PT
             // txtDebug
             // 
             this.txtDebug.Location = new System.Drawing.Point(9, 289);
-            this.txtDebug.Multiline = true;
             this.txtDebug.Name = "txtDebug";
+            this.txtDebug.Multiline = true;
+            this.txtDebug.Enabled = true;
             this.txtDebug.Size = new System.Drawing.Size(162, 91);
             this.txtDebug.TabIndex = 10;
             // 

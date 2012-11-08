@@ -85,9 +85,11 @@ namespace Sensor_Aware_PT
             {
                 simpleOpenGlControl.Refresh();
                 handleInput();
+                updateDebugText();
             }
         }
 
+        
         void handleInput()
         {
             /// ROTATION
@@ -153,18 +155,21 @@ namespace Sensor_Aware_PT
                 mScene.incrementPositionTowardsTarget(1f);
             if( mKeyState[ ( int ) Keys.V ] )
                 mScene.incrementPositionTowardsTarget(-1f);
+        }
 
+        void updateDebugText()
+        {
+            Dictionary<String, Vector3> values = this.mSkeleton.getAngles();
+
+            Vector3 ElbowL = values["ArmLowerL"];
+            String LeftElbow = String.Format("{0:F2} {1:F2} {2:F2}", ElbowL.X, ElbowL.Y, ElbowL.Z);
+
+            Vector3 ElbowR = values["ArmLowerR"];
+            String RightElbow = String.Format("{0:F2} {1:F2} {2:F2}", ElbowR.X, ElbowR.Y, ElbowR.Z);
+
+            txtDebug.Text = String.Format("Angles\r\nLeft Elbow: {0}\r\nRight Elbow:{1}", LeftElbow, RightElbow);
             
 
-            txtDebug.Text = String.Format( "Pos: {0},{1},{2}\r\nLook {3},{4},{5}",
-                                            mScene.CameraPosition.X,
-                                            mScene.CameraPosition.Y,
-                                            mScene.CameraPosition.Z,
-                                            mScene.CameraLookAt.X,
-                                            mScene.CameraLookAt.Y,
-                                            mScene.CameraLookAt.Z
-                                            );
-            
         }
 
         /// <summary>

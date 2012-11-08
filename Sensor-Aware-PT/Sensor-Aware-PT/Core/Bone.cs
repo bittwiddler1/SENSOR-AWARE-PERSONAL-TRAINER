@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 //using OpenTK.Graphics;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
@@ -35,7 +34,7 @@ namespace Sensor_Aware_PT
         private float mDrawRatio = .3f; // Upper = .3f, lower = 1-.3f
         private static bool mDrawBox = false;
         private static bool mDrawWireframe = true;
-        private static bool mDrawLineSegments = true;
+        private static bool mDrawLineSegments = false;
         private List<Bone> mChildren;
         protected Bone mParentBone;
         private float mLength;
@@ -230,7 +229,7 @@ namespace Sensor_Aware_PT
         {
             mCurrentOrientation = newOrientation;
 
-            DumpAngleWithParent();
+            //DumpAngleWithParent();
 
 
             /** Save the new orientation as the current, then calculate final transform using our calibrated and new */
@@ -294,31 +293,29 @@ namespace Sensor_Aware_PT
             }
         }
 
-        int mnumTime = 0;
-        private void DumpAngleWithParent()
+        public Vector3 getAngleWithParent()
         {
-            if (this.mParentBone != null && 
-               (this.mBoneType == BoneType.ArmLowerL))
-                //&& (mnumTime % 10 == 0))
-            {
-                int pos = System.Console.CursorTop;
-                if (pos == 0) return;
-                System.Console.SetCursorPosition(0, pos);
-                System.Console.Write("                    ");
-                System.Console.SetCursorPosition(0, pos);
+            Matrix4 parent = this.ParentBone.CurrentOrientation * this.ParentBone.CurrentZeroOrientation;
+            Matrix4 me = this.CurrentOrientation * this.CurrentZeroOrientation;
 
-                Matrix4 parent = this.ParentBone.CurrentOrientation * this.ParentBone.CurrentZeroOrientation;
+            Vector3 XUnitVector = new Vector3(1, 0, 0);
+            Vector3 YUnitVector = new Vector3(0, 1, 0);
+            Vector3 ZUnitVector = new Vector3(0, 0, 1);
 
-                Vector3 parentOrient = new Vector3(1, 0, 0);
-                Vector3 meOrient = new Vector3(1, 0, 0);
-                Matrix4 me = this.CurrentOrientation * this.CurrentZeroOrientation;
+            Vector3 pX = Vector3.TransformVector(XUnitVector, parent);
+            Vector3 mX = Vector3.TransformVector(XUnitVector, me);
 
-                Vector3 pX = Vector3.TransformVector(parentOrient, parent);
-                Vector3 mX = Vector3.TransformVector(meOrient, me);
-                System.Console.Write("{0} {1}", "ArmLowerL", MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pX, mX)));
-                
-            }
-            mnumTime++;
+            Vector3 pY = Vector3.TransformVector(YUnitVector, parent);
+            Vector3 mY = Vector3.TransformVector(YUnitVector, me);
+
+            Vector3 pZ = Vector3.TransformVector(ZUnitVector, parent);
+            Vector3 mZ = Vector3.TransformVector(ZUnitVector, me);
+
+            Single dX = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pX, mX));
+            Single dY = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pY, mY));
+            Single dZ = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pZ, mZ));
+
+            return new Vector3(dX, dY, dZ);
         }
 
         /// <summary>
