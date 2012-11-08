@@ -138,7 +138,7 @@ namespace Sensor_Aware_PT
         public void draw()
         {
             /** First prepare stuff */
-            preDraw();
+            //preDraw();
 
             foreach( IDrawable drawObj in mObjectList )
             {
@@ -149,7 +149,7 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Internally called to set opengl options and camera options before each draw call
         /// </summary>
-        private void preDraw()
+        public void preDraw()
         {
             /** 1. Clear screen, set polygon fill mode */
             GL.Clear( ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit );

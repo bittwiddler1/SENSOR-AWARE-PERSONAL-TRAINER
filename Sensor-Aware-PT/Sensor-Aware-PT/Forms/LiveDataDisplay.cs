@@ -61,9 +61,7 @@ namespace Sensor_Aware_PT
             mMouseState[ 0 ] = false;
             mMouseState[ 1 ] = false;
             setupSkeletonBoneMappings();
-            mScene.addSceneObject( mSkeleton );
-
-           
+            mScene.addSceneObject( mSkeleton );            
         }
 
         private void initializeRedrawTimer()
@@ -208,7 +206,8 @@ namespace Sensor_Aware_PT
                 lock( this )
                 {
                     simpleOpenGlControl.MakeCurrent();
-                    mScene.draw();
+                    mScene.preDraw();
+                    mScene.draw();                    
                     simpleOpenGlControl.SwapBuffers();
                 }
             }
