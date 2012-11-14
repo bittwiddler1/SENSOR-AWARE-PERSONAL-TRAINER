@@ -128,27 +128,43 @@ namespace Sensor_Aware_PT
             outStream.Flush();
             outStream.Close();
 
-            outStream = File.Open( outputFile + ".csv", FileMode.Create );
-            StreamWriter csvWriter = new StreamWriter( outStream );
-            csvWriter.WriteLine( "t,accx,accy,accz,gx,gy,gz" );
-            String first = mData.mDataList.First().id;
+            /** Create a bunch of writer objects, 1 per each sensor in the mapping struct */
+            Dictionary<string, StreamWriter> idList = new Dictionary<string, StreamWriter>();
+            foreach( var kvp in mData.mSensorBoneMapping )
+            {
+                StreamWriter writer = new StreamWriter( File.Open( outputFile + kvp.Key + ".csv", FileMode.Create ) );
+                idList.Add(kvp.Key, writer);
+            }
+
+
             for( int i = 0; i < mData.mDataList.Count; i++ )
             {
-                if( mData.mDataList[ i ].id == first )
-                {
-                    csvWriter.WriteLine("{0},{1},{2},{3},{4},{5},{6}", 
-                        mData.mDataList[i].timeSpan,
-                        mData.mDataList[ i ].accelerometer.X,
-                        mData.mDataList[ i ].accelerometer.Y,
-                        mData.mDataList[ i ].accelerometer.Z,
-                        mData.mDataList[ i ].gyroscope.X,
-                        mData.mDataList[ i ].gyroscope.Y,
-                        mData.mDataList[ i ].gyroscope.Z
-                        );
-                }
+                
+                idList[mData.mDataList[i].id].WriteLine("{0},{1},{2},{3}", 
+                mData.mDataList[i].timeSpan,
+                mData.mDataList[ i ].accelerometer.X,
+                mData.mDataList[ i ].accelerometer.Y,
+                mData.mDataList[ i ].accelerometer.Z
+                );
             }
-            csvWriter.Flush();
-            csvWriter.Close();
+
+            foreach(var kvp in idList)
+            {
+                kvp.Value.Flush();
+                kvp.Value.Close();
+                FileStream theFile = File.Open( outputFile + kvp.Key + ".csv", FileMode.Open);
+                if( theFile.Length > 0 )
+                {
+                    Logger.Info( "Sensor data recorder: File {0} has data and was written", kvp.Key );
+                }
+                else
+                {
+                    Logger.Info( "Sensor data recorder: File {0} DOES NOT have data and was deleted!", kvp.Key );
+                    theFile.Close();
+                    File.Delete( outputFile + kvp.Key + ".csv" );
+                }
+
+            }
         }
     }
 }

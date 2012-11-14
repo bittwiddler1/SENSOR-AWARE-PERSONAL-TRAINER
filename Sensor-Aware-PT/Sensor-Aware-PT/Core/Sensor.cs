@@ -225,7 +225,7 @@ namespace Sensor_Aware_PT
                     mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
                     mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
                     mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
-                    mSerialPort.DataReceived += new SerialDataReceivedEventHandler( mSerialPort_DataReceived );
+                    //mSerialPort.DataReceived += new SerialDataReceivedEventHandler( mSerialPort_DataReceived );
                     try
                     {
                         mSerialPort.Open();
@@ -411,8 +411,9 @@ namespace Sensor_Aware_PT
                     do
                     {
                         mSerialPort.DiscardInBuffer();
+                        mSerialPort.DiscardOutBuffer();
                         mSerialPort.Write( "#s00" );
-                        Thread.Sleep( 1 );
+                        Thread.Sleep( 5 );
                         synchronized = readToken( "#SYNCH00\r\n" );
                     }
                     while( !synchronized );
@@ -453,7 +454,7 @@ namespace Sensor_Aware_PT
                 catch( Exception e )
                 {
                     Logger.Error( "Sensor {0} read thread exception: {1}", mID, e.Message );
-                    throw;
+                    //throw;
                     //throw new Exception( String.Format( "Sensor {0} read thread exception: {1}", mID, e.Message ) );
                 }
                 finally
