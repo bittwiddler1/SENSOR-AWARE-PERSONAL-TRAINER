@@ -692,13 +692,14 @@ namespace Sensor_Aware_PT
            //matData = matData * transform;
             //matData = Matrix4.Transpose( matData );
             //matData.Row1 *= -1;
-            /*
+            
             Vector3 accData = new Vector3( readFloat(), readFloat(), readFloat() );
+            /**
             Vector3 magData = new Vector3( readFloat(), readFloat(), readFloat() );
             Vector3 gyroData = new Vector3( readFloat(), readFloat(), readFloat() );
              */
             /** Returned the packed entry */
-            return prepareEntry( matData, ypr, Vector3.Zero, Vector3.Zero );
+            return prepareEntry( matData, accData, Vector3.Zero, Vector3.Zero, ypr );
         }
 
         /// <summary>
@@ -737,11 +738,12 @@ namespace Sensor_Aware_PT
         /// <param name="mag">magnetometer vector</param>
         /// <param name="gyro">gyroscope vector</param>
         /// <returns></returns>
-        private SensorDataEntry prepareEntry( Matrix4 orientation, Vector3 accel, Vector3 mag, Vector3 gyro )
+        private SensorDataEntry prepareEntry( Matrix4 orientation, Vector3 accel, Vector3 mag, Vector3 gyro, Vector3 ypr )
         {
             SensorDataEntry newEntry = new SensorDataEntry();
             newEntry.orientation = orientation;
-            newEntry.yawpitchroll = accel;
+            newEntry.yawpitchroll = ypr;
+            newEntry.accelerometer = accel;
             newEntry.magnetometer = mag;
             newEntry.gyroscope = gyro;
             newEntry.sequenceNumber = mSequenceNum++;

@@ -11,6 +11,7 @@ namespace Sensor_Aware_PT
     public class SensorDataEntry
     {
         public Matrix4 orientation = Matrix4.Identity;
+        public Vector3 accelerometer = new Vector3();
         public Vector3 yawpitchroll = new Vector3();
         public Vector3 gyroscope = new Vector3();
         public Vector3 magnetometer = new Vector3();
@@ -134,4 +135,6 @@ namespace Sensor_Aware_PT
     {
         void draw();
     }
+
+    
 }

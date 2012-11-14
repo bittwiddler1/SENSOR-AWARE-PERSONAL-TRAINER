@@ -5,7 +5,7 @@ using System.Text;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System.Drawing;
-
+using QuickFont;
 namespace Sensor_Aware_PT
 {
     /// <summary>
@@ -18,6 +18,7 @@ namespace Sensor_Aware_PT
         private Vector3 mCameraRotation;
         private List<IDrawable> mObjectList;
         private Vector3 mTargetPosition;
+        private QFont mFont;
         /// <summary>
         /// Holds the up vector for the world
         /// </summary>
@@ -97,10 +98,57 @@ namespace Sensor_Aware_PT
 
             DrawWireframe = false;
             DrawAxes = true;
+            setupFont();
             setupScene();
         }
 
+
         /// <summary>
+        /// Self explanatory, sets up the Qfont parameters
+        /// </summary>
+        private void setupFont()
+        {
+            var config = new QFontBuilderConfiguration()
+            {
+                UseVertexBuffer = true,
+                TextGenerationRenderHint = TextGenerationRenderHint.SystemDefault
+            };
+
+            mFont = new QFont( "Core/times.ttf", 16, config );
+
+            //mFont.PrintToVBO( "i love", new Vector3( 0, 0, 0 ), Color.Red );
+            //mFont.PrintToVBO( "quickfont", new Vector3( 0, 10, 0 ), Color.Blue );
+            mFont.LoadVBOs();
+        }
+
+
+        /// <summary>
+        /// Resets the font text strings
+        /// </summary>
+        public void resetFontText()
+        {
+            mFont.ResetVBOs();
+        }
+
+        /// <summary>
+        /// Adds the specified text to the font object for drawing
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="worldPos"></param>
+        /// <param name="color"></param>
+        public void addFontText( string text, Vector3 worldPos, Color color )
+        {
+            mFont.PrintToVBO( text, form3Dto2D( worldPos ), color );
+        }
+
+        /// <summary>
+        /// Called after resetting and adding text
+        /// </summary>
+        public void renderFontText()
+        {
+            mFont.LoadVBOs();
+        }
+                /// <summary>
         /// Internally called to set up initial openGL parameters
         /// </summary>
         private void setupScene()
@@ -139,6 +187,18 @@ namespace Sensor_Aware_PT
         {
             /** First prepare stuff */
             //preDraw();
+            /** Draw font shit first */
+
+            QFont.Begin();
+            GL.Disable( EnableCap.DepthTest );
+            GL.PushMatrix();
+
+            mFont.DrawVBOs();
+            GL.PopMatrix();
+            QFont.End();
+
+            GL.Enable( EnableCap.DepthTest );
+            GL.Disable( EnableCap.Texture2D );
 
             foreach( IDrawable drawObj in mObjectList )
             {
@@ -156,13 +216,19 @@ namespace Sensor_Aware_PT
             GL.PolygonMode( MaterialFace.Front, PolygonMode.Fill );
 
             /** 2. Set modelview mode, load camera */
+            
             GL.MatrixMode( MatrixMode.Modelview );
+            
+
             GL.LoadMatrix( ref mCameraTransform );
 
             /** 3. Rotate the view by user specified */
             GL.Rotate( mCameraRotation.X, 1f, 0, 0 );
             GL.Rotate( mCameraRotation.Y, 0, 1f, 0 );
             GL.Rotate( mCameraRotation.Z, 0, 0, 1f );
+             
+            GL.PushMatrix();
+            
 
             if( DrawAxes )
                 drawAxes();
@@ -174,9 +240,6 @@ namespace Sensor_Aware_PT
         private void drawAxes()
         {
             GL.LineWidth( 2f );
-            //GL.Enable( EnableCap.LineStipple );
-            //GL.LineStipple( 1, Convert.ToInt16( "1000110001100011", 2 ) );
-
             //x+
             GL.Begin( BeginMode.Lines );
             GL.Color3( Color.Red );
@@ -365,6 +428,31 @@ namespace Sensor_Aware_PT
         private void recalculateCameraTransform()
         {
             mCameraTransform = Matrix4.LookAt( mCameraPosition, mTargetPosition, mWorldNormal );
+        }
+
+        private Vector3 form3Dto2D( Vector3 our3DPoint )
+        {
+
+            Matrix4 modelviewMatrix = new Matrix4();
+            Matrix4 projectionMatrix = new Matrix4();
+            int[] viewport = new int[ 4 ];
+            Vector3 pos = new Vector3( our3DPoint );
+            GL.GetFloat( GetPName.ModelviewMatrix, out modelviewMatrix );
+            GL.GetFloat( GetPName.ProjectionMatrix, out projectionMatrix );
+            GL.GetInteger( GetPName.Viewport, viewport );
+
+
+            projectionMatrix.Transpose();
+            pos = Vector3.Transform( pos, modelviewMatrix );
+            pos = Vector3.Transform( pos, projectionMatrix );
+            pos.X /= pos.Z;
+            pos.Y /= pos.Z;
+            pos.X = ( pos.X + 1 ) * ( viewport[ 0 ] + viewport[ 2 ] ) / 2;
+            pos.Y = ( pos.Y + 1 ) * ( viewport[ 1 ] + viewport[ 3 ] ) / 2;
+
+            pos.Y = ( ( viewport[ 0 ] + viewport[ 2 ] ) / 2 ) - pos.Y;
+            //pos.X = ( ( viewport[ 1 ] + viewport[ 3 ] ) / 2 ) + pos.X;
+            return new Vector3( pos.X, pos.Y, 1f );
         }
     }
 }

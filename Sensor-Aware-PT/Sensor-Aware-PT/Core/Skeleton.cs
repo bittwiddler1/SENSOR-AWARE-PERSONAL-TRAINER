@@ -515,6 +515,19 @@ namespace Sensor_Aware_PT
             }
         }
 
+
+        internal Vector3 getBonePositionEnd( BoneType bone )
+        {
+            foreach( var kvp in mBoneTypeMapping )
+            {
+                if( kvp.Key == bone )
+                {
+                    return kvp.Value.EndPosition;
+                }
+            }
+
+            return Vector3.Zero;
+        }
         internal void spitAngles()
         {
 

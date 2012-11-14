@@ -11,6 +11,7 @@ using System.Drawing.Imaging;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
+using QuickFont;
 
 //DONT FORGET TO SET THE GLCONTROL CONSTRUCTOR
 //: base(new GraphicsMode(32, 24, 8, 4), 3, 0, GraphicsContextFlags.ForwardCompatible)
@@ -27,7 +28,6 @@ namespace Sensor_Aware_PT
         Vector2 mMouseLoc = new Vector2();
         //bool[] mMouseState = new bool[ 2 ];
         private bool mLoaded = false;
-        
 
         public LiveDataDisplayForm()
         {
@@ -61,7 +61,13 @@ namespace Sensor_Aware_PT
             mMouseState[ 0 ] = false;
             mMouseState[ 1 ] = false;
             setupSkeletonBoneMappings();
-            mScene.addSceneObject( mSkeleton );            
+            mScene.addSceneObject( mSkeleton );
+
+            var config = new QFontBuilderConfiguration()
+            {
+                UseVertexBuffer = true,
+                TextGenerationRenderHint = TextGenerationRenderHint.SystemDefault
+            };
         }
 
         private void initializeRedrawTimer()
@@ -168,6 +174,12 @@ namespace Sensor_Aware_PT
             String RightElbow = String.Format("{0:F2} {1:F2} {2:F2}", ElbowR.X, ElbowR.Y, ElbowR.Z);
 
             txtDebug.Text = String.Format("Angles\r\nLeft Elbow: {0}\r\nRight Elbow:{1}", LeftElbow, RightElbow);
+
+            var armend = mSkeleton.getBonePositionEnd(BoneType.ArmLowerL);
+
+            mScene.resetFontText();
+            mScene.addFontText( txtDebug.Text, armend, Color.Red );
+            mScene.renderFontText();
             
 
         }
@@ -177,6 +189,7 @@ namespace Sensor_Aware_PT
         /// </summary>
         private void simpleOpenGlControl_SizeChanged( object sender, EventArgs e )
         {
+            simpleOpenGlControl.MakeCurrent();
             int height = simpleOpenGlControl.Size.Height;
             int width = simpleOpenGlControl.Size.Width;
             GL.MatrixMode( MatrixMode.Projection );
@@ -188,7 +201,9 @@ namespace Sensor_Aware_PT
 
 
             GL.MatrixMode( MatrixMode.Modelview);
-            //jPopMatrix();
+
+            QFont.RefreshViewport();
+            
         }
 
         private void setPerspective( float fovy, float aspect, float zNear, float zFar )
@@ -198,8 +213,6 @@ namespace Sensor_Aware_PT
             GL.Frustum(-fW, fW, -fH, fH, zNear, zFar);
             
         }
-
-        
         
         /// <summary>
         /// Redraw cuboid polygons.
@@ -212,7 +225,7 @@ namespace Sensor_Aware_PT
                 {
                     simpleOpenGlControl.MakeCurrent();
                     mScene.preDraw();
-                    mScene.draw();                    
+                    mScene.draw();
                     simpleOpenGlControl.SwapBuffers();
                 }
             }
