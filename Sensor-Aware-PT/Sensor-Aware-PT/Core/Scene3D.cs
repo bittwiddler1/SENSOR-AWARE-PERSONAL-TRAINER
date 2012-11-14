@@ -122,6 +122,7 @@ namespace Sensor_Aware_PT
         }
 
 
+
         /// <summary>
         /// Resets the font text strings
         /// </summary>

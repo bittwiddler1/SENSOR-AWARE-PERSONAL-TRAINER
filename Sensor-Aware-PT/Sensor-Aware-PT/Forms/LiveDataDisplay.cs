@@ -175,7 +175,7 @@ namespace Sensor_Aware_PT
 
             txtDebug.Text = String.Format("Angles\r\nLeft Elbow: {0}\r\nRight Elbow:{1}", LeftElbow, RightElbow);
 
-            var armend = mSkeleton.getBonePositionEnd(BoneType.ArmLowerL);
+            var armend = mSkeleton.getLastViewBonePositionStart();
 
             mScene.resetFontText();
             mScene.addFontText( txtDebug.Text, armend, Color.Red );
@@ -327,26 +327,30 @@ namespace Sensor_Aware_PT
             switch( (string)cameraFocusDropdown.SelectedItem)
             {
                 case "Arms L":
-                    mScene.CameraPosition = Skeleton.getSkeletonView( "Arms L" ).position;
-                    mScene.CameraLookAt = Skeleton.getSkeletonView( "Arms L" ).lookAt;
+                    mScene.CameraPosition = mSkeleton.getSkeletonView( "Arms L" ).position;
+                    mScene.CameraLookAt = mSkeleton.getSkeletonView( "Arms L" ).lookAt;
                     break;
                 case "Arms R":
-                    mScene.CameraPosition = Skeleton.getSkeletonView( "Arms R" ).position;
-                    mScene.CameraLookAt = Skeleton.getSkeletonView( "Arms R" ).lookAt;
+                    mScene.CameraPosition = mSkeleton.getSkeletonView( "Arms R" ).position;
+                    mScene.CameraLookAt = mSkeleton.getSkeletonView( "Arms R" ).lookAt;
                     break;
                 case "Legs L":
-                    mScene.CameraPosition = Skeleton.getSkeletonView( "Legs L" ).position;
-                    mScene.CameraLookAt = Skeleton.getSkeletonView( "Legs L" ).lookAt;
+                    mScene.CameraPosition = mSkeleton.getSkeletonView( "Legs L" ).position;
+                    mScene.CameraLookAt = mSkeleton.getSkeletonView( "Legs L" ).lookAt;
                     break;
                 case "Legs R":
-                    mScene.CameraPosition = Skeleton.getSkeletonView( "Legs R" ).position;
-                    mScene.CameraLookAt = Skeleton.getSkeletonView( "Legs R" ).lookAt;
+                    mScene.CameraPosition = mSkeleton.getSkeletonView( "Legs R" ).position;
+                    mScene.CameraLookAt = mSkeleton.getSkeletonView( "Legs R" ).lookAt;
                     break;
                 case "Torso":
-                    mScene.CameraPosition = Skeleton.getSkeletonView( "Torso" ).position;
-                    mScene.CameraLookAt = Skeleton.getSkeletonView( "Torso" ).lookAt;
+                    mScene.CameraPosition = mSkeleton.getSkeletonView( "Torso" ).position;
+                    mScene.CameraLookAt = mSkeleton.getSkeletonView( "Torso" ).lookAt;
                     break;
                 case "Hip":
+                    break;
+                case "Full Body":
+                    mScene.CameraPosition = mSkeleton.getSkeletonView( "Full Body" ).position;
+                    mScene.CameraLookAt = mSkeleton.getSkeletonView( "Full Body" ).lookAt;
                     break;
             }
         }

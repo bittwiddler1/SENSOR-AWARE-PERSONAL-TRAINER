@@ -99,7 +99,8 @@ namespace Sensor_Aware_PT
             "Legs L",
             "Legs R",
             "Torso",
-            "Hip"});
+            "Hip",
+            "Full Body"});
             this.cameraFocusDropdown.Location = new System.Drawing.Point(13, 241);
             this.cameraFocusDropdown.Name = "cameraFocusDropdown";
             this.cameraFocusDropdown.Size = new System.Drawing.Size(121, 21);
@@ -109,9 +110,8 @@ namespace Sensor_Aware_PT
             // txtDebug
             // 
             this.txtDebug.Location = new System.Drawing.Point(9, 289);
-            this.txtDebug.Name = "txtDebug";
             this.txtDebug.Multiline = true;
-            this.txtDebug.Enabled = true;
+            this.txtDebug.Name = "txtDebug";
             this.txtDebug.Size = new System.Drawing.Size(162, 91);
             this.txtDebug.TabIndex = 10;
             // 

@@ -127,6 +127,28 @@ namespace Sensor_Aware_PT
             outputFormatter.Serialize( outStream, mData );
             outStream.Flush();
             outStream.Close();
+
+            outStream = File.Open( outputFile + ".csv", FileMode.Create );
+            StreamWriter csvWriter = new StreamWriter( outStream );
+            csvWriter.WriteLine( "t,accx,accy,accz,gx,gy,gz" );
+            String first = mData.mDataList.First().id;
+            for( int i = 0; i < mData.mDataList.Count; i++ )
+            {
+                if( mData.mDataList[ i ].id == first )
+                {
+                    csvWriter.WriteLine("{0},{1},{2},{3},{4},{5},{6}", 
+                        mData.mDataList[i].timeSpan,
+                        mData.mDataList[ i ].accelerometer.X,
+                        mData.mDataList[ i ].accelerometer.Y,
+                        mData.mDataList[ i ].accelerometer.Z,
+                        mData.mDataList[ i ].gyroscope.X,
+                        mData.mDataList[ i ].gyroscope.Y,
+                        mData.mDataList[ i ].gyroscope.Z
+                        );
+                }
+            }
+            csvWriter.Flush();
+            csvWriter.Close();
         }
     }
 }

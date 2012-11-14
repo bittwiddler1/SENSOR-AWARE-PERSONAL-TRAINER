@@ -94,6 +94,11 @@ namespace Sensor_Aware_PT
         protected Bone mParentBone;
 
         /// <summary>
+        /// Keeps track of the bonetype for the last requested skeleton view
+        /// </summary>
+        protected BoneType mLastViewBone;
+
+        /// <summary>
         /// These are default orientation values for bones
         /// </summary>
         /// 
@@ -228,7 +233,8 @@ namespace Sensor_Aware_PT
                 legL = new SkeletonView(),
                 legR = new SkeletonView(),
                 torso = new SkeletonView(),
-                hip = new SkeletonView();
+                hip = new SkeletonView(),
+                fullbody = new SkeletonView();
 
             armL.position = new Vector3( -14f, 25f, 18f);
             armL.lookAt = new Vector3( -1f, 6.5f, 2.9f );
@@ -245,12 +251,16 @@ namespace Sensor_Aware_PT
             legR.position = new Vector3( -13f, 20f, 18f );
             legR.lookAt = new Vector3( -1f, 0.5f, 1.9f );
 
+            fullbody.position = new Vector3( 40, 35, 40 );
+            fullbody.lookAt = new Vector3( 0, 0, 0 );
+
             mSkeletonViewMapping.Add("Arms L", armL);
             mSkeletonViewMapping.Add("Arms R", armR);
             mSkeletonViewMapping.Add("Legs L", legL);
             mSkeletonViewMapping.Add("Legs R", legR);
             mSkeletonViewMapping.Add("Torso", torso);
             mSkeletonViewMapping.Add( "Hip", hip );
+            mSkeletonViewMapping.Add( "Full Body", fullbody );
 
         }
         /// <summary>
@@ -447,8 +457,101 @@ namespace Sensor_Aware_PT
             }
         }
 
-        public static SkeletonView getSkeletonView( String view )
+        public  SkeletonView getSkeletonView( String view )
         {
+
+            switch( ( string ) view )
+            {
+                case "Arms L":
+                    foreach(var kvp in mBoneTypeMapping)
+                    {
+                        if( kvp.Key == BoneType.ArmLowerL || kvp.Key == BoneType.ArmUpperL )
+                        {
+                            kvp.Value.DrawingEnabled = true;
+                        }
+                        else
+                        {
+                            kvp.Value.DrawingEnabled = false;
+                        }
+                    }
+
+                    mLastViewBone = BoneType.ArmUpperL;
+                    break;
+                case "Arms R":
+                    foreach( var kvp in mBoneTypeMapping )
+                    {
+                        if( kvp.Key == BoneType.ArmLowerR || kvp.Key == BoneType.ArmUpperR )
+                        {
+                            kvp.Value.DrawingEnabled = true;
+                        }
+                        else
+                        {
+                            kvp.Value.DrawingEnabled = false;
+                        }
+                    }
+                    mLastViewBone = BoneType.ArmUpperR;
+                    break;
+                case "Legs L":
+                    foreach( var kvp in mBoneTypeMapping )
+                    {
+                        if( kvp.Key == BoneType.LegLowerL || kvp.Key == BoneType.LegUpperL )
+                        {
+                            kvp.Value.DrawingEnabled = true;
+                        }
+                        else
+                        {
+                            kvp.Value.DrawingEnabled = false;
+                        }
+                    }
+
+                    mLastViewBone = BoneType.LegUpperL;
+                    break;
+                case "Legs R":
+                    foreach( var kvp in mBoneTypeMapping )
+                    {
+                        if( kvp.Key == BoneType.LegLowerR || kvp.Key == BoneType.LegUpperR )
+                        {
+                            kvp.Value.DrawingEnabled = true;
+                        }
+                        else
+                        {
+                            kvp.Value.DrawingEnabled = false;
+                        }
+                    }
+                    mLastViewBone = BoneType.LegUpperR;
+                    break;
+                case "Torso":
+                    foreach( var kvp in mBoneTypeMapping )
+                    {
+                        if( kvp.Key == BoneType.BackUpper || 
+                            kvp.Key == BoneType.ArmLowerL ||
+                            kvp.Key == BoneType.ArmUpperL ||
+                            kvp.Key == BoneType.ArmLowerR ||
+                            kvp.Key == BoneType.ArmUpperR
+                            )
+                        {
+                            kvp.Value.DrawingEnabled = true;
+                        }
+                        else
+                        {
+                            kvp.Value.DrawingEnabled = false;
+                        }
+
+                        mLastViewBone = BoneType.FakeHip;
+                    }
+                    break;
+                case "Hip":
+                    break;
+                case "Full Body":
+                    foreach( var kvp in mBoneTypeMapping )
+                    {
+                        kvp.Value.DrawingEnabled = true;
+                    }
+                    
+                    break;
+            }
+            mParentBone.DrawingEnabled = false;
+
             SkeletonView skelView;
             if( mSkeletonViewMapping.TryGetValue( view, out skelView ) )
                 return skelView;
@@ -527,6 +630,20 @@ namespace Sensor_Aware_PT
             }
 
             return Vector3.Zero;
+        }
+
+        internal Vector3 getLastViewBonePositionStart()
+        {
+            foreach( var kvp in mBoneTypeMapping )
+            {
+                if( kvp.Key == mLastViewBone )
+                {
+                    return kvp.Value.StartPosition;
+                }
+            }
+
+            return Vector3.Zero;
+
         }
         internal void spitAngles()
         {
