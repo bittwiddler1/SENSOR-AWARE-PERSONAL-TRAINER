@@ -32,6 +32,7 @@
             this.btnRecorder = new System.Windows.Forms.Button();
             this.btnMappings = new System.Windows.Forms.Button();
             this.sensorListView = new System.Windows.Forms.ListView();
+            this.btnGraph = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnLiveView
@@ -73,11 +74,22 @@
             this.sensorListView.UseCompatibleStateImageBehavior = false;
             this.sensorListView.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
             // 
+            // btnGraph
+            // 
+            this.btnGraph.Location = new System.Drawing.Point(299, 12);
+            this.btnGraph.Name = "btnGraph";
+            this.btnGraph.Size = new System.Drawing.Size(109, 68);
+            this.btnGraph.TabIndex = 4;
+            this.btnGraph.Text = "Graph";
+            this.btnGraph.UseVisualStyleBackColor = true;
+            this.btnGraph.Click += new System.EventHandler(this.btnGraph_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(420, 349);
+            this.Controls.Add(this.btnGraph);
             this.Controls.Add(this.sensorListView);
             this.Controls.Add(this.btnMappings);
             this.Controls.Add(this.btnRecorder);
@@ -97,6 +109,7 @@
         private System.Windows.Forms.Button btnRecorder;
         private System.Windows.Forms.Button btnMappings;
         private System.Windows.Forms.ListView sensorListView;
+        private System.Windows.Forms.Button btnGraph;
 
 
 

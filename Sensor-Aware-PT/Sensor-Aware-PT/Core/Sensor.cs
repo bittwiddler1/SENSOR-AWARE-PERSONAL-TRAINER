@@ -396,18 +396,18 @@ namespace Sensor_Aware_PT
                     Logger.Info( "Sensor {0} synchronization started", mID );
 
                     mSerialPort.DiscardInBuffer();
-
+                    mSerialPort.DiscardOutBuffer();
                     /** Sets the output parameters */
                     mSerialPort.Write( "#ob" );  /** Turn on binary output */
                     mSerialPort.Write( "#o1" );  /** Turn on continuous streaming output */
                     mSerialPort.Write( "#oe0" ); /** Disable error message output*/
 
                     /** Clear the input buffer and then request the sync token */
-                    mSerialPort.DiscardInBuffer();
-                    mSerialPort.Write( "#s00" );
+                    
                     bool synchronized = false;
 
                     /** Wait until we are synchronized */
+                    /** Clear the input buffer and then request the sync token */
                     do
                     {
                         mSerialPort.DiscardInBuffer();
@@ -415,6 +415,9 @@ namespace Sensor_Aware_PT
                         mSerialPort.Write( "#s00" );
                         Thread.Sleep( 5 );
                         synchronized = readToken( "#SYNCH00\r\n" );
+
+                        mSerialPort.Write( "#s01" );
+                        Thread.Sleep( 5 );
                     }
                     while( !synchronized );
 

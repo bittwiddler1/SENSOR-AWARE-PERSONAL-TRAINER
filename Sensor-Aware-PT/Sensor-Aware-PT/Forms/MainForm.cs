@@ -10,6 +10,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using System.ComponentModel;
 using System.Diagnostics;
+using Sensor_Aware_PT.Forms;
 
 namespace Sensor_Aware_PT
 {
@@ -105,7 +106,15 @@ namespace Sensor_Aware_PT
 
         private void listView1_SelectedIndexChanged( object sender, EventArgs e )
         {
-            
+
+        }
+
+        private void btnGraph_Click( object sender, EventArgs e )
+        {
+            LiveAccelerometerGraphForm liveGrah = new LiveAccelerometerGraphForm();
+
+            liveGrah.Show();
+            liveGrah.subscribeToSource( Nexus.Instance );
         }
     }
 }
