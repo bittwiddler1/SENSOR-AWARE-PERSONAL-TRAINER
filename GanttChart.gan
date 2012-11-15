@@ -33,8 +33,8 @@
         </taskproperties>
         <task id="20" name="M1:Basic Sensor Data Retrieval Code" color="#8cb6ce" meeting="true" start="2012-09-15" duration="1" complete="50" priority="2" expand="true"/>
         <task id="73" name="M2: Basic Exercise Analysis" color="#8cb6ce" meeting="true" start="2012-10-06" duration="1" complete="0" expand="true"/>
-        <task id="75" name="M3: Camera Integration" color="#8cb6ce" meeting="true" start="2012-10-26" duration="1" complete="0" expand="true"/>
-        <task id="77" name="M4: Modularization and Programmable Exercise Database" color="#8cb6ce" meeting="true" start="2012-11-30" duration="1" complete="0" expand="true"/>
+        <task id="109" name="M3: Angle Calculation and Camera Movement" color="#8cb6ce" meeting="false" start="2012-08-01" duration="1" complete="0" expand="true"/>
+        <task id="77" name="M4: Modularization and Programmable Exercise Database" color="#8cb6ce" meeting="true" start="2012-11-22" duration="9" complete="0" expand="true"/>
         <task id="79" name="M5: Presentation?" color="#8cb6ce" meeting="true" start="2012-12-04" duration="1" complete="0" expand="true"/>
         <task id="4" name="Order &amp; Build Sensors" color="#8cb6ce" meeting="false" start="2012-06-11" duration="61" complete="100" expand="true"/>
         <task id="0" name="Setup GitHub and Create Basic C# Solution Files" color="#8cb6ce" meeting="false" start="2012-08-20" duration="1" complete="100" expand="true"/>
@@ -99,9 +99,9 @@
         <displaycolumn property-id="tpd9" order="-1" width="75" visible="false"/>
         <displaycolumn property-id="tpd1" order="-1" width="75" visible="false"/>
         <displaycolumn property-id="tpd0" order="-1" width="75" visible="false"/>
-        <displaycolumn property-id="tpd3" order="0" width="213" visible="true"/>
-        <displaycolumn property-id="tpd4" order="1" width="56" visible="true"/>
-        <displaycolumn property-id="tpd5" order="2" width="58" visible="true"/>
+        <displaycolumn property-id="tpd3" order="0" width="326" visible="true"/>
+        <displaycolumn property-id="tpd4" order="1" width="43" visible="true"/>
+        <displaycolumn property-id="tpd5" order="2" width="91" visible="true"/>
     </taskdisplaycolumns>
     <previous/>
     <roles roleset-name="Default"/>

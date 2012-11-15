@@ -41,6 +41,24 @@ namespace Sensor_Aware_PT
     }
 
     /// <summary>
+    /// Holds camera info for a view type
+    /// </summary>
+    public struct SkeletonView
+    {
+        public Vector3 position;
+        public Vector3 lookAt;
+
+        /*
+        public SkeletonView()
+        {
+            position = new Vector3();
+            lookAt = new Vector3();
+        }
+         * */
+
+    }
+
+    /// <summary>
     /// Models a simple skeleton
     /// </summary>
     public class Skeleton : IObserver<SensorDataEntry>, IDrawable
@@ -61,6 +79,11 @@ namespace Sensor_Aware_PT
         protected static Dictionary<BoneType, float> mBoneLengthMapping = new Dictionary<BoneType, float>();
 
         /// <summary>
+        /// Maps the string for a view type
+        /// </summary>
+        public static Dictionary<String, SkeletonView> mSkeletonViewMapping = new Dictionary<string, SkeletonView>();
+
+        /// <summary>
         /// Maps a bonetype to a specific bone 
         /// </summary>
         protected Dictionary<BoneType, Bone> mBoneTypeMapping = new Dictionary<BoneType, Bone>();
@@ -69,6 +92,11 @@ namespace Sensor_Aware_PT
         /// Used to keep track of the fixed parent bone, which varies between skeleton types
         /// </summary>
         protected Bone mParentBone;
+
+        /// <summary>
+        /// Keeps track of the bonetype for the last requested skeleton view
+        /// </summary>
+        protected BoneType mLastViewBone;
 
         /// <summary>
         /// These are default orientation values for bones
@@ -94,7 +122,7 @@ namespace Sensor_Aware_PT
 
         private static bool mInitialized = false;
 
-        private System.Timers.Timer mTheUpdateTimer = new System.Timers.Timer();
+        private System.Timers.Timer mOrientationUpdateTimer = new System.Timers.Timer();
 
         public Skeleton()
         {
@@ -102,22 +130,23 @@ namespace Sensor_Aware_PT
             {
                 initializeBoneLengths();
                 initializeOrientations();
+                initializeSkeletonViews();
 ; // this is bobby. he has a right to exist. 
+;; // this is bobby's friends, they also have a right to exist since bobby is all by himself and will never amount to anyhting on his own
 
                 mInitialized = true;
             }
-            initializeTimer();
         }
 
         private void initializeTimer()
         {
-            mTheUpdateTimer.Interval = 1000 / 50; // 50Hz yo
-            mTheUpdateTimer.Elapsed += mTheUpdateTimer_Elapsed;
-            mTheUpdateTimer.AutoReset = true;
-            mTheUpdateTimer.Start();
+            mOrientationUpdateTimer.Interval = 1000 / 50; // 50Hz yo
+            mOrientationUpdateTimer.Elapsed += mOrientationUpdateTimer_Elapsed;
+            mOrientationUpdateTimer.AutoReset = true;
+            mOrientationUpdateTimer.Start();
         }
 
-        void mTheUpdateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        void mOrientationUpdateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             this.mParentBone.TriggerOrientationUpdate();
         }
@@ -195,21 +224,59 @@ namespace Sensor_Aware_PT
         }
 
         /// <summary>
+        /// Sets up the skeleton view camera stuff
+        /// </summary>
+        private static void initializeSkeletonViews()
+        {
+            SkeletonView armL = new SkeletonView(),
+                armR = new SkeletonView(),
+                legL = new SkeletonView(),
+                legR = new SkeletonView(),
+                torso = new SkeletonView(),
+                hip = new SkeletonView(),
+                fullbody = new SkeletonView();
+
+            armL.position = new Vector3( -14f, 25f, 18f);
+            armL.lookAt = new Vector3( -1f, 6.5f, 2.9f );
+
+            armR.position = new Vector3( 14f, 25f, 18f );
+            armR.lookAt = new Vector3( 1f, 6.5f, 2.9f );
+
+            torso.position = new Vector3( -14f, 25f, 18f );
+            torso.lookAt = new Vector3( -1f, 5.5f, 2.9f );
+
+            legL.position = new Vector3( -13f, 17f, 17f );
+            legL.lookAt = new Vector3( -0f, 0.5f, 1.9f );
+
+            legR.position = new Vector3( -13f, 20f, 18f );
+            legR.lookAt = new Vector3( -1f, 0.5f, 1.9f );
+
+            fullbody.position = new Vector3( 40, 35, 40 );
+            fullbody.lookAt = new Vector3( 0, 0, 0 );
+
+            mSkeletonViewMapping.Add("Arms L", armL);
+            mSkeletonViewMapping.Add("Arms R", armR);
+            mSkeletonViewMapping.Add("Legs L", legL);
+            mSkeletonViewMapping.Add("Legs R", legR);
+            mSkeletonViewMapping.Add("Torso", torso);
+            mSkeletonViewMapping.Add( "Hip", hip );
+            mSkeletonViewMapping.Add( "Full Body", fullbody );
+
+        }
+        /// <summary>
         /// Creates a new skeletal system
         /// </summary>
         /// <param name="skelType">The skeletal system type to create</param>
         public Skeleton(SkeletonType skelType) : this()
         {
+            createSkeleton();
             switch (skelType)
             {
                 case SkeletonType.UpperBody:
-                    createUpperBody();
                     break;
                 case SkeletonType.LowerBody:
-                    //createLowerBody();
                     break;
                 case SkeletonType.MidBody:
-                    //createMidBody();
                     break;
                 case SkeletonType.Dog:
                     break;
@@ -218,12 +285,15 @@ namespace Sensor_Aware_PT
                 default:
                     break;
             }
+
+            /** set up the timer ONLY after the skeleton has been created, otherwise bad stuff happens */
+            initializeTimer();
         }
 
         /// <summary>
         /// Creates the upper body skeletal system using the back as a fixed reference point
         /// </summary>
-        private void createUpperBody()
+        private void createSkeleton()
         {
             Bone BackU, BackL, ArmUL, ArmUR, ArmLL, ArmLR, ShoulderL, ShoulderR, HipL, HipR, Head,
                 LegLL, LegLR, LegUL, LegUR, FakeHip;
@@ -338,7 +408,26 @@ namespace Sensor_Aware_PT
             mParentBone.DrawingEnabled = false;
             mParentBone.updateOrientation();
 
+
+            this.mParentBone.TriggerOrientationUpdate();
+
+            debugWritePositions();
         }
+
+
+        public  void debugWritePositions()
+        {
+            foreach( KeyValuePair<BoneType, Bone> kvp in mBoneTypeMapping )
+            {
+                Logger.Info( "Bone {0} loc: {1}, {2}, {3}",
+                    kvp.Key.ToString(),
+                    kvp.Value.EndPosition.X,
+                    kvp.Value.EndPosition.Y,
+                    kvp.Value.EndPosition.Z
+                    );
+            }
+        }
+
         /// <summary>
         /// Draws the entire skeletal structure
         /// </summary>
@@ -366,6 +455,108 @@ namespace Sensor_Aware_PT
                 /** Bone mapping doesn't exist, error */
                 throw new Exception("The requested BoneType has no mapping for this skeleton.");
             }
+        }
+
+        public  SkeletonView getSkeletonView( String view )
+        {
+
+            switch( ( string ) view )
+            {
+                case "Arms L":
+                    foreach(var kvp in mBoneTypeMapping)
+                    {
+                        if( kvp.Key == BoneType.ArmLowerL || kvp.Key == BoneType.ArmUpperL )
+                        {
+                            kvp.Value.DrawingEnabled = true;
+                        }
+                        else
+                        {
+                            kvp.Value.DrawingEnabled = false;
+                        }
+                    }
+
+                    mLastViewBone = BoneType.ArmUpperL;
+                    break;
+                case "Arms R":
+                    foreach( var kvp in mBoneTypeMapping )
+                    {
+                        if( kvp.Key == BoneType.ArmLowerR || kvp.Key == BoneType.ArmUpperR )
+                        {
+                            kvp.Value.DrawingEnabled = true;
+                        }
+                        else
+                        {
+                            kvp.Value.DrawingEnabled = false;
+                        }
+                    }
+                    mLastViewBone = BoneType.ArmUpperR;
+                    break;
+                case "Legs L":
+                    foreach( var kvp in mBoneTypeMapping )
+                    {
+                        if( kvp.Key == BoneType.LegLowerL || kvp.Key == BoneType.LegUpperL )
+                        {
+                            kvp.Value.DrawingEnabled = true;
+                        }
+                        else
+                        {
+                            kvp.Value.DrawingEnabled = false;
+                        }
+                    }
+
+                    mLastViewBone = BoneType.LegUpperL;
+                    break;
+                case "Legs R":
+                    foreach( var kvp in mBoneTypeMapping )
+                    {
+                        if( kvp.Key == BoneType.LegLowerR || kvp.Key == BoneType.LegUpperR )
+                        {
+                            kvp.Value.DrawingEnabled = true;
+                        }
+                        else
+                        {
+                            kvp.Value.DrawingEnabled = false;
+                        }
+                    }
+                    mLastViewBone = BoneType.LegUpperR;
+                    break;
+                case "Torso":
+                    foreach( var kvp in mBoneTypeMapping )
+                    {
+                        if( kvp.Key == BoneType.BackUpper || 
+                            kvp.Key == BoneType.ArmLowerL ||
+                            kvp.Key == BoneType.ArmUpperL ||
+                            kvp.Key == BoneType.ArmLowerR ||
+                            kvp.Key == BoneType.ArmUpperR
+                            )
+                        {
+                            kvp.Value.DrawingEnabled = true;
+                        }
+                        else
+                        {
+                            kvp.Value.DrawingEnabled = false;
+                        }
+
+                        mLastViewBone = BoneType.FakeHip;
+                    }
+                    break;
+                case "Hip":
+                    break;
+                case "Full Body":
+                    foreach( var kvp in mBoneTypeMapping )
+                    {
+                        kvp.Value.DrawingEnabled = true;
+                    }
+                    
+                    break;
+            }
+            mParentBone.DrawingEnabled = false;
+
+            SkeletonView skelView;
+            if( mSkeletonViewMapping.TryGetValue( view, out skelView ) )
+                return skelView;
+            else
+                throw new ArgumentException( "That skeletonviewtype does not exist" );
         }
 
         #region IObserver<SensorDataEntry> Members
@@ -427,25 +618,72 @@ namespace Sensor_Aware_PT
             }
         }
 
-        internal void spitAngles()
+
+        internal Vector3 getBonePositionEnd( BoneType bone )
         {
-            Logger.Info( "Spitting angles" );
-            foreach( KeyValuePair<String, Bone> kvp in mSensorBoneMapping )
+            foreach( var kvp in mBoneTypeMapping )
             {
-                if( kvp.Value.ParentBone != null )
+                if( kvp.Key == bone )
                 {
-                    Matrix4 parent = kvp.Value.ParentBone.CurrentOrientation * kvp.Value.ParentBone.CurrentZeroOrientation;
-                    
-                    Vector3 parentOrient = new Vector3( 1, 0, 0 );
-                    Vector3 meOrient = new Vector3( 1, 0, 0 );
-                    Matrix4 me = kvp.Value.CurrentOrientation * kvp.Value.CurrentZeroOrientation;
-
-                    Vector3 pX = Vector3.TransformVector( parentOrient, parent );
-                    Vector3 mX = Vector3.TransformVector( meOrient, me);
-                    Logger.Info( "{0} {1}", kvp.Key, MathHelper.RadiansToDegrees( Vector3.CalculateAngle( pX, mX ) ) );
-
+                    return kvp.Value.EndPosition;
                 }
             }
+
+            return Vector3.Zero;
+        }
+
+        internal Vector3 getLastViewBonePositionStart()
+        {
+            foreach( var kvp in mBoneTypeMapping )
+            {
+                if( kvp.Key == mLastViewBone )
+                {
+                    return kvp.Value.StartPosition;
+                }
+            }
+
+            return Vector3.Zero;
+
+        }
+        internal void spitAngles()
+        {
+
+            //Logger.Info( "Spitting angles" );
+            //foreach( KeyValuePair<String, Bone> kvp in mSensorBoneMapping )
+            //{
+            //    if( kvp.Value.ParentBone != null )
+            //    {
+            //        Matrix4 parent = kvp.Value.ParentBone.CurrentOrientation * kvp.Value.ParentBone.CurrentZeroOrientation;
+                    
+            //        Vector3 parentOrient = new Vector3( 1, 0, 0 );
+            //        Vector3 meOrient = new Vector3( 1, 0, 0 );
+            //        Matrix4 me = kvp.Value.CurrentOrientation * kvp.Value.CurrentZeroOrientation;
+
+            //        Vector3 pX = Vector3.TransformVector( parentOrient, parent );
+            //        Vector3 mX = Vector3.TransformVector( meOrient, me);
+            //        Logger.Info("{0} {1}", kvp.Key, MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pX, mX)));
+            //    }
+            //}
+        }
+
+        internal Dictionary<String, Vector3> getAngles()
+        {
+            var result = new Dictionary<string, Vector3>();
+            foreach (var pair in this.mBoneTypeMapping)
+            {
+                try
+                {
+
+                    result[pair.Key.ToString()] = pair.Value.getAngleWithParent();
+                }
+                catch (NullReferenceException e)
+                {
+                    continue;
+                }
+
+            }
+
+            return result;
         }
     }
 }

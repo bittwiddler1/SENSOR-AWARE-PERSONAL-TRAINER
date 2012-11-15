@@ -42,6 +42,9 @@
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL" />
     <Reference Include="OpenTK.Compatibility, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL" />
     <Reference Include="OpenTK.GLControl, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL" />
+    <Reference Include="QuickFont">
+      <HintPath>..\..\..\..\..\..\Desktop\QuickFont-master\QuickFont\bin\Release\QuickFont.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
@@ -56,7 +59,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\AccelerometerGrapher.cs" />
+    <Compile Include="Core\MyTextWriter.cs" />
     <Compile Include="Core\Scene3D.cs" />
+    <Compile Include="Forms\LiveAccelerometerGraphForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\LiveAccelerometerGraphForm.Designer.cs">
+      <DependentUpon>LiveAccelerometerGraphForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\RawDataForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -102,7 +113,6 @@
     <Compile Include="Helpers\Logger.cs" />
     <Compile Include="Core\Program.cs" />
     <Compile Include="Helpers\MicroLibrary.cs" />
-    <Compile Include="Core\INexus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\RingBuffer.cs" />
     <Compile Include="Core\Sensor.cs" />
@@ -116,8 +126,14 @@
     </Compile>
     <Compile Include="Core\SensorDataRecorder.cs" />
     <Compile Include="Core\Skeleton.cs" />
+    <EmbeddedResource Include="Forms\AntiAliasedGLControl.resx">
+      <DependentUpon>AntiAliasedGLControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ConfigurationDialog.resx">
       <DependentUpon>ConfigurationDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\LiveAccelerometerGraphForm.resx">
+      <DependentUpon>LiveAccelerometerGraphForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\RawDataForm.resx">
       <DependentUpon>RawDataForm.cs</DependentUpon>
@@ -147,6 +163,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="Core\times.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

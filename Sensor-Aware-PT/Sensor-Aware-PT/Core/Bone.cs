@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 //using OpenTK.Graphics;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
@@ -21,6 +20,7 @@ namespace Sensor_Aware_PT
     {
         Vector3 mStartPoint;
         Vector3 mEndPoint;
+        Vector3 mCurrentStartPoint, mCurrentEndPoint;
         Vector3[] mBoxVerts;
         Vector3[] mInitialBoxVerts;
         BoneOrientation mOrientation;
@@ -33,8 +33,8 @@ namespace Sensor_Aware_PT
         private float mThickness = .2f;
         private float mDrawRatio = .3f; // Upper = .3f, lower = 1-.3f
         private static bool mDrawBox = false;
-        private static bool mDrawWireframe = false;
-        private static bool mDrawLineSegments = true;
+        private static bool mDrawWireframe = true;
+        private static bool mDrawLineSegments = false;
         private List<Bone> mChildren;
         protected Bone mParentBone;
         private float mLength;
@@ -139,6 +139,21 @@ namespace Sensor_Aware_PT
             }
         }
 
+        public Vector3 StartPosition
+        {
+            get
+            {
+                return mCurrentStartPoint;
+            }
+        }
+
+        public Vector3 EndPosition
+        {
+            get
+            {
+                return mCurrentEndPoint;
+            }
+        }
         #endregion
 
         public Bone( float length, BoneType bonetype )
@@ -213,7 +228,10 @@ namespace Sensor_Aware_PT
         public void updateOrientation( Matrix4 newOrientation, Vector3 ypr )
         {
             mCurrentOrientation = newOrientation;
-            
+
+            //DumpAngleWithParent();
+
+
             /** Save the new orientation as the current, then calculate final transform using our calibrated and new */
             Matrix4 transformedOrientation = transformOrientation( newOrientation );
             /** Calculate yaw pitch roll shit stuff */
@@ -238,7 +256,6 @@ namespace Sensor_Aware_PT
                     d = Matrix4.CreateRotationZ( ( mParentBone.mCalibYawPitchRoll.X ) - mParentBone.mYawPitchRoll.X );
                     mFinalTransform = d * transformedOrientation * mCalibratedOrientation;
                 }
-                
             }
             else
             {
@@ -266,12 +283,39 @@ namespace Sensor_Aware_PT
                 mEndPoint = Vector3.Transform( mEndPoint, mFinalTransform );
             }
 
+            mCurrentEndPoint = mEndPoint;
+            mCurrentStartPoint = mStartPoint;
 
             /** Now that our position is finalized, go ahead and update the positions of all children */
             foreach (Bone child in mChildren)
             {
                 child.TriggerOrientationUpdate();
             }
+        }
+
+        public Vector3 getAngleWithParent()
+        {
+            Matrix4 parent = this.ParentBone.CurrentOrientation * this.ParentBone.CurrentZeroOrientation;
+            Matrix4 me = this.CurrentOrientation * this.CurrentZeroOrientation;
+
+            Vector3 XUnitVector = new Vector3(1, 0, 0);
+            Vector3 YUnitVector = new Vector3(0, 1, 0);
+            Vector3 ZUnitVector = new Vector3(0, 0, 1);
+
+            Vector3 pX = Vector3.TransformVector(XUnitVector, parent);
+            Vector3 mX = Vector3.TransformVector(XUnitVector, me);
+
+            Vector3 pY = Vector3.TransformVector(YUnitVector, parent);
+            Vector3 mY = Vector3.TransformVector(YUnitVector, me);
+
+            Vector3 pZ = Vector3.TransformVector(ZUnitVector, parent);
+            Vector3 mZ = Vector3.TransformVector(ZUnitVector, me);
+
+            Single dX = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pX, mX));
+            Single dY = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pY, mY));
+            Single dZ = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(pZ, mZ));
+
+            return new Vector3(dX, dY, dZ);
         }
 
         /// <summary>
@@ -542,12 +586,13 @@ namespace Sensor_Aware_PT
                 /** Draw the line segment for this bone, in world-space coordinates */
                 if( mDrawLineSegments )
                 {
-                    GL.LineWidth( 1f );
+                    GL.LineWidth( 5f );
                     GL.Begin( BeginMode.Lines );
                     GL.Color3( Color.Black );
                     GL.Vertex3( mStartPoint );
                     GL.Vertex3( mEndPoint );
                     GL.End();
+                    GL.LineWidth( 1f );
                 }
             }
 

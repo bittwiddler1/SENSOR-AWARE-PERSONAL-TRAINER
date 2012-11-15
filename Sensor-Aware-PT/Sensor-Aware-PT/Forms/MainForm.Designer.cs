@@ -182,9 +182,6 @@
         private System.Windows.Forms.ToolStripMenuItem mappingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
-
-
-
     }
 }
 

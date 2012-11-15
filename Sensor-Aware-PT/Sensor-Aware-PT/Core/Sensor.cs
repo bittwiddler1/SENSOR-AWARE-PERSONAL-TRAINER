@@ -152,6 +152,8 @@ namespace Sensor_Aware_PT
             mData = new RingBuffer<SensorDataEntry>(HISTORY_BUFFER_SIZE);
             /** Add an empty entry in case getLastEntry is called before data comes in */
             mData.Add( new SensorDataEntry() );
+
+            
         }
 
         /// <summary>
@@ -223,7 +225,7 @@ namespace Sensor_Aware_PT
                     mSerialPort = new SerialPort( mPortName, Nexus.SENSOR_BAUD_RATE );
                     mSerialPort.ReadTimeout = SERIAL_IO_TIMEOUT;
                     mSerialPort.WriteTimeout = SERIAL_IO_TIMEOUT;
-                    mSerialPort.DataReceived += new SerialDataReceivedEventHandler( mSerialPort_DataReceived );
+                    //mSerialPort.DataReceived += new SerialDataReceivedEventHandler( mSerialPort_DataReceived );
                     try
                     {
                         mSerialPort.Open();
@@ -394,24 +396,28 @@ namespace Sensor_Aware_PT
                     Logger.Info( "Sensor {0} synchronization started", mID );
 
                     mSerialPort.DiscardInBuffer();
-
+                    mSerialPort.DiscardOutBuffer();
                     /** Sets the output parameters */
                     mSerialPort.Write( "#ob" );  /** Turn on binary output */
                     mSerialPort.Write( "#o1" );  /** Turn on continuous streaming output */
                     mSerialPort.Write( "#oe0" ); /** Disable error message output*/
 
                     /** Clear the input buffer and then request the sync token */
-                    mSerialPort.DiscardInBuffer();
-                    mSerialPort.Write( "#s00" );
+                    
                     bool synchronized = false;
 
                     /** Wait until we are synchronized */
+                    /** Clear the input buffer and then request the sync token */
                     do
                     {
                         mSerialPort.DiscardInBuffer();
+                        mSerialPort.DiscardOutBuffer();
                         mSerialPort.Write( "#s00" );
-                        Thread.Sleep( 1 );
+                        Thread.Sleep( 5 );
                         synchronized = readToken( "#SYNCH00\r\n" );
+
+                        mSerialPort.Write( "#s01" );
+                        Thread.Sleep( 5 );
                     }
                     while( !synchronized );
 
@@ -434,7 +440,8 @@ namespace Sensor_Aware_PT
                         lock( mSynchronizationLock )
                         {
                             /** Read the data and add to circular buffer */
-                            newData = readDataEntry();                          
+                            newData = readDataEntry();
+                            Thread.SpinWait( 10000 );
                         }
 
                         addDataEntry( newData );
@@ -450,7 +457,7 @@ namespace Sensor_Aware_PT
                 catch( Exception e )
                 {
                     Logger.Error( "Sensor {0} read thread exception: {1}", mID, e.Message );
-                    throw;
+                    //throw;
                     //throw new Exception( String.Format( "Sensor {0} read thread exception: {1}", mID, e.Message ) );
                 }
                 finally
@@ -689,13 +696,14 @@ namespace Sensor_Aware_PT
            //matData = matData * transform;
             //matData = Matrix4.Transpose( matData );
             //matData.Row1 *= -1;
-            /*
+            
             Vector3 accData = new Vector3( readFloat(), readFloat(), readFloat() );
+            /**
             Vector3 magData = new Vector3( readFloat(), readFloat(), readFloat() );
             Vector3 gyroData = new Vector3( readFloat(), readFloat(), readFloat() );
              */
             /** Returned the packed entry */
-            return prepareEntry( matData, ypr, Vector3.Zero, Vector3.Zero );
+            return prepareEntry( matData, accData, Vector3.Zero, Vector3.Zero, ypr );
         }
 
         /// <summary>
@@ -734,11 +742,12 @@ namespace Sensor_Aware_PT
         /// <param name="mag">magnetometer vector</param>
         /// <param name="gyro">gyroscope vector</param>
         /// <returns></returns>
-        private SensorDataEntry prepareEntry( Matrix4 orientation, Vector3 accel, Vector3 mag, Vector3 gyro )
+        private SensorDataEntry prepareEntry( Matrix4 orientation, Vector3 accel, Vector3 mag, Vector3 gyro, Vector3 ypr )
         {
             SensorDataEntry newEntry = new SensorDataEntry();
             newEntry.orientation = orientation;
-            newEntry.yawpitchroll = accel;
+            newEntry.yawpitchroll = ypr;
+            newEntry.accelerometer = accel;
             newEntry.magnetometer = mag;
             newEntry.gyroscope = gyro;
             newEntry.sequenceNumber = mSequenceNum++;
