@@ -72,8 +72,6 @@ namespace Sensor_Aware_PT
         private void btnLiveView_Click( object sender, EventArgs e )
         {
 
-            MappingDialog MD = new MappingDialog();
-            MD.Show();
             LiveDataDisplayForm EF = new LiveDataDisplayForm();
             EF.subscribeToSource( Nexus.Instance );
 
@@ -97,15 +95,26 @@ namespace Sensor_Aware_PT
             SDV.Show();
         }
 
-        private void btnMappings_Click( object sender, EventArgs e )
+        private void btnStability_Click( object sender, EventArgs e )
         {
-            MappingDialog MD = new MappingDialog();
-            MD.ShowDialog();
+   
         }
 
         private void listView1_SelectedIndexChanged( object sender, EventArgs e )
         {
             
+        }
+
+        private void sensorsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ConfigurationDialog CD = new ConfigurationDialog();
+            CD.ShowDialog();
+        }
+
+        private void mappingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MappingDialog MD = new MappingDialog();
+            MD.ShowDialog();
         }
     }
 }

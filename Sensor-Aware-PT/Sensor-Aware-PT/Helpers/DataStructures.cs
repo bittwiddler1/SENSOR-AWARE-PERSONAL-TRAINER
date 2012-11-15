@@ -129,6 +129,6 @@ namespace Sensor_Aware_PT
 
     public interface IDrawable
     {
-        public void draw();
+        void draw();
     }
 }

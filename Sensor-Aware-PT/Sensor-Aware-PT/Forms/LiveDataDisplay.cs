@@ -88,8 +88,16 @@ namespace Sensor_Aware_PT
             mCamRotation.Transpose();
             mCamRotation.Row2 *= -1f;
             */
-            setupSkeleton();
 
+            try
+            {
+                setupSkeleton();
+            }
+            catch (Exception)
+            {
+                MappingDialog MD = new MappingDialog();
+                MD.ShowDialog();
+            }
            
         }
 
