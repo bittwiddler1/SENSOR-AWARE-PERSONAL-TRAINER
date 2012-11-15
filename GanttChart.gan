@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><project name="Sensor-Aware-Personal-Trainer" company="JB FitTech" webLink="http://" view-date="2012-09-01" view-index="0" gantt-divider-location="346" resource-divider-location="300" version="2.0">
+<?xml version="1.0" encoding="UTF-8"?><project name="Sensor-Aware-Personal-Trainer" company="JB FitTech" webLink="http://" view-date="2012-08-01" view-index="0" gantt-divider-location="346" resource-divider-location="300" version="2.0">
     <description><![CDATA[A sensor-based utility to assist gym trainees in learning basic exercise form.]]></description>
     <view zooming-state="default:8" id="gantt-chart"/>
     <view id="resource-table">
@@ -63,7 +63,6 @@
         <task id="33" name="SensorRecorder module" color="#8cb6ce" meeting="false" start="2012-09-17" duration="7" complete="100" expand="true"/>
         <task id="34" name="SensorPlayback Module" color="#8cb6ce" meeting="false" start="2012-09-17" duration="7" complete="100" expand="true"/>
         <task id="43" name="Set up Skeleton Model System" color="#8cb6ce" meeting="false" start="2012-09-08" duration="6" complete="100" expand="true">
-            <depend id="59" type="2" difference="0" hardness="Strong"/>
             <depend id="84" type="2" difference="0" hardness="Strong"/>
         </task>
         <task id="84" name="Figure out Skeletal Alignment Issues" color="#8cb6ce" meeting="false" start="2012-09-14" duration="4" complete="100" expand="true">
@@ -79,15 +78,14 @@
         <task id="92" name="Figure out Skeletal Alignment Again" color="#8cb6ce" meeting="false" start="2012-09-18" duration="12" complete="100" expand="true"/>
         <task id="98" name="Prepare for Presentation" color="#8cb6ce" meeting="false" start="2012-10-23" duration="3" complete="100" expand="true"/>
         <task id="108" name="Make the sensors output the Accelerometer data" color="#8cb6ce" meeting="false" start="2012-11-13" duration="3" complete="0" expand="true"/>
-        <task id="58" name="Create user interface" color="#8cb6ce" meeting="false" start="2012-11-08" duration="8" complete="50" expand="true">
-            <depend id="59" type="2" difference="0" hardness="Strong"/>
+        <task id="58" name="Create user interface" color="#8cb6ce" meeting="false" start="2012-11-08" duration="8" complete="100" expand="true">
             <task id="103" name="Create Scene3D class" color="#8cb6ce" meeting="false" start="2012-11-08" duration="2" complete="100" expand="true"/>
-            <task id="104" name="Get text rendering to work" color="#8cb6ce" meeting="false" start="2012-11-09" duration="1" complete="0" expand="true"/>
-            <task id="105" name="Make Scene3D Serializable" color="#8cb6ce" meeting="false" start="2012-11-15" duration="1" complete="0" expand="true"/>
+            <task id="104" name="Get text rendering to work" color="#8cb6ce" meeting="false" start="2012-11-09" duration="1" complete="100" expand="true"/>
+            <task id="105" name="Make Scene3D Serializable" color="#8cb6ce" meeting="false" start="2012-11-15" duration="1" complete="100" expand="true"/>
         </task>
         <task id="97" name="Throw in Code to calculate angles between limbs" color="#8cb6ce" meeting="false" start="2012-11-12" duration="1" complete="100" expand="true"/>
-        <task id="110" name="Verify that this code works for most limbs and add exceptions" color="#8cb6ce" meeting="false" start="2012-11-13" duration="2" complete="0" expand="true"/>
-        <task id="59" name="Integration testing" color="#8cb6ce" meeting="false" start="2012-11-16" duration="9" complete="0" expand="true"/>
+        <task id="110" name="Verify that this code works for most limbs and add exceptions" color="#8cb6ce" meeting="false" start="2012-11-13" duration="2" complete="100" expand="true"/>
+        <task id="111" name="Rework the GUI and make it look more professional" color="#8cb6ce" meeting="false" start="2012-08-01" duration="1" complete="0" expand="true"/>
     </tasks>
     <resources/>
     <allocations/>
