@@ -32,6 +32,8 @@ namespace Sensor_Aware_PT
             this.button3 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.simpleOpenGlControl = new Sensor_Aware_PT.Forms.AntiAliasedGLControl();
+            this.hScrollTime = new System.Windows.Forms.HScrollBar();
+            this.btnPause = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button3
@@ -73,18 +75,38 @@ namespace Sensor_Aware_PT
             this.simpleOpenGlControl.MouseUp += new System.Windows.Forms.MouseEventHandler(this.simpleOpenGlControl_MouseUp);
             this.simpleOpenGlControl.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.simpleOpenGlControl_MouseWheel);
             // 
+            // hScrollTime
+            // 
+            this.hScrollTime.Location = new System.Drawing.Point(6, 277);
+            this.hScrollTime.Name = "hScrollTime";
+            this.hScrollTime.Size = new System.Drawing.Size(182, 30);
+            this.hScrollTime.TabIndex = 8;
+            this.hScrollTime.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hScrollTime_Scroll);
+            // 
+            // btnPause
+            // 
+            this.btnPause.Location = new System.Drawing.Point(13, 311);
+            this.btnPause.Name = "btnPause";
+            this.btnPause.Size = new System.Drawing.Size(75, 23);
+            this.btnPause.TabIndex = 9;
+            this.btnPause.Text = "paus";
+            this.btnPause.UseVisualStyleBackColor = true;
+            this.btnPause.Click += new System.EventHandler(this.btnPause_Click);
+            // 
             // ReplayDataDisplayForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(895, 558);
+            this.Controls.Add(this.btnPause);
+            this.Controls.Add(this.hScrollTime);
             this.Controls.Add(this.simpleOpenGlControl);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button3);
             this.Name = "ReplayDataDisplayForm";
             this.Text = "Sensor Aware PT Skeletal Viewer of Doom";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExperimentalForm_FormClosing);
-            this.Load += new System.EventHandler(this.ExperimentalForm_Load);
+            this.Load += new System.EventHandler(this.ReplayDataDisplayForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.simpleOpenGlControl_KeyUp);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.simpleOpenGlControl_MouseDown);
@@ -100,6 +122,8 @@ namespace Sensor_Aware_PT
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Label label1;
         private Forms.AntiAliasedGLControl simpleOpenGlControl;
+        private System.Windows.Forms.HScrollBar hScrollTime;
+        private System.Windows.Forms.Button btnPause;
 
     }
 }

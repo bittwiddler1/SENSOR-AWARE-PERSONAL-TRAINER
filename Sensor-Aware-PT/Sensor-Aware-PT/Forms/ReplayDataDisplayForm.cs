@@ -25,16 +25,18 @@ namespace Sensor_Aware_PT
         bool[] mKeyStatePrev = new bool[ 256 ];
         bool[] mMouseState = new bool[ 2 ];
         Vector2 mMouseLoc = new Vector2();
-        //bool[] mMouseState = new bool[ 2 ];
+        private SensorDataPlayer mReplayer;
         private bool mLoaded = false;
 
 
-        public ReplayDataDisplayForm( Dictionary<BoneType, Matrix4> calibration, Dictionary<string, BoneType> boneMapping )
+        public ReplayDataDisplayForm( SensorDataPlayer sdp, Dictionary<BoneType, Matrix4> calibration, Dictionary<string, BoneType> boneMapping )
         {
             // TODO: Complete member initialization
             InitializeComponent();
             this.mCalibrationData = calibration;
             this.mSensorBoneMapping = boneMapping;
+            mReplayer = sdp;
+            this.subscribeToSource( sdp );
         }
 
         private Timer formUpdateTimer;
@@ -92,6 +94,7 @@ namespace Sensor_Aware_PT
             {
                 simpleOpenGlControl.Refresh();
                 handleInput();
+                hScrollTime.Value = mReplayer.CurrentPosition;
             }
         }
 
@@ -213,6 +216,7 @@ namespace Sensor_Aware_PT
                 lock( this )
                 {
                     simpleOpenGlControl.MakeCurrent();
+                    mScene.preDraw();
                     mScene.draw();
                     simpleOpenGlControl.SwapBuffers();
                 }
@@ -231,12 +235,16 @@ namespace Sensor_Aware_PT
             Nexus.Instance.resynchronize();
         }
 
-        private void ExperimentalForm_Load( object sender, EventArgs e )
+        private void ReplayDataDisplayForm_Load( object sender, EventArgs e )
         {
-
 
         }
 
+        public void begin()
+        {
+            hScrollTime.Maximum = mReplayer.Length;
+            mReplayer.beginPlay();
+        }
         #region IObserver<DataFrame> Members
 
         void IObserver<SensorDataEntry>.OnCompleted()
@@ -303,12 +311,12 @@ namespace Sensor_Aware_PT
 
         private void setupSkeletonBoneMappings()
         {
-            foreach( KeyValuePair<string, BoneType> kvp in Nexus.Instance.BoneMappings )
+            foreach( KeyValuePair<string, BoneType> kvp in mSensorBoneMapping )
             {
                 mSkeleton.createMapping( kvp.Key, kvp.Value );
             }
 
-            //mSkeleton.calibrateZero( mCalibrationData );
+            mSkeleton.calibrateZero( mCalibrationData );
 
         }
         /*
@@ -439,6 +447,16 @@ namespace Sensor_Aware_PT
         private void LiveDataDisplayForm_Resize( object sender, EventArgs e )
         {
 
+        }
+
+        private void hScrollTime_Scroll( object sender, ScrollEventArgs e )
+        {
+            mReplayer.seekTo( hScrollTime.Value );
+        }
+
+        private void btnPause_Click( object sender, EventArgs e )
+        {
+            mReplayer.pause();
         }
     }
 }

@@ -24,7 +24,7 @@ namespace MicroLibrary
             {
                 return (long)(ElapsedTicks * _microSecPerTick);
             }
-        }
+        }      
     }
 
     /// <summary>

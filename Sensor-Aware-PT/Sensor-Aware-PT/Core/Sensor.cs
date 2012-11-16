@@ -415,9 +415,6 @@ namespace Sensor_Aware_PT
                         mSerialPort.Write( "#s00" );
                         Thread.Sleep( 5 );
                         synchronized = readToken( "#SYNCH00\r\n" );
-
-                        mSerialPort.Write( "#s01" );
-                        Thread.Sleep( 5 );
                     }
                     while( !synchronized );
 

@@ -39,7 +39,7 @@
             this.antiAliasedGLControl1.BackColor = System.Drawing.Color.Black;
             this.antiAliasedGLControl1.Location = new System.Drawing.Point(12, 12);
             this.antiAliasedGLControl1.Name = "antiAliasedGLControl1";
-            this.antiAliasedGLControl1.Size = new System.Drawing.Size(260, 238);
+            this.antiAliasedGLControl1.Size = new System.Drawing.Size(278, 349);
             this.antiAliasedGLControl1.TabIndex = 0;
             this.antiAliasedGLControl1.VSync = true;
             this.antiAliasedGLControl1.Load += new System.EventHandler(this.antiAliasedGLControl1_Load);
@@ -50,7 +50,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 262);
+            this.ClientSize = new System.Drawing.Size(302, 373);
             this.Controls.Add(this.antiAliasedGLControl1);
             this.Name = "LiveAccelerometerGraphForm";
             this.Text = "LiveAccelerometerGraphForm";
