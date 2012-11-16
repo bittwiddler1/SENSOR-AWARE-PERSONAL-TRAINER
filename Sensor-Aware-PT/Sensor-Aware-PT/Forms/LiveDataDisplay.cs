@@ -40,44 +40,45 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Form load event to initialises OpenGL graphics.
         /// </summary>
-        private void simpleOpenGlControl_Load( object sender, EventArgs ex )
+        private void simpleOpenGlControl_Load(object sender, EventArgs ex)
         {
             mLoaded = true;
-            simpleOpenGlControl_SizeChanged( sender, ex );
+            simpleOpenGlControl_SizeChanged(sender, ex);
 
             /** Setup the 3d scene object */
-            mScene = new Scene3D(new Vector3(40, 35, 40), new Vector3(0, 0, 0), new Vector3( 0, 1, 0 ));
+            mScene = new Scene3D(new Vector3(40, 35, 40), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
 
             initializeRedrawTimer();
 
             simpleOpenGlControl.Focus();
 
-            for( int i = 0; i < 256; i++ )
+            for (int i = 0; i < 256; i++)
             {
-                mKeyState[ i ] = false;
-                mKeyStatePrev[ i ] = false;
+                mKeyState[i] = false;
+                mKeyStatePrev[i] = false;
             }
 
-/*
-            Matrix4 rx, ry, rz;
-            rx = Matrix4.CreateRotationX(-MathHelper.PiOver2);
-            ry = Matrix4.Identity;
-            rz = Matrix4.CreateRotationZ(MathHelper.PiOver2);
-            mCamRotation = rx * ry * rz;
+            /*
+                        Matrix4 rx, ry, rz;
+                        rx = Matrix4.CreateRotationX(-MathHelper.PiOver2);
+                        ry = Matrix4.Identity;
+                        rz = Matrix4.CreateRotationZ(MathHelper.PiOver2);
+                        mCamRotation = rx * ry * rz;
             
-            mCamRotation.Transpose();
-            mCamRotation.Row2 *= -1f;
-            */
+                        mCamRotation.Transpose();
+                        mCamRotation.Row2 *= -1f;
+                        */
 
             try
             {
-                setupSkeleton();
+                setupSkeletonBoneMappings();
             }
             catch (Exception)
             {
                 MappingDialog MD = new MappingDialog();
                 MD.ShowDialog();
             }
+        }
            
         private void initializeRedrawTimer()
         {

@@ -43,7 +43,7 @@
     <Reference Include="OpenTK.Compatibility, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL" />
     <Reference Include="OpenTK.GLControl, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL" />
     <Reference Include="QuickFont">
-      <HintPath>..\..\..\..\..\..\Desktop\QuickFont-master\QuickFont\bin\Release\QuickFont.dll</HintPath>
+      <HintPath>.\QuickFont.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
