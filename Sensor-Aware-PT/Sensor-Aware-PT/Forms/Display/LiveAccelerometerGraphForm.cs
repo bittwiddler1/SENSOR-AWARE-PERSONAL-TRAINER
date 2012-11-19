@@ -93,5 +93,10 @@ namespace Sensor_Aware_PT.Forms
         }
 
         #endregion
+
+        private void btnResynchronize_Click( object sender, EventArgs e )
+        {
+            Nexus.Instance.resynchronize();
+        }
     }
 }

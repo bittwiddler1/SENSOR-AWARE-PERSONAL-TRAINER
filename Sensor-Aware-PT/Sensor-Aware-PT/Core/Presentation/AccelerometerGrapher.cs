@@ -5,6 +5,7 @@ using System.Text;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System.Drawing;
+using QuickFont;
 
 namespace Sensor_Aware_PT
 {
@@ -14,6 +15,9 @@ namespace Sensor_Aware_PT
         private const int MAX_POINTS = 250;
         private Vector2 mDimensions;
         private float mMaxHeight = 500f;
+        private QFont mLargeFont;
+        private QFont mSmallFont;
+
         public Vector2 WindowDimensions
         {
             get
@@ -31,7 +35,6 @@ namespace Sensor_Aware_PT
             mPoints = new Dictionary<String,List<Vector3>>();
             var activeSensors = Nexus.Instance.getActivatedSensors();
 
-
             foreach( var s in activeSensors )
             {
                 mPoints.Add( s.Id, new List<Vector3>() );
@@ -40,18 +43,59 @@ namespace Sensor_Aware_PT
             }
 
             mDimensions = new Vector2( width, height/(float)(mPoints.Count+1) );
-            
+
+            var config = new QFontBuilderConfiguration()
+            {
+                UseVertexBuffer = true,
+                TextGenerationRenderHint = TextGenerationRenderHint.SystemDefault
+            };
+
+            mLargeFont = new QFont( "Core/times.ttf", 16, config );
+            mSmallFont = new QFont( "Core/times.ttf", 10, config );
         }
 
         public void setDimensions( Vector2 newDim )
         {
             mDimensions = new Vector2( newDim.X, newDim.Y/ ( float ) ( mPoints.Count + 1 ) );
+            QFont.RefreshViewport();
+
+            float scale = ( mMaxHeight * 2f ) / mDimensions.Y;
+            float yOffset = mDimensions.Y;
+            mLargeFont.ResetVBOs();
+            mSmallFont.ResetVBOs();
+            //Prints sensor labels
+            foreach( var kvp in mPoints )
+            {
+
+                mLargeFont.PrintToVBO( "Sensor " + kvp.Key, new Vector3( 0, yOffset-15f, 0 ), Color.White );
+                mSmallFont.PrintToVBO("1g", new Vector3( 0, (220f/scale)+yOffset, 0 ), Color.WhiteSmoke);
+                mSmallFont.PrintToVBO( "2g", new Vector3( 0, ( 440f / scale ) + yOffset, 0 ), Color.WhiteSmoke );
+                mSmallFont.PrintToVBO( "1g", new Vector3( 0, yOffset-( 220f / scale ), 0 ), Color.WhiteSmoke );
+                mSmallFont.PrintToVBO( "2g", new Vector3( 0, yOffset-( 440f / scale ) , 0 ), Color.WhiteSmoke );
+                yOffset += mDimensions.Y;
+            }
+            mLargeFont.LoadVBOs();
+            mSmallFont.LoadVBOs();
         }
 
         public void draw()
         {
             float offset = 0;
             float scale = ( mMaxHeight * 2f ) / mDimensions.Y;
+            
+            QFont.Begin();
+            GL.Disable( EnableCap.DepthTest );
+            GL.PushMatrix();
+
+            mLargeFont.DrawVBOs();
+            mSmallFont.DrawVBOs();
+            GL.PopMatrix();
+            QFont.End();
+
+            GL.Enable( EnableCap.DepthTest );
+            GL.Disable( EnableCap.Texture2D );
+            
+
             foreach( var kvp in mPoints )
             {
                 offset+= mDimensions.Y;
@@ -78,6 +122,14 @@ namespace Sensor_Aware_PT
                     GL.Vertex2(  ( float ) i * ( WindowDimensions.X / ( float ) MAX_POINTS ), (kvp.Value[ i ].Z/scale)  + offset );
                 }
                 GL.End();
+
+                GL.Enable( EnableCap.LineStipple );
+                GL.LineStipple( 3, Convert.ToInt16( "0011001100110011", 2 ) );
+                GL.Begin( BeginMode.Lines );
+                    GL.Vertex2( 0, offset - ( 440f / scale ) );
+                    GL.Vertex2( WindowDimensions.X, offset - ( 440f / scale ) );
+                GL.End();
+                /** Draw the dotted 1g/2g lines */
             }
         }
         #region IObserver<SensorDataEntry> Members
