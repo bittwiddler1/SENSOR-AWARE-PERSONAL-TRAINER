@@ -59,54 +59,48 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\AccelerometerGrapher.cs" />
-    <Compile Include="Core\Scene3D.cs" />
-    <Compile Include="Forms\LiveAccelerometerGraphForm.cs">
+    <Compile Include="Core\Presentation\AccelerometerGrapher.cs" />
+    <Compile Include="Core\Model\Scene3D.cs" />
+    <Compile Include="Forms\Display\LiveAccelerometerGraphForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\LiveAccelerometerGraphForm.Designer.cs">
+    <Compile Include="Forms\Display\LiveAccelerometerGraphForm.Designer.cs">
       <DependentUpon>LiveAccelerometerGraphForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\RawDataForm.cs">
+    <Compile Include="Forms\Display\ReplayDataDisplayForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\RawDataForm.Designer.cs">
-      <DependentUpon>RawDataForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\ReplayDataDisplayForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\ReplayDataDisplayForm.designer.cs">
+    <Compile Include="Forms\Display\ReplayDataDisplayForm.designer.cs">
       <DependentUpon>ReplayDataDisplayForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\LiveDataDisplay.cs">
+    <Compile Include="Forms\Display\LiveDataDisplay.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\LiveDataDisplay.designer.cs">
+    <Compile Include="Forms\Display\LiveDataDisplay.designer.cs">
       <DependentUpon>LiveDataDisplay.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\BadJooJooException.cs" />
-    <Compile Include="Forms\ConfigurationDialog.cs">
+    <Compile Include="Forms\Configuration\ConfigurationDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\ConfigurationDialog.Designer.cs">
+    <Compile Include="Forms\Configuration\ConfigurationDialog.Designer.cs">
       <DependentUpon>ConfigurationDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Core\Bone.cs" />
-    <Compile Include="Forms\AntiAliasedGLControl.cs">
+    <Compile Include="Core\Model\Bone.cs" />
+    <Compile Include="Forms\Display\AntiAliasedGLControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Forms\MappingDialog.cs">
+    <Compile Include="Forms\Configuration\MappingDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\MappingDialog.designer.cs">
+    <Compile Include="Forms\Configuration\MappingDialog.designer.cs">
       <DependentUpon>MappingDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\DataStructures.cs" />
-    <Compile Include="Forms\MainForm.cs">
+    <Compile Include="Forms\Configuration\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\MainForm.Designer.cs">
+    <Compile Include="Forms\Configuration\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\Logger.cs" />
@@ -114,42 +108,39 @@
     <Compile Include="Helpers\MicroLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\RingBuffer.cs" />
-    <Compile Include="Core\Sensor.cs" />
-    <Compile Include="Core\Nexus.cs" />
-    <Compile Include="Core\SensorDataPlayer.cs" />
-    <Compile Include="Forms\DataRecorderForm.cs">
+    <Compile Include="Core\IO\Sensor.cs" />
+    <Compile Include="Core\IO\Nexus.cs" />
+    <Compile Include="Core\Presentation\SensorDataPlayer.cs" />
+    <Compile Include="Forms\Configuration\DataRecorderForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\DataRecorderForm.Designer.cs">
+    <Compile Include="Forms\Configuration\DataRecorderForm.Designer.cs">
       <DependentUpon>DataRecorderForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Core\SensorDataRecorder.cs" />
-    <Compile Include="Core\Skeleton.cs" />
-    <EmbeddedResource Include="Forms\AntiAliasedGLControl.resx">
+    <Compile Include="Core\Presentation\SensorDataRecorder.cs" />
+    <Compile Include="Core\Model\Skeleton.cs" />
+    <EmbeddedResource Include="Forms\Display\AntiAliasedGLControl.resx">
       <DependentUpon>AntiAliasedGLControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ConfigurationDialog.resx">
+    <EmbeddedResource Include="Forms\Configuration\ConfigurationDialog.resx">
       <DependentUpon>ConfigurationDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\LiveAccelerometerGraphForm.resx">
+    <EmbeddedResource Include="Forms\Display\LiveAccelerometerGraphForm.resx">
       <DependentUpon>LiveAccelerometerGraphForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\RawDataForm.resx">
-      <DependentUpon>RawDataForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ReplayDataDisplayForm.resx">
+    <EmbeddedResource Include="Forms\Display\ReplayDataDisplayForm.resx">
       <DependentUpon>ReplayDataDisplayForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\LiveDataDisplay.resx">
+    <EmbeddedResource Include="Forms\Display\LiveDataDisplay.resx">
       <DependentUpon>LiveDataDisplay.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\DataRecorderForm.resx">
+    <EmbeddedResource Include="Forms\Configuration\DataRecorderForm.resx">
       <DependentUpon>DataRecorderForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\MainForm.resx">
+    <EmbeddedResource Include="Forms\Configuration\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\MappingDialog.resx">
+    <EmbeddedResource Include="Forms\Configuration\MappingDialog.resx">
       <DependentUpon>MappingDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
