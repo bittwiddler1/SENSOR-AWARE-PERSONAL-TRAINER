@@ -123,12 +123,22 @@ namespace Sensor_Aware_PT
                 }
                 GL.End();
 
+                
                 GL.Enable( EnableCap.LineStipple );
-                GL.LineStipple( 3, Convert.ToInt16( "0011001100110011", 2 ) );
+                GL.LineStipple( 6, Convert.ToInt16( "0011011100110011", 2 ) );
                 GL.Begin( BeginMode.Lines );
+                    GL.Color3( Color.White );
                     GL.Vertex2( 0, offset - ( 440f / scale ) );
-                    GL.Vertex2( WindowDimensions.X, offset - ( 440f / scale ) );
+                    GL.Vertex2( WindowDimensions.X/8, offset - ( 440f / scale ) );
+                    GL.Vertex2( 0, offset - ( 220f / scale ) );
+                    GL.Vertex2( WindowDimensions.X / 8, offset - ( 220f / scale ) );
+
+                    GL.Vertex2( 0, offset +( 440f / scale ) );
+                    GL.Vertex2( WindowDimensions.X / 8, offset + ( 440f / scale ) );
+                    GL.Vertex2( 0, offset + ( 220f / scale ) );
+                    GL.Vertex2( WindowDimensions.X / 8, offset + ( 220f / scale ) );      
                 GL.End();
+                GL.Disable( EnableCap.LineStipple );
                 /** Draw the dotted 1g/2g lines */
             }
         }
