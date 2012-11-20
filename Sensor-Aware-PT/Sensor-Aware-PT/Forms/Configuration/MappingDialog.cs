@@ -35,14 +35,24 @@ namespace Sensor_Aware_PT
         private bool bSaved = false;
         #endregion
 
+        static private MappingDialog mInstance = null;
         #region ConstructorDeconstructor
-        public MappingDialog()
+        private MappingDialog()
         {
             InitializeComponent();
             mSensorMappings = mNexus.BoneMappings;
  
             this.LaunchWorkerThread();
             this.Focus();
+        }
+
+
+        internal static MappingDialog GetInstance()
+        {
+            if (mInstance == null)
+                mInstance = new MappingDialog();
+
+            return mInstance;
         }
 
         private void LaunchWorkerThread()
@@ -399,6 +409,12 @@ namespace Sensor_Aware_PT
         }
         #endregion
 
+        private void MappingDialog_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = true;
+            this.Hide();
+        }
+
         #region oldcode
 
 
@@ -443,5 +459,6 @@ namespace Sensor_Aware_PT
         //    }
         //}
         #endregion
+
     }
 }

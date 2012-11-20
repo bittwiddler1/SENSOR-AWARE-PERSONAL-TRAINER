@@ -104,7 +104,7 @@ namespace Sensor_Aware_PT
 
         public void initialize()
         {
-            this.mConfigurator = new ConfigurationDialog();
+            this.mConfigurator = ConfigurationDialog.GetInstance();
             this.mConfigurator.ShowDialog(); 
 
             mAvailableSensors = mSensorDict.Values.ToArray();

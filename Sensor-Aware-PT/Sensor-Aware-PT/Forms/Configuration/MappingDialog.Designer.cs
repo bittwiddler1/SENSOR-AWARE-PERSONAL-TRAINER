@@ -111,6 +111,7 @@
             this.Name = "MappingDialog";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "MappingDialog";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MappingDialog_FormClosing);
             this.mPanel.ResumeLayout(false);
             this.mSplitter.Panel1.ResumeLayout(false);
             this.mSplitter.Panel2.ResumeLayout(false);

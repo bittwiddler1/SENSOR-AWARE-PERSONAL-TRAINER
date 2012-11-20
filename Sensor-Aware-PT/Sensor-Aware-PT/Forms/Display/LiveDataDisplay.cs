@@ -75,7 +75,7 @@ namespace Sensor_Aware_PT
             }
             catch (Exception)
             {
-                MappingDialog MD = new MappingDialog();
+                MappingDialog MD = MappingDialog.GetInstance();
                 MD.ShowDialog();
             }
         }

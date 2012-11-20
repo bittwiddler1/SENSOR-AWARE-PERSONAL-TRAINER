@@ -45,8 +45,10 @@ namespace Sensor_Aware_PT
         #endregion
         #endregion
 
+        static private ConfigurationDialog mInstance = null;
+
         #region ConstructorDeconstructor
-        public ConfigurationDialog()
+        private ConfigurationDialog()
         {
             InitializeComponent();
 
@@ -57,6 +59,14 @@ namespace Sensor_Aware_PT
 
 
             this.Focus();
+        }
+
+        internal static ConfigurationDialog GetInstance()
+        {
+            if (mInstance == null)
+                mInstance = new ConfigurationDialog();
+
+            return mInstance;
         }
 
         private void LaunchWorkerThread(Boolean bReadFile = true)
@@ -319,6 +329,8 @@ namespace Sensor_Aware_PT
                     this.PopulateDictionaries();
                 }
             }
+            e.Cancel = true;
+            this.Hide();
         }
         #endregion
 
@@ -582,5 +594,7 @@ namespace Sensor_Aware_PT
         //    }
         //}
         #endregion
+
+
     }
 }

@@ -18,7 +18,9 @@ namespace Sensor_Aware_PT
     {
 
         private Nexus mSensorManager;
-        
+        private MappingDialog MD;
+        private ConfigurationDialog CD;
+
         public MainForm()
         {
             InitializeComponent();
@@ -116,13 +118,13 @@ namespace Sensor_Aware_PT
             Nexus.Instance.mSensorDict.Clear();
             Nexus.Instance.mSensorIDDict.Clear();
 
-            ConfigurationDialog CD = new ConfigurationDialog();
+            ConfigurationDialog CD = ConfigurationDialog.GetInstance();
             CD.ShowDialog();
         }
 
         private void mappingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MappingDialog MD = new MappingDialog();
+            MappingDialog MD = MappingDialog.GetInstance(); 
             MD.ShowDialog();
         }
 
