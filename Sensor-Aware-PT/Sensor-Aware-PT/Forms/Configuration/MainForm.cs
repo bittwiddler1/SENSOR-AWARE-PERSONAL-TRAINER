@@ -39,6 +39,8 @@ namespace Sensor_Aware_PT
             mSensorManager.InitializationComplete += new Nexus.InitializationCompleteHandler( mSensorManager_NexusInitializedEvent );
             mSensorManager.SensorStatusChanged += new Nexus.SensorStatusChangedHandler( mSensorManager_SensorStatusChanged );
             mSensorManager.initialize();
+
+            
         }
 
         void mSensorManager_SensorStatusChanged( object sender, EventArgs e )
@@ -91,7 +93,7 @@ namespace Sensor_Aware_PT
 
         private void btnLiveView_Click( object sender, EventArgs e )
         {
-
+            MappingDialog.Instance.ReadConfigFile();
             LiveDataDisplayForm EF = new LiveDataDisplayForm();
             EF.subscribeToSource( Nexus.Instance );
 
@@ -118,13 +120,13 @@ namespace Sensor_Aware_PT
             Nexus.Instance.mSensorDict.Clear();
             Nexus.Instance.mSensorIDDict.Clear();
 
-            ConfigurationDialog CD = ConfigurationDialog.GetInstance();
+            ConfigurationDialog CD = ConfigurationDialog.Instance;
             CD.ShowDialog();
         }
 
         private void mappingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MappingDialog MD = MappingDialog.GetInstance(); 
+            MappingDialog MD = MappingDialog.Instance; 
             MD.ShowDialog();
         }
 

@@ -61,12 +61,15 @@ namespace Sensor_Aware_PT
             this.Focus();
         }
 
-        internal static ConfigurationDialog GetInstance()
+        internal  static ConfigurationDialog Instance
         {
-            if (mInstance == null)
-                mInstance = new ConfigurationDialog();
+            get
+            {
+                if (mInstance == null)
+                    mInstance = new ConfigurationDialog();
 
-            return mInstance;
+                return mInstance;
+            }
         }
 
         private void LaunchWorkerThread(Boolean bReadFile = true)

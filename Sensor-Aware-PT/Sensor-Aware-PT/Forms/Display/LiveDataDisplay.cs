@@ -75,9 +75,11 @@ namespace Sensor_Aware_PT
             }
             catch (Exception)
             {
-                MappingDialog MD = MappingDialog.GetInstance();
+                MappingDialog MD = MappingDialog.Instance;
                 MD.ShowDialog();
             }
+
+            mScene.addSceneObject(mSkeleton);
         }
            
         private void initializeRedrawTimer()

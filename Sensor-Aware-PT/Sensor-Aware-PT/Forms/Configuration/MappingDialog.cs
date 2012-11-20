@@ -43,16 +43,19 @@ namespace Sensor_Aware_PT
             mSensorMappings = mNexus.BoneMappings;
  
             this.LaunchWorkerThread();
-            this.Focus();
+            //this.Focus();
         }
 
 
-        internal static MappingDialog GetInstance()
+        internal static MappingDialog Instance
         {
-            if (mInstance == null)
-                mInstance = new MappingDialog();
+            get
+            {
+                if (mInstance == null)
+                    mInstance = new MappingDialog();
 
-            return mInstance;
+                return mInstance;
+            }
         }
 
         private void LaunchWorkerThread()
@@ -253,7 +256,7 @@ namespace Sensor_Aware_PT
         /// <summary>
         /// Reads the config file at %APPDATA%/Sensor-Aware-PT/config.xml
         /// </summary>
-        private bool ReadConfigFile()
+        public bool ReadConfigFile()
         {
             bool retval = true;
             StreamReader fileStream = null;
