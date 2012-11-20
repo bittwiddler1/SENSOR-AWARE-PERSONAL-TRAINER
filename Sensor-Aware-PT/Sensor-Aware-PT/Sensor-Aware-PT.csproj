@@ -67,12 +67,6 @@
     <Compile Include="Forms\Display\LiveAccelerometerGraphForm.Designer.cs">
       <DependentUpon>LiveAccelerometerGraphForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\Display\ReplayDataDisplayForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\Display\ReplayDataDisplayForm.designer.cs">
-      <DependentUpon>ReplayDataDisplayForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\Display\LiveDataDisplay.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -127,9 +121,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\Display\LiveAccelerometerGraphForm.resx">
       <DependentUpon>LiveAccelerometerGraphForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\Display\ReplayDataDisplayForm.resx">
-      <DependentUpon>ReplayDataDisplayForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\Display\LiveDataDisplay.resx">
       <DependentUpon>LiveDataDisplay.cs</DependentUpon>

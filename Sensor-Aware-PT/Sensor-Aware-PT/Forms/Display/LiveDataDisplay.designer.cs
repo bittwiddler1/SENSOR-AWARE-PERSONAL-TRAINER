@@ -36,6 +36,8 @@ namespace Sensor_Aware_PT
             this.txtDebug = new System.Windows.Forms.TextBox();
             this.simpleOpenGlControl = new Sensor_Aware_PT.Forms.AntiAliasedGLControl();
             this.btnSynchronize = new System.Windows.Forms.Button();
+            this.btnPause = new System.Windows.Forms.Button();
+            this.hScrollTime = new System.Windows.Forms.HScrollBar();
             this.SuspendLayout();
             // 
             // btnCalibrate
@@ -136,11 +138,31 @@ namespace Sensor_Aware_PT
             this.btnSynchronize.UseVisualStyleBackColor = true;
             this.btnSynchronize.Click += new System.EventHandler(this.btnSynchronize_Click);
             // 
+            // btnPause
+            // 
+            this.btnPause.Location = new System.Drawing.Point(466, 46);
+            this.btnPause.Name = "btnPause";
+            this.btnPause.Size = new System.Drawing.Size(75, 23);
+            this.btnPause.TabIndex = 12;
+            this.btnPause.Text = "paus";
+            this.btnPause.UseVisualStyleBackColor = true;
+            this.btnPause.Click += new System.EventHandler(this.btnPause_Click);
+            // 
+            // hScrollTime
+            // 
+            this.hScrollTime.Location = new System.Drawing.Point(459, 12);
+            this.hScrollTime.Name = "hScrollTime";
+            this.hScrollTime.Size = new System.Drawing.Size(182, 30);
+            this.hScrollTime.TabIndex = 11;
+            this.hScrollTime.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hScrollTime_Scroll);
+            // 
             // LiveDataDisplayForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(895, 558);
+            this.Controls.Add(this.btnPause);
+            this.Controls.Add(this.hScrollTime);
             this.Controls.Add(this.txtDebug);
             this.Controls.Add(this.cameraFocusDropdown);
             this.Controls.Add(this.debug_btn);
@@ -168,6 +190,8 @@ namespace Sensor_Aware_PT
         private System.Windows.Forms.Button debug_btn;
         private System.Windows.Forms.ComboBox cameraFocusDropdown;
         private System.Windows.Forms.TextBox txtDebug;
+        private System.Windows.Forms.Button btnPause;
+        private System.Windows.Forms.HScrollBar hScrollTime;
 
     }
 }

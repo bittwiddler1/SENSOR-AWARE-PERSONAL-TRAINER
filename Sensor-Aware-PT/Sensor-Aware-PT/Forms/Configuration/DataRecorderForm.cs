@@ -84,15 +84,11 @@ namespace Sensor_Aware_PT
                 SensorDataPlayer sdp = new SensorDataPlayer();
 
                 ReplayData data = sdp.loadFile( openDialog.FileName );
-                ReplayDataDisplayForm Replay = new ReplayDataDisplayForm(sdp, data.mCalibrationData, data.mSensorBoneMapping);
-
-                //Replay.Show();
-
+                LiveDataDisplayForm Replay = new LiveDataDisplayForm(sdp, data.mCalibrationData, data.mSensorBoneMapping);
                 BindingList<SensorDataEntry> blist = new BindingList<SensorDataEntry>( data.mDataList );
                 dataGridView1.DataSource = blist;
                 Replay.Show();
                 Replay.begin();
-                
             }
         }
     }

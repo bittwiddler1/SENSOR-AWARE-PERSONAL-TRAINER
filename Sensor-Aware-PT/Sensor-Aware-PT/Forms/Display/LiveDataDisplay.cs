@@ -28,10 +28,27 @@ namespace Sensor_Aware_PT
         Vector2 mMouseLoc = new Vector2();
         //bool[] mMouseState = new bool[ 2 ];
         private bool mLoaded = false;
-
+        private SensorDataPlayer mReplayer;
+        private Dictionary<BoneType, Matrix4> mCalibrationData;
+        private Dictionary<string, BoneType> mSensorBoneMapping;
+        private bool isReplay = false;
         public LiveDataDisplayForm()
         {
             InitializeComponent();
+        }
+
+        public LiveDataDisplayForm( SensorDataPlayer sdp, Dictionary<BoneType, Matrix4> calibration, Dictionary<string, BoneType> boneMapping )
+        {
+            // TODO: Complete member initialization
+            InitializeComponent();
+            this.mCalibrationData = calibration;
+            this.mSensorBoneMapping = boneMapping;
+            mReplayer = sdp;
+            this.subscribeToSource( sdp );
+            isReplay = true;
+
+            this.btnCalibrate.Visible = false;
+            this.btnSynchronize.Visible = false;
         }
 
         private Timer formUpdateTimer;
@@ -104,9 +121,15 @@ namespace Sensor_Aware_PT
                 simpleOpenGlControl.Refresh();
                 handleInput();
                 updateDebugText();
+                hScrollTime.Value = mReplayer.CurrentPosition;
             }
         }
 
+        public void begin()
+        {
+            hScrollTime.Maximum = mReplayer.Length;
+            mReplayer.beginPlay();
+        }
         
         void handleInput()
         {
@@ -321,13 +344,33 @@ namespace Sensor_Aware_PT
             mSkeleton.debugWritePositions();
         }
 
+        private void hScrollTime_Scroll( object sender, ScrollEventArgs e )
+        {
+            mReplayer.seekTo( hScrollTime.Value );
+        }
+
+        private void btnPause_Click( object sender, EventArgs e )
+        {
+            mReplayer.pause();
+        }
         private void setupSkeletonBoneMappings()
         {
-            foreach( KeyValuePair<string, BoneType> kvp in Nexus.Instance.BoneMappings )
+            if( isReplay )
             {
-                mSkeleton.createMapping( kvp.Key, kvp.Value );
-            }
+                foreach( KeyValuePair<string, BoneType> kvp in mSensorBoneMapping )
+                {
+                    mSkeleton.createMapping( kvp.Key, kvp.Value );
+                }
 
+                mSkeleton.calibrateZero( mCalibrationData );
+            }
+            else
+            {
+                foreach( KeyValuePair<string, BoneType> kvp in Nexus.Instance.BoneMappings )
+                {
+                    mSkeleton.createMapping( kvp.Key, kvp.Value );
+                }
+            }
         }
 
         private void cameraFocusDropdown_SelectedIndexChanged( object sender, EventArgs e )
