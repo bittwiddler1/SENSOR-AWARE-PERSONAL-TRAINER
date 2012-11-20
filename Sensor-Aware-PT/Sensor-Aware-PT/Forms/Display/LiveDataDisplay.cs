@@ -278,10 +278,6 @@ namespace Sensor_Aware_PT
 
         #endregion
 
-        private void button3_Click( object sender, EventArgs e )
-        {
-
-        }
 
         private void ExperimentalForm_FormClosing( object sender, FormClosingEventArgs e )
         {
@@ -463,6 +459,14 @@ namespace Sensor_Aware_PT
         private void LiveDataDisplayForm_Resize( object sender, EventArgs e )
         {
 
+        }
+
+        private void LiveDataDisplayForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.E && e.Modifiers == (Keys.Control | Keys.Shift))
+            {
+                debug_btn.Show();
+            }
         }
     }
 }

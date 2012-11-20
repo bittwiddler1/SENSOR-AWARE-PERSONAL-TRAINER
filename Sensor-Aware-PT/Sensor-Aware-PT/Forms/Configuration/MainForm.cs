@@ -81,41 +81,24 @@ namespace Sensor_Aware_PT
 
         private void btnRecorder_Click( object sender, EventArgs e )
         {
-            /*
-            BackgroundWorker bg = new BackgroundWorker();
-
-            bg.DoWork += new DoWorkEventHandler( delegate
-            {
-                SDV.ShowDialog();
-                
-            } );
-
-            bg.RunWorkerAsync();
-             * */
             DataRecorderForm SDV = new DataRecorderForm();
             SDV.Show();
         }
 
         private void btnStability_Click( object sender, EventArgs e )
         {
-   
-        }
-
-        private void listView1_SelectedIndexChanged( object sender, EventArgs e )
-        {
-
-        }
-
-        private void btnGraph_Click( object sender, EventArgs e )
-        {
             LiveAccelerometerGraphForm liveGrah = new LiveAccelerometerGraphForm();
 
             liveGrah.Show();
             liveGrah.subscribeToSource( Nexus.Instance );
         }
-
+   
+      
         private void sensorsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Nexus.Instance.mSensorDict.Clear();
+            Nexus.Instance.mSensorIDDict.Clear();
+
             ConfigurationDialog CD = new ConfigurationDialog();
             CD.ShowDialog();
         }
@@ -124,6 +107,11 @@ namespace Sensor_Aware_PT
         {
             MappingDialog MD = new MappingDialog();
             MD.ShowDialog();
+        }
+
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }

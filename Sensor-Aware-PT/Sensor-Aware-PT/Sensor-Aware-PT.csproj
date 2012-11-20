@@ -170,6 +170,28 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="icons\16_refresh.png" />
+    <None Include="icons\16_info.png" />
+    <None Include="icons\16_form.png" />
+    <None Include="icons\16_faq.png" />
+    <None Include="icons\16_edit_page.png" />
+    <None Include="icons\16_edit.png" />
+    <None Include="icons\64_statistics.png" />
+    <None Include="icons\64_refresh.png" />
+    <None Include="icons\64_poll.png" />
+    <None Include="icons\64_pie_graph.png" />
+    <None Include="icons\64_info.png" />
+    <None Include="icons\64_edit.png" />
+    <None Include="icons\64_close.png" />
+    <None Include="icons\64_catalogue.png" />
+    <None Include="icons\64_archive.png" />
+    <None Include="icons\16_settings.png" />
+    <None Include="icons\48_refresh.png" />
+    <None Include="icons\32_refresh.png" />
+    <None Include="icons\32_settings.png" />
+    <None Include="icons\64_settings.png" />
+    <None Include="icons\16_close.png" />
+    <None Include="icons\16_map.png" />
     <Content Include="view-refresh.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
