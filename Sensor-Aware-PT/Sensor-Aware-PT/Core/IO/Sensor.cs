@@ -514,8 +514,6 @@ namespace Sensor_Aware_PT
                         default:
                             break;
                     }
-                    
-
                 }
             }
             else
