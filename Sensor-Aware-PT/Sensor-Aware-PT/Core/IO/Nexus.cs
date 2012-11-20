@@ -60,6 +60,9 @@ namespace Sensor_Aware_PT
         /** Delegate & event for when all sensors are initialized and reading */
         public delegate void InitializationCompleteHandler( object sender, EventArgs e );
         public event InitializationCompleteHandler InitializationComplete;
+
+        public delegate void SensorStatusChangedHandler( object sender, EventArgs e );
+        public event SensorStatusChangedHandler SensorStatusChanged;
  
         #endregion
 
@@ -110,11 +113,17 @@ namespace Sensor_Aware_PT
                 /** Register the ready event */
                 s.InitializationComplete += new Sensor.InitializationCompleteHandler(Sensor_InitializationCompleteEvent);
                 s.ReInitializationComplete += new Sensor.ReInitializationCompleteHandler( Sensor_ReInitializationComplete );
+                s.Disconnected += new Sensor.DisconnectedHandler( Sensor_Disconnected );
             }
 
             /** Initialize the first member */
             mAvailableSensors[0].initialize();
             
+        }
+
+        void Sensor_Disconnected( object sender, EventArgs e )
+        {
+            OnSensorStatusChanged();
         }
 
         #region ObserverPattern
@@ -374,7 +383,7 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void Sensor_ReActivationComplete( object sender, EventArgs e )
         {
-            //throw new NotImplementedException();
+            OnSensorStatusChanged();
         }
 
         /// <summary>
@@ -408,6 +417,22 @@ namespace Sensor_Aware_PT
                 }
             }
             catch(Exception e)
+            {
+                throw e;
+            }
+        }
+
+        private void OnSensorStatusChanged()
+        {
+            SensorStatusChangedHandler handler = SensorStatusChanged;
+            try
+            {
+                if( handler != null )
+                {
+                    handler( this, EventArgs.Empty );
+                }
+            }
+            catch( Exception e )
             {
                 throw e;
             }

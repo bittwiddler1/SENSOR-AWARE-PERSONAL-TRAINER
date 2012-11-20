@@ -35,8 +35,13 @@ namespace Sensor_Aware_PT
             
             mSensorManager = Nexus.Instance;
             mSensorManager.InitializationComplete += new Nexus.InitializationCompleteHandler( mSensorManager_NexusInitializedEvent );
-            
+            mSensorManager.SensorStatusChanged += new Nexus.SensorStatusChangedHandler( mSensorManager_SensorStatusChanged );
             mSensorManager.initialize();
+        }
+
+        void mSensorManager_SensorStatusChanged( object sender, EventArgs e )
+        {
+            refreshSensorStatusList();
         }
 
         /// <summary>
@@ -46,11 +51,23 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void mSensorManager_NexusInitializedEvent( object sender, EventArgs e )
         {
+            refreshSensorStatusList();
+        }
+
+        private void refreshSensorStatusList()
+        {
             List<Sensor> all = mSensorManager.getAllSensors();
+
+            this.Invoke( ( MethodInvoker ) delegate
+            {
+                sensorListView.Items.Clear();
+            } );
+
             foreach( Sensor s in all )
             {
                 this.Invoke( ( MethodInvoker ) delegate
                 {
+                    
                     ListViewItem lvi = sensorListView.Items.Add( String.Format( "Sensor {0}", s.Id ) );
 
                     lvi.BackColor = s.IsActivated ? Color.Green : Color.Red;
