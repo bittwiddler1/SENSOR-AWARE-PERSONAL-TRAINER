@@ -24,7 +24,7 @@ namespace Sensor_Aware_PT
         /** Amount of time to wait between reconnects, in ms */
         static int RECONNECT_TIMEOUT = 65000;
         /** Maximum # of disconnects before never reconnecting */
-        private const int MAX_READ_ERRORS = 3;
+        private const int MAX_READ_ERRORS = 7;
         System.Diagnostics.Stopwatch mTimeoutWatch;
 
         /** Friendly sensor ID A-D */
@@ -86,7 +86,8 @@ namespace Sensor_Aware_PT
             ReInitialized,
             ReConnecting
         };
-        private SensorState mSensorState = SensorState.Uninitialized; /** Default state for the sensor */
+        private SensorState mCurrentSensorState = SensorState.Uninitialized; /** Default state for the sensor */
+        private SensorState mPreviousSensorState = SensorState.Uninitialized;
         
         #endregion
 
@@ -246,7 +247,7 @@ namespace Sensor_Aware_PT
                     finally
                     {
                         /** Reconnect unless init complete */
-                        switch( mSensorState )
+                        switch( mCurrentSensorState )
                         {
                             case SensorState.ReInitialized:
                                 mReadThread.Start();
@@ -319,7 +320,7 @@ namespace Sensor_Aware_PT
         /// <param name="e"></param>
         void mSerialPort_DataReceived( object sender, SerialDataReceivedEventArgs e )
         {
-            if( mSensorState == SensorState.Initialized || mSensorState == SensorState.ReInitialized)
+            if( mCurrentSensorState == SensorState.Initialized || mCurrentSensorState == SensorState.ReInitialized)
             {
                 if( mSerialPort.BytesToRead > 0 )
                     mSerialPort.ReadExisting();
@@ -332,7 +333,7 @@ namespace Sensor_Aware_PT
         /// <exception cref="Exception">Thrown when unable to activate a sensor due to not being initialized</exception>
         public void activate()
         {
-            if( mSensorState == SensorState.Initialized )
+            if( mCurrentSensorState == SensorState.Initialized )
                 mReadThread.Start();
             else
                 throw new Exception( String.Format( "Cannot activate sensor {0} since it is not initialized", mID ) );
@@ -389,7 +390,7 @@ namespace Sensor_Aware_PT
         private void readThreadRun()
         {
             
-            if ((mSensorState == SensorState.Initialized )||( mSensorState == SensorState.ReInitialized))
+            if ((mCurrentSensorState == SensorState.Initialized )||( mCurrentSensorState == SensorState.ReInitialized))
             {
                 changeState( SensorState.PreActivated );
 
@@ -431,19 +432,21 @@ namespace Sensor_Aware_PT
 
 
                     Logger.Info( "Sensor {0} synchronization complete", mID );
-                    
-                    changeState( SensorState.Activated );
 
-                    if( mSensorState == SensorState.ReInitialized )
+                    if( mPreviousSensorState == SensorState.ReInitialized )
+                    {
+                        changeState( SensorState.Activated );
                         OnReactivationComplete();
-                    else
+                    }
+                    else if( mPreviousSensorState == SensorState.Initialized )
+                    {
+                        changeState( SensorState.Activated );
                         OnActivationComplete();
+                    }
 
-                    
-                    
                     /** Send the sensor ready event */
 
-                    while( mSensorState == SensorState.Activated )
+                    while( mCurrentSensorState == SensorState.Activated )
                     {
                         SensorDataEntry newData;
                         lock( mSynchronizationLock )
@@ -471,7 +474,10 @@ namespace Sensor_Aware_PT
                 }
                 finally
                 {
-                    switch( mSensorState )
+
+                    if( mSerialPort.IsOpen )
+                        mSerialPort.Close();    
+                    switch( mCurrentSensorState )
                     {
                         case SensorState.Uninitialized:
                             break;
@@ -486,6 +492,8 @@ namespace Sensor_Aware_PT
                                 {
                                     Logger.Error( "Sensor {0} disconnected, attempting to reconnect", mID );
                                     changeState( SensorState.ReConnecting );
+                                    /** Raise the disconnect event */
+                                    OnDisconnected();
                                     Thread reconnectThread = new Thread( reinitialize );
                                     reconnectThread.IsBackground = true;
                                     reconnectThread.Start();
@@ -494,6 +502,8 @@ namespace Sensor_Aware_PT
                                 {
                                     Logger.Error( "Sensor {0} maximum read error limit reach, not going to reconnect", mID );
                                     changeState( SensorState.NotPresent );
+                                    /** Raise the disconnect event */
+                                    OnDisconnected();
                                 }
                             }
                             break;
@@ -504,8 +514,8 @@ namespace Sensor_Aware_PT
                         default:
                             break;
                     }
+                    
 
-                    mSerialPort.Close();
                 }
             }
             else
@@ -721,8 +731,9 @@ namespace Sensor_Aware_PT
         /// <param name="newState">The new state</param>
         private void changeState(SensorState newState)
         {
-            Logger.Info("Sensor {0} changing state from {1} to {2}", mID, mSensorState, newState);
-            mSensorState = newState;
+            Logger.Info("Sensor {0} changing state from {1} to {2}", mID, mCurrentSensorState, newState);
+            mPreviousSensorState = mCurrentSensorState;
+            mCurrentSensorState = newState;
         }
 
         /// <summary>
@@ -793,7 +804,7 @@ namespace Sensor_Aware_PT
         {
             get
             {
-                return mSensorState == SensorState.Activated;
+                return mCurrentSensorState == SensorState.Activated;
             }
         }
 
@@ -801,7 +812,7 @@ namespace Sensor_Aware_PT
         {
             get
             {
-                return mSensorState == SensorState.Initialized;
+                return mCurrentSensorState == SensorState.Initialized;
             }
         }
 
@@ -815,7 +826,7 @@ namespace Sensor_Aware_PT
             lock( mSynchronizationLock )
             {
 
-                if( mSensorState == SensorState.Activated )
+                if( mCurrentSensorState == SensorState.Activated )
                 {
                     Logger.Info( "Sensor {0} RE-synchronization started", mID );
                     /** Clear the input buffer and then request the sync token */
