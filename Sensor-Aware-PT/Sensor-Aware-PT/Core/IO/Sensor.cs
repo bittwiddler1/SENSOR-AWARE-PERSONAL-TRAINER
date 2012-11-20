@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using OpenTK;
 using System.IO;
+using Sensor_Aware_PT.Forms;
 
 namespace Sensor_Aware_PT
 {
@@ -24,6 +25,7 @@ namespace Sensor_Aware_PT
         static int RECONNECT_TIMEOUT = 65000;
         /** Maximum # of disconnects before never reconnecting */
         private const int MAX_READ_ERRORS = 3;
+        System.Diagnostics.Stopwatch mTimeoutWatch;
 
         /** Friendly sensor ID A-D */
         private string mID;
@@ -152,7 +154,8 @@ namespace Sensor_Aware_PT
             mData = new RingBuffer<SensorDataEntry>(HISTORY_BUFFER_SIZE);
             /** Add an empty entry in case getLastEntry is called before data comes in */
             mData.Add( new SensorDataEntry() );
-
+            mTimeoutWatch = new System.Diagnostics.Stopwatch();
+            
             
         }
 
@@ -405,9 +408,10 @@ namespace Sensor_Aware_PT
                     /** Clear the input buffer and then request the sync token */
                     
                     bool synchronized = false;
-
+                    bool synchronizationTimeout = false;
                     /** Wait until we are synchronized */
                     /** Clear the input buffer and then request the sync token */
+                    mTimeoutWatch.Restart();
                     do
                     {
                         mSerialPort.DiscardInBuffer();
@@ -415,11 +419,16 @@ namespace Sensor_Aware_PT
                         mSerialPort.Write( "#s00" );
                         Thread.Sleep( 5 );
                         synchronized = readToken( "#SYNCH00\r\n" );
-
-                        mSerialPort.Write( "#s01" );
-                        Thread.Sleep( 5 );
+                        if( mTimeoutWatch.ElapsedMilliseconds >= 15000 )
+                            synchronizationTimeout = true;
                     }
-                    while( !synchronized );
+                    while( !synchronized  && !synchronizationTimeout);
+
+                    mTimeoutWatch.Reset();
+
+                    if( synchronizationTimeout )
+                        throw new BadJooJooException( "Synchronization timed the fuck out" );
+
 
                     Logger.Info( "Sensor {0} synchronization complete", mID );
                     

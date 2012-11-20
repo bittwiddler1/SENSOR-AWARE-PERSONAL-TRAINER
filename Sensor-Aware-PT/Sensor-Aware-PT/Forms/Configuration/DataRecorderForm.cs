@@ -83,28 +83,15 @@ namespace Sensor_Aware_PT
             {
                 SensorDataPlayer sdp = new SensorDataPlayer();
 
-
-
-
-                BackgroundWorker bg = new BackgroundWorker();
                 ReplayData data = sdp.loadFile( openDialog.FileName );
-                ReplayDataDisplayForm Replay = new ReplayDataDisplayForm(data.mCalibrationData, data.mSensorBoneMapping);
+                ReplayDataDisplayForm Replay = new ReplayDataDisplayForm(sdp, data.mCalibrationData, data.mSensorBoneMapping);
 
-                Replay.subscribeToSource( sdp );
-                Replay.Show();
+                //Replay.Show();
 
                 BindingList<SensorDataEntry> blist = new BindingList<SensorDataEntry>( data.mDataList );
                 dataGridView1.DataSource = blist;
-
-                bg.DoWork += new DoWorkEventHandler( delegate
-                {
-                    sdp.play();
-
-                } );
-
-                bg.RunWorkerAsync();
-
-                
+                Replay.Show();
+                Replay.begin();
                 
             }
         }

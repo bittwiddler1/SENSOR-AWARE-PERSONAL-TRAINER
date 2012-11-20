@@ -49,11 +49,11 @@ namespace Sensor_Aware_PT.Forms
 
             GL.LoadIdentity();
             GL.Viewport( 0, 0, width, height );
-            GL.Ortho(0, width, -height / 2, height / 2, -1000, 1000 );
+            GL.Ortho(0, width, height, 0, -1000, 1000 );
 
             GL.MatrixMode( MatrixMode.Modelview );
 
-            mGrapher.WindowDimensions = new OpenTK.Vector2( width, height );
+            mGrapher.setDimensions(new OpenTK.Vector2( width, height ));
         }
 
         private void antiAliasedGLControl1_Paint( object sender, PaintEventArgs e )
@@ -93,5 +93,10 @@ namespace Sensor_Aware_PT.Forms
         }
 
         #endregion
+
+        private void btnResynchronize_Click( object sender, EventArgs e )
+        {
+            Nexus.Instance.resynchronize();
+        }
     }
 }

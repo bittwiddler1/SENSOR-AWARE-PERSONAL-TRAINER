@@ -7,6 +7,8 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics;
 using System.Threading;
+using Sensor_Aware_PT.Forms;
+using System.ComponentModel;
 namespace Sensor_Aware_PT
 {
     /// <summary>
@@ -15,6 +17,14 @@ namespace Sensor_Aware_PT
     /// </summary>
     public class SensorDataPlayer : IObservable<SensorDataEntry>
     {
+        enum DataPlayerState
+        {
+            Uninitialized,
+            Paused,
+            Ready, //at the start but not playing
+            Playing,
+            Finished
+        }
         /// <summary>
         /// Used to keep track of time
         /// </summary>
@@ -25,13 +35,32 @@ namespace Sensor_Aware_PT
         /// </summary>
         private int mCurrentIndex = 0;
         private int mMaxIndex = 0;
-        
+        private int mOffsetTime = 0;
+        private TimeSpan mOffsetSpan = TimeSpan.Zero;
+        private DataPlayerState mCurrentState = DataPlayerState.Uninitialized;
+                    BackgroundWorker bg = new BackgroundWorker();
+
         /// <summary>
         /// Holds the data to be played
         /// </summary>
         //private List<SensorDataEntry> mData.mDataList;
         private ReplayData mData;
 
+        public int Length
+        {
+            get
+            {
+                return mMaxIndex;
+            }
+        }
+
+        public int CurrentPosition
+        {
+            get
+            {
+                return mCurrentIndex;
+            }
+        }
         #region ObserverPattern
 
         /// <summary>
@@ -89,6 +118,12 @@ namespace Sensor_Aware_PT
 
         public SensorDataPlayer()
         {
+            bg.DoWork += new DoWorkEventHandler( delegate
+            {
+                this.play();
+
+            } );
+            bg.WorkerSupportsCancellation = true;
         }
 
         /// <summary>
@@ -126,26 +161,81 @@ namespace Sensor_Aware_PT
 
             mData = ( ReplayData ) inputFormatter.Deserialize( inputStream );
             mMaxIndex = mData.mDataList.Count;
-
+            mCurrentState = DataPlayerState.Ready;
             return mData;
         }
 
-        public void play()
+        public void beginPlay()
         {
+            Logger.Info( "Beginning to replay" );
+            bg.RunWorkerAsync();
+
+            
+        }
+        private void play()
+        {
+            if( mCurrentState == DataPlayerState.Uninitialized )
+                throw new BadJooJooException( "Can't start playing data if uninitialized" );
+            
+            mCurrentState = DataPlayerState.Playing;
+            
             mPreciseCounter.Start();
-            while( mCurrentIndex < mMaxIndex )
+            while( (mCurrentIndex < mMaxIndex) && mCurrentState == DataPlayerState.Playing )
             {
                 SensorDataEntry data = mData.mDataList[ mCurrentIndex ];
-                if( mPreciseCounter.Elapsed.CompareTo( data.timeSpan ) >= 0 )
+                if( mPreciseCounter.Elapsed.CompareTo( data.timeSpan - mOffsetSpan ) >= 0 )
                 {
                     NotifyObservers( data );
                     mCurrentIndex++;
                 }
                 Thread.SpinWait( 500 );
             };
+
+            Logger.Info( "Player leaving while loop" );
+            if(mCurrentIndex >= mMaxIndex)
+            {
+                mPreciseCounter.Reset();
+                //mMaxIndex = 0;
+                mCurrentIndex = 0;
+                mCurrentState = DataPlayerState.Finished;
+                mOffsetSpan = TimeSpan.Zero;
+                Logger.Info( "Player leaving beause current index > max" );
+                return;
+            }
+
+            if( mCurrentState == DataPlayerState.Paused )
+            {
+                Logger.Info( "Player leaving beause state change to pause" );
+                mPreciseCounter.Stop();
+                return;
+                
+            }
+            
+        }
+
+        public void pause()
+        {
+            if( mCurrentState == DataPlayerState.Playing )
+            {
+                mCurrentState = DataPlayerState.Paused;   
+            }
+            else if( mCurrentState == DataPlayerState.Paused )
+            {
+                beginPlay();
+            }
+        }
+
+        public void seekTo( int seek )
+        {
+
+            mCurrentIndex = seek;
+            mOffsetSpan = mData.mDataList[ mCurrentIndex ].timeSpan;
             mPreciseCounter.Reset();
-            mMaxIndex = 0;
-            mCurrentIndex = 0;
+            mPreciseCounter.Start();
+
+            if( mCurrentState == DataPlayerState.Finished )
+                beginPlay();
+
         }
     }
 }

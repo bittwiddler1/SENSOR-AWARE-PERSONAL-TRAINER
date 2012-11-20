@@ -189,7 +189,6 @@ namespace Sensor_Aware_PT
             /** First prepare stuff */
             //preDraw();
             /** Draw font shit first */
-
             QFont.Begin();
             GL.Disable( EnableCap.DepthTest );
             GL.PushMatrix();
@@ -200,6 +199,7 @@ namespace Sensor_Aware_PT
 
             GL.Enable( EnableCap.DepthTest );
             GL.Disable( EnableCap.Texture2D );
+
 
             foreach( IDrawable drawObj in mObjectList )
             {
@@ -282,6 +282,7 @@ namespace Sensor_Aware_PT
 
             //z-
             GL.Enable( EnableCap.LineStipple );
+
             GL.Begin( BeginMode.Lines );
             GL.Color3( Color.Blue );
             GL.Vertex3( 0, 0, 0 );
