@@ -75,17 +75,6 @@ namespace Sensor_Aware_PT
                 mKeyStatePrev[i] = false;
             }
 
-            /*
-                        Matrix4 rx, ry, rz;
-                        rx = Matrix4.CreateRotationX(-MathHelper.PiOver2);
-                        ry = Matrix4.Identity;
-                        rz = Matrix4.CreateRotationZ(MathHelper.PiOver2);
-                        mCamRotation = rx * ry * rz;
-            
-                        mCamRotation.Transpose();
-                        mCamRotation.Row2 *= -1f;
-                        */
-
             try
             {
                 setupSkeletonBoneMappings();
