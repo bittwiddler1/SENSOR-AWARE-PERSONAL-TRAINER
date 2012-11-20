@@ -28,9 +28,20 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.antiAliasedGLControl1 = new Sensor_Aware_PT.Forms.AntiAliasedGLControl();
             this.btnResynchronize = new System.Windows.Forms.Button();
+            this.antiAliasedGLControl1 = new Sensor_Aware_PT.Forms.AntiAliasedGLControl();
             this.SuspendLayout();
+            // 
+            // btnResynchronize
+            // 
+            this.btnResynchronize.BackgroundImage = global::Sensor_Aware_PT.Properties.Resources.view_refresh;
+            this.btnResynchronize.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnResynchronize.Location = new System.Drawing.Point(12, 13);
+            this.btnResynchronize.Name = "btnResynchronize";
+            this.btnResynchronize.Size = new System.Drawing.Size(75, 75);
+            this.btnResynchronize.TabIndex = 1;
+            this.btnResynchronize.UseVisualStyleBackColor = true;
+            this.btnResynchronize.Click += new System.EventHandler(this.btnResynchronize_Click);
             // 
             // antiAliasedGLControl1
             // 
@@ -38,24 +49,14 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.antiAliasedGLControl1.BackColor = System.Drawing.Color.Black;
-            this.antiAliasedGLControl1.Location = new System.Drawing.Point(12, 42);
+            this.antiAliasedGLControl1.Location = new System.Drawing.Point(12, 90);
             this.antiAliasedGLControl1.Name = "antiAliasedGLControl1";
-            this.antiAliasedGLControl1.Size = new System.Drawing.Size(278, 319);
+            this.antiAliasedGLControl1.Size = new System.Drawing.Size(278, 271);
             this.antiAliasedGLControl1.TabIndex = 0;
             this.antiAliasedGLControl1.VSync = true;
             this.antiAliasedGLControl1.Load += new System.EventHandler(this.antiAliasedGLControl1_Load);
             this.antiAliasedGLControl1.SizeChanged += new System.EventHandler(this.antiAliasedGLControl1_SizeChanged);
             this.antiAliasedGLControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.antiAliasedGLControl1_Paint);
-            // 
-            // btnResynchronize
-            // 
-            this.btnResynchronize.Location = new System.Drawing.Point(12, 13);
-            this.btnResynchronize.Name = "btnResynchronize";
-            this.btnResynchronize.Size = new System.Drawing.Size(75, 23);
-            this.btnResynchronize.TabIndex = 1;
-            this.btnResynchronize.Text = "Resynchronize";
-            this.btnResynchronize.UseVisualStyleBackColor = true;
-            this.btnResynchronize.Click += new System.EventHandler(this.btnResynchronize_Click);
             // 
             // LiveAccelerometerGraphForm
             // 

@@ -68,10 +68,10 @@ namespace Sensor_Aware_PT
             {
 
                 mLargeFont.PrintToVBO( "Sensor " + kvp.Key, new Vector3( 0, yOffset-15f, 0 ), Color.White );
-                mSmallFont.PrintToVBO("1g", new Vector3( 0, (220f/scale)+yOffset, 0 ), Color.WhiteSmoke);
-                mSmallFont.PrintToVBO( "2g", new Vector3( 0, ( 440f / scale ) + yOffset, 0 ), Color.WhiteSmoke );
-                mSmallFont.PrintToVBO( "1g", new Vector3( 0, yOffset-( 220f / scale ), 0 ), Color.WhiteSmoke );
-                mSmallFont.PrintToVBO( "2g", new Vector3( 0, yOffset-( 440f / scale ) , 0 ), Color.WhiteSmoke );
+                mSmallFont.PrintToVBO("1g", new Vector3( mDimensions.X-(mDimensions.X/8), (220f/scale)+yOffset, 0 ), Color.WhiteSmoke);
+                mSmallFont.PrintToVBO( "2g", new Vector3( mDimensions.X - ( mDimensions.X / 8 ),( 440f / scale ) + yOffset, 0 ), Color.WhiteSmoke );
+                mSmallFont.PrintToVBO( "1g", new Vector3( mDimensions.X - ( mDimensions.X / 8 ), yOffset - ( 220f / scale ), 0 ), Color.WhiteSmoke );
+                mSmallFont.PrintToVBO( "2g", new Vector3( mDimensions.X - ( mDimensions.X / 8 ), yOffset - ( 440f / scale ), 0 ), Color.WhiteSmoke );
                 yOffset += mDimensions.Y;
             }
             mLargeFont.LoadVBOs();
@@ -128,15 +128,15 @@ namespace Sensor_Aware_PT
                 GL.LineStipple( 6, Convert.ToInt16( "0011011100110011", 2 ) );
                 GL.Begin( BeginMode.Lines );
                     GL.Color3( Color.White );
-                    GL.Vertex2( 0, offset - ( 440f / scale ) );
-                    GL.Vertex2( WindowDimensions.X/8, offset - ( 440f / scale ) );
-                    GL.Vertex2( 0, offset - ( 220f / scale ) );
-                    GL.Vertex2( WindowDimensions.X / 8, offset - ( 220f / scale ) );
+                    GL.Vertex2( WindowDimensions.X - ( WindowDimensions.X / 8 ), offset - ( 440f / scale ) );
+                    GL.Vertex2( WindowDimensions.X, offset - ( 440f / scale ) );
+                    GL.Vertex2( WindowDimensions.X - ( WindowDimensions.X / 8 ), offset - ( 220f / scale ) );
+                    GL.Vertex2( WindowDimensions.X , offset - ( 220f / scale ) );
 
-                    GL.Vertex2( 0, offset +( 440f / scale ) );
-                    GL.Vertex2( WindowDimensions.X / 8, offset + ( 440f / scale ) );
-                    GL.Vertex2( 0, offset + ( 220f / scale ) );
-                    GL.Vertex2( WindowDimensions.X / 8, offset + ( 220f / scale ) );      
+                    GL.Vertex2( WindowDimensions.X - ( WindowDimensions.X / 8 ), offset + ( 440f / scale ) );
+                    GL.Vertex2( WindowDimensions.X , offset + ( 440f / scale ) );
+                    GL.Vertex2( WindowDimensions.X - ( WindowDimensions.X / 8 ), offset + ( 220f / scale ) );
+                    GL.Vertex2( WindowDimensions.X , offset + ( 220f / scale ) );      
                 GL.End();
                 GL.Disable( EnableCap.LineStipple );
                 /** Draw the dotted 1g/2g lines */
